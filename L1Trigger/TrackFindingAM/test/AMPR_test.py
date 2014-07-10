@@ -16,7 +16,7 @@
 # Author: S.Viret (viret@in2p3.fr)
 # Date        : 17/02/2014
 #
-# Script tested with release CMSSW_6_2_0_SLHC14
+# Script tested with release CMSSW_6_2_0_SLHC15
 #
 #########################
 

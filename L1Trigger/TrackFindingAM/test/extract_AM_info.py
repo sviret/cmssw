@@ -17,7 +17,7 @@
 # Author: S.Viret (viret@in2p3.fr)
 # Date  : 27/02/2014
 #
-# Script tested with release CMSSW_6_2_0_SLHC13
+# Script tested with release CMSSW_6_2_0_SLHC15
 #
 #########
 
@@ -63,16 +63,17 @@ process.load("Extractors.RecoExtractor.MIB_extractor_cff")
 
 # Tune some options (see MIB_extractor_cfi.py for details)
 
-#process.MIBextraction.doPixel          = True
-process.MIBextraction.doMatch          = True
-process.MIBextraction.doMC             = True
+#process.MIBextraction.doPixel          = True  # Pixel digis (not for official samples)
+#process.MIBextraction.doMatch          = True  # Pixel digis matching (not for official samples)
+process.MIBextraction.doMC             = True  # Extract TP information
 
-process.MIBextraction.doSTUB           = True
+process.MIBextraction.doSTUB           = True  # Extract official stub info
+
 # You can choose to extract the info from filtered stubs only
 #process.MIBextraction.STUB_container   = cms.string( "MergePROutput" )
 #process.MIBextraction.STUB_name        = cms.string( "StubInPattern" )
 process.MIBextraction.CLUS_container   = cms.string( "TTStubsFromPixelDigis")
-process.MIBextraction.CLUS_name        = cms.string( "ClusterAccepted" )
+process.MIBextraction.CLUS_name        = cms.string( "ClusterAccepted" ) # Only clusters from stubs are in the official samples
 
 process.MIBextraction.doL1TRK          = True
 process.MIBextraction.L1pattern_tag    = cms.InputTag( "MergePROutput", "AML1Patterns")
