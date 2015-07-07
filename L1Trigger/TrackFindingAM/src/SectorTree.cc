@@ -2,7 +2,7 @@
 
 SectorTree::SectorTree(){
   srand ( time(NULL) );
-  superStripSize=-1;
+  setSuperStripSize(0,-1);
   mapNeedsUpdate=true;
 }
 
@@ -104,7 +104,7 @@ int SectorTree::getFDPatternNumber(){
   return nb;  
 }
 
-void SectorTree::computeAdaptativePatterns(short r){
+void SectorTree::computeAdaptativePatterns(map<int, int> r){
   for(unsigned int i=0;i<sector_list.size();i++){
     Sector* s=sector_list[i];
     s->computeAdaptativePatterns(r);
@@ -131,7 +131,7 @@ vector<Sector*> SectorTree::getActivePatternsPerSector(int active_threshold){
     Sector* copy = new Sector(*sector_list[i]);
     vector<GradedPattern*> active_patterns = sector_list[i]->getActivePatterns(active_threshold);
     for(unsigned int j=0;j<active_patterns.size();j++){
-      copy->getPatternTree()->addPattern(active_patterns[j], NULL);
+      copy->getPatternTree()->addPattern(active_patterns[j], NULL, active_patterns[j]->getAveragePt());
       delete active_patterns[j];
     }
     list.push_back(copy);
@@ -145,7 +145,7 @@ vector<Sector*> SectorTree::getActivePatternsPerSectorUsingMissingHit(int max_nb
     Sector* copy = new Sector(*sector_list[i]);
     vector<GradedPattern*> active_patterns = sector_list[i]->getActivePatternsUsingMissingHit(max_nb_missing_hit, active_threshold);
     for(unsigned int j=0;j<active_patterns.size();j++){
-      copy->getPatternTree()->addPattern(active_patterns[j], NULL);
+      copy->getPatternTree()->addPattern(active_patterns[j], NULL, active_patterns[j]->getAveragePt());
       delete active_patterns[j];
     }
     list.push_back(copy);
@@ -153,13 +153,26 @@ vector<Sector*> SectorTree::getActivePatternsPerSectorUsingMissingHit(int max_nb
   return list;
 }
 
-int SectorTree::getSuperStripSize(){
-  return superStripSize;
+int SectorTree::getSuperStripSize(int layer_id){
+  try{
+    return superStripSize.at(layer_id);
+  }
+  catch (const std::out_of_range& oor) {
+    return superStripSize[0];
+  }
 }
 
-void SectorTree::setSuperStripSize(int s){
-  if(s>0)
-    superStripSize=s;
+void SectorTree::setSuperStripSize(int s, int layer_id){
+  if(s>0 && layer_id>-1)
+    superStripSize[layer_id]=s;
+}
+
+vector<int> SectorTree::getSuperStripSizeLayers(){
+  vector<int> keys;
+  for(map<int,int>::iterator it = superStripSize.begin(); it != superStripSize.end(); ++it) {
+    keys.push_back(it->first);
+  }
+  return keys;
 }
 
 int SectorTree::getNbSectors(){

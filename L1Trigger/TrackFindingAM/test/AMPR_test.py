@@ -50,7 +50,7 @@ process.maxEvents = cms.untracked.PSet(
 #
 
 process.source = cms.Source("PoolSource",
-                            fileNames = cms.untracked.vstring('/store/group/comm_trigger/L1TrackTrigger/BE5D_620_SLHC6/singleMu/PU140/AssoFix/SingleMuonPlus_BE5D_PU140_48.root'),
+                            fileNames = cms.untracked.vstring('file:/data/EDM_SLHC_extr_PILEUP4T_140_15.root'),
                            # fileNames = cms.untracked.vstring('/store/group/comm_trigger/L1TrackTrigger/BE5D_620_SLHC6/singleEle/NoPU/test/SingleElectron_BE5D_NoPU_AllStubs_1.root'), 
                             skipEvents=cms.untracked.uint32(0),
 			    duplicateCheckMode = cms.untracked.string( 'noDuplicateCheck' )
@@ -61,9 +61,9 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:upgradePLS3', '')
 
 # Some pattern recognition options
-process.TTPatternsFromStub.inputBankFile = cms.string('/afs/cern.ch/work/s/sviret/testarea/PatternBanks/BE_5D/Eta7_Phi8/ss32_cov40/612_SLHC6_MUBANK_lowmidhig_sec35_ss32_cov40.pbk')
-process.TTPatternsFromStub.threshold     = cms.int32(5)
-process.TTPatternsFromStub.nbMissingHits = cms.int32(-1)
+process.TTPatternsFromStub.inputBankFile = cms.string('/data/baulieu/test/620_SLHC7_MUBANK_lowmidhig_sec27_varDC_1000000.pbk')
+process.TTPatternsFromStub.threshold     = cms.int32(0)
+process.TTPatternsFromStub.nbMissingHits = cms.int32(1)
 process.TTPatternsFromStub.debugMode = cms.int32(0)
 
 # The name of the stub container over which the association is done, please note that the filtered cluster container is

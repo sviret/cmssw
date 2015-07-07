@@ -3,6 +3,7 @@
 
 #include "Layer.h"
 #include <vector>
+#include <map>
 
 
 /**
@@ -18,7 +19,10 @@ class Detector{
  private:
   vector<Layer*> layers;
   vector<int> layerNumber;
+  vector<int> superStripSizes;
   SuperStrip* dump;//used for fake superstrips in the patterns
+  map<string,int> ladderMap;
+  map<string,int> moduleMap;
 
   int getLayerPosition(int pos);
   
@@ -33,15 +37,18 @@ class Detector{
      \param lNum The id of the layer (ie 10 for the outermost layer)
      \param nbLad Number of ladders in the layer
      \param nbMod Number of modules for each ladder
+     \param nbSeg Number of segments for each module
      \param segmentSize Number of strips in each segment
      \param sstripSize Size of a superStrip (number of strips)
+     \param barrel True if it's a barrel layer
   **/
-  void addLayer(int lNum, int nbLad, int nbMod, int segmentSize, int sstripSize);
+  void addLayer(int lNum, int nbLad, int nbMod, int nbSeg, int segmentSize, int sstripSize, bool barrel);
   /**
      \brief Destructor
      Delete all layers.
   **/
   ~Detector();
+
   /**
      \brief Get one of the detector's layers
      \param pos The id of the layer (ie 10 for the outermost layer)
@@ -72,6 +79,8 @@ class Detector{
      Get the dump superstrip (used for fake superstrips in patterns)
   **/
   SuperStrip* getDump();
+
+  void setSectorMaps(map<string,int> lm, map<string,int> mm);
 
 };
 #endif

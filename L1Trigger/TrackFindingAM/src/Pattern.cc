@@ -148,15 +148,15 @@ void Pattern::unlink(){
   nb_strips = NULL;
 }
 
-void Pattern::link(Detector& d, const vector< vector<int> >& sec, const vector<map<int, vector<int> > >& modules){
+void Pattern::link(Detector& d){
   if(strips!=NULL){// already linked
     unlink();
   }
-
+  
   nb_strips=new char[nb_layer];
   strips = new SuperStrip**[nb_layer];
   for(int i=0;i<nb_layer;i++){
-    vector<SuperStrip*> tmp_strips = layer_strips[i]->getSuperStrip(i, sec[i], modules[i], d);
+    vector<SuperStrip*> tmp_strips = layer_strips[i]->getSuperStrip(i, d);
     nb_strips[i] = tmp_strips.size();
     strips[i] = new SuperStrip*[nb_strips[i]];
     for(unsigned int j=0;j<tmp_strips.size();j++){
@@ -205,18 +205,22 @@ bool Pattern::contains(Pattern* hdp){
     return false;
   
   for(int i=0;i<nb_layer;i++){
-    //cout<<"index gray : "<<layer_strips[i]->getStripCode()<<endl;
     int base_index = layer_strips[i]->getStripCode()<<layer_strips[i]->getDCBitsNumber();
-    //cout<<"index gray decale: "<<base_index<<endl;
     vector<short> positions=layer_strips[i]->getPositionsFromDC();
     bool found = false;
     short reference = hdp->getLayerStrip(i)->getStripCode();
-    for(unsigned int j=0;j<positions.size();j++){
-      int index = base_index | positions[j];
-      //      cout<<"index gray avec DC "<<positions[j]<<" : "<<index<<endl;
-      if(reference==index){
+    if(positions.size()==0){//no DC bits used
+      if(reference==base_index){
 	found=true;
-	break;
+      }
+    }
+    else{
+      for(unsigned int j=0;j<positions.size();j++){
+	int index = base_index | positions[j];
+	if(reference==index){
+	  found=true;
+	  break;
+	}
       }
     }
     if(!found){

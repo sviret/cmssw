@@ -60,7 +60,7 @@ class Pattern{
      \param sec The ladders in the sector
      \param modules The modules in the sector (one vector per ladder)
   **/
-  void link(Detector& d, const vector< vector<int> >& sec, const vector<map<int, vector<int> > >& modules);
+  void link(Detector& d);
 #ifdef IPNL_USE_CUDA
   /**
      \brief Create links between patterns and detector on the device
