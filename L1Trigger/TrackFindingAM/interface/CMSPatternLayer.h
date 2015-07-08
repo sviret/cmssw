@@ -99,6 +99,16 @@ class CMSPatternLayer : public PatternLayer{
   **/
   void setValues(short m, short phi, short strip, short seg);
 
+  /**
+     \brief Compute the superstrip value from the stub informations
+     \param layerID The ID of the stub's layer
+     \param module The value of the stub's module in the trigger tower
+     \param phi The value of the stub's ladder in the trigger tower
+     \param strip The value of the stub's strip
+     \param seg The value of the stub's segment
+     \param sstripSize The size of a superstrip in numbner of strips
+     \param fake True if you are building a fake superstrip
+   **/
   void computeSuperstrip(short layerID, short module, short phi, short strip, short seg, int sstripSize, bool fake=0);
 
   /**
@@ -112,11 +122,6 @@ class CMSPatternLayer : public PatternLayer{
      \return A string describing the PatternLayer
   **/
   string toStringBinary();
-  /**
-     \brief Returns a string representation of the PatternLayer, using binary values and in the correct AM05 order (strip position at the end).
-     \return A string describing the PatternLayer
-  **/
-  string toStringSuperstripBinary();
   /**
      \brief Returns a string representation of the PatternLayer, using the encoding needed for a AM05 chip
      \return A string describing the PatternLayer

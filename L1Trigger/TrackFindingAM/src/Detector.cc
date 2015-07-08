@@ -78,7 +78,7 @@ void Detector::receiveHit(const Hit& h){
 
 	pat.computeSuperstrip(h.getLayer(), moduleMap[oss.str()], ladderMap[lad], h.getStripNumber(), h.getSegment(), superStripSizes[l]);
 	if(verbose)
-	  cout<<(int)h.getLayer()<<" "<<hex<<"0x"<<std::setfill ('0') << std::setw (4)<<pat.toStringBinary()<<dec<<endl;
+	  cout<<(int)h.getLayer()<<" "<<hex<<"0x"<<std::setfill ('0') << std::setw (4)<<pat.getIntValue()<<dec<<endl;
 	SuperStrip* s = la->getLadder(pat.getPhi())->getModule(la->isBarrel()?0:pat.getModule())->getSegment(la->isBarrel()?pat.getModule()*2+pat.getSegment():pat.getSegment())->getSuperStripFromIndex(pat.getStrip());
 
 	if(s==NULL)
