@@ -248,10 +248,9 @@ void TrackFindingAMProducer::produce( edm::Event& iEvent, const edm::EventSetup&
 
   /// STEP 2
   /// PAssing the superstrips into the AM chip
-
-  std::vector< Sector* > patternsSectors = m_pf->find(m_hits); // AM PR is done here....
   if(nDebug==1)
-    m_pf->displaySuperstrips(m_hits); // display the supertrips of the event
+    m_pf->setVerboseMode(true); // display the supertrips of the event
+  std::vector< Sector* > patternsSectors = m_pf->find(m_hits); // AM PR is done here....
 
   /// STEP 3
   /// Collect the info and store the track seed stuff

@@ -103,16 +103,10 @@ class PatternFinder{
   static void mergeFiles(string outputFile, string inputFile1, string inputFile2);
 
   /**
-     \brief Display all the stubs of events as superstrips
-     \param start The search will start from this event number
-     \param stop The search will end at this event number
+     \brief Control the output level
+     \param m If set to True, all stub's superstrip values will be displayed during the pattern recognition process.
    **/
-  void displayEventsSuperstrips(int start, int& stop);
-  /**
-     \brief Display the given hits as superstrips if they are part of the sector. Each line will contain the layer ID followed by the 16 bits of the superstrip as an integer.
-     \param hits The list of hits in the event
-   **/
-  void displaySuperstrips(const vector<Hit*> &hits);
+  void setVerboseMode(bool m);
   /**
      \brief Use the maximum missing hit threshold instead of the active_threshold
    **/

@@ -24,6 +24,8 @@ class Detector{
   map<string,int> ladderMap;
   map<string,int> moduleMap;
 
+  bool verbose;
+
   int getLayerPosition(int pos);
   
  public:
@@ -71,16 +73,27 @@ class Detector{
   **/
   void clear();
   /**
-     Get the current number of layes in the detector
+     \brief Get the current number of layes in the detector
      \return The number of layers
   **/
   int getNbLayers();
   /**
-     Get the dump superstrip (used for fake superstrips in patterns)
+     \brief Get the dump superstrip (used for fake superstrips in patterns)
   **/
   SuperStrip* getDump();
 
+  /**
+     \brief Set the LUTs to be used for global to local mapping
+     \param lm LUT for ladders
+     \param mm LUT for modules
+   **/
   void setSectorMaps(map<string,int> lm, map<string,int> mm);
+
+  /**
+     \brief Configure the verbose mode
+     \param m If true display informations
+   **/
+  void setVerboseMode(bool m);
 
 };
 #endif
