@@ -61,7 +61,8 @@ void Detector::clear(){
 }
 
 void Detector::receiveHit(const Hit& h){
-  //cout<<h<<endl;
+  if(verbose)
+    cout<<"#STUB : "<<h<<endl;
   int l = getLayerPosition(h.getLayer());
   if(l!=-1){
     Layer* la = getLayerFromAbsolutePosition(l);
@@ -77,8 +78,10 @@ void Detector::receiveHit(const Hit& h){
 	oss<<setw(2)<<(int)h.getModule();
 
 	pat.computeSuperstrip(h.getLayer(), moduleMap[oss.str()], ladderMap[lad], h.getStripNumber(), h.getSegment(), superStripSizes[l]);
-	if(verbose)
-	  cout<<(int)h.getLayer()<<" "<<hex<<"0x"<<std::setfill ('0') << std::setw (4)<<pat.getIntValue()<<dec<<endl;
+	if(verbose){
+	  cout<<"#SUPERSTRIP : "<<(int)h.getLayer()<<" "<<hex<<"0x"<<std::setfill ('0') << std::setw (4)<<pat.getIntValue()<<dec<<endl;
+	  cout<<endl;
+	}
 	SuperStrip* s = la->getLadder(pat.getPhi())->getModule(la->isBarrel()?0:pat.getModule())->getSegment(la->isBarrel()?pat.getModule()*2+pat.getSegment():pat.getSegment())->getSuperStripFromIndex(pat.getStrip());
 
 	if(s==NULL)

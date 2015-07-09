@@ -232,7 +232,7 @@ bool Pattern::contains(Pattern* hdp){
 
 ostream& operator<<(ostream& out, const Pattern& s){
   for(int i=0;i<s.getNbLayers();i++){
-    out<<s.layer_strips[i]->toString()<<endl;
+    out<<s.layer_strips[i]->toString()<<" - ";
   }
   out<<endl;
   return out;
