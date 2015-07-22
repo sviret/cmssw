@@ -222,7 +222,6 @@ class CMSPatternLayer : public PatternLayer{
      \return For each layerID, gives the minimum and maximum ETA values
   **/
   static map<int, pair<float,float> > getLayerDefInEta();
-
 };
 BOOST_CLASS_VERSION(CMSPatternLayer, 2)
 #endif

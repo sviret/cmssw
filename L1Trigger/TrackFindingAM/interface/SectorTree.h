@@ -42,7 +42,8 @@ class SectorTree{
      \brief used to know the superstrip size used for the patterns contained in this sectorTree.
      This value is not used inside the class.
   **/
-  map<int,int> superStripSize;
+  static map<string, int> superstripSize_lut;
+  static string ss_size_filename;
 
   void updateSectorMap();
 
@@ -50,18 +51,17 @@ class SectorTree{
   
   template<class Archive> void save(Archive & ar, const unsigned int version) const{
     ar << sector_list;
-    ar << superStripSize;
+    ar & SectorTree::superstripSize_lut;
   }
   
   template<class Archive> void load(Archive & ar, const unsigned int version){
-    ar >> sector_list;
-    if(version<1){
-      int val;
-      ar >> val;
-      setSuperStripSize(val);
+    if(version>1){
+      ar >> sector_list;
+      ar >> superstripSize_lut;
     }
     else{
-      ar >> superStripSize;
+      cout<<"This PBK file format is too old and not compatible with this version of the software."<<endl;
+      exit(-1);
     }
   }
   
@@ -72,6 +72,10 @@ class SectorTree{
      \brief Constructor
   **/
   SectorTree();
+  /**
+     \brief Constructor by copy : only copy the superstrip sizes
+  **/
+  SectorTree(const SectorTree& st);
   /**
      \brief Destructor
   **/
@@ -145,20 +149,20 @@ class SectorTree{
      \param layer_id The ID of the layer for which you want the superstrip size (0 for default).If the ID is not know, returns the default value.
      \return -1 if not specified, the superStrip size otherwise.
   **/
-  int getSuperStripSize(int layer_id=0);
+  static int getSuperstripSize(int layer_id=0, int ladder_id=0);
 
-  /**
-     \brief Set the size of the superStrip used in the patterns stored in the SectorTree
-     \param s The superStrip size (should be greater than 0)
-     \param layer_id The ID of the layer for which you want to set the superstrip size (0 for default)
-  **/
-  void setSuperStripSize(int s, int layer_id=0);
+  static map< string, int > loadSStripSizeLUT(string name);
 
   /**
      \brief Returns the list of layer IDs for which a superstrip size is defined
      \return A vector containing the list of layer IDs
    **/
-  vector<int> getSuperStripSizeLayers();
+  // static vector<int> getSuperStripSizeLayers();
+  
+  bool hasSameSuperstripSizes(const SectorTree& st);
+
+  static void displaySuperstripSizes();
+  static void setSuperstripSizeFile(string fileName);
 
   /**
      \brief Get the number of sectors in the SectorTree
@@ -166,5 +170,5 @@ class SectorTree{
   int getNbSectors();
 
 };
-BOOST_CLASS_VERSION(SectorTree, 1)
+BOOST_CLASS_VERSION(SectorTree, 2)
 #endif
