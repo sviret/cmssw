@@ -1,6 +1,6 @@
 #include "../interface/Detector.h"
 
-#include "../interface/CMSPatternLayer.h"
+#include "../interface/SectorTree.h"
 
 Detector::Detector(){
   dump=NULL;
@@ -77,7 +77,7 @@ void Detector::receiveHit(const Hit& h){
 	string lad = oss.str();
 	oss<<setw(2)<<(int)h.getModule();
 
-	pat.computeSuperstrip(h.getLayer(), moduleMap[oss.str()], ladderMap[lad], h.getStripNumber(), h.getSegment(), superStripSizes[l]);
+	pat.computeSuperstrip(h.getLayer(), moduleMap[oss.str()], ladderMap[lad], h.getStripNumber(), h.getSegment(), SectorTree::getSuperstripSize(h.getLayer(),h.getLadder()));
 	if(verbose){
 	  cout<<"#SUPERSTRIP : "<<(int)h.getLayer()<<" "<<hex<<"0x"<<std::setfill ('0') << std::setw (4)<<pat.getIntValue()<<dec<<endl;
 	  cout<<endl;

@@ -295,6 +295,7 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     */
 
     float last_pt = 0;
+    int ladder_ori = -1;
     Pattern* p = new Pattern(tracker_layers.size());
     Pattern* lowDef_p=NULL;
     
@@ -318,6 +319,7 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
 	//	cout<<value<<endl;
 	value = value-(value/1000000)*1000000;
 	ladder = value/10000;
+	ladder_ori = ladder;
 	value = value-ladder*10000;
 	module = value/100;
 	value = value-module*100;
@@ -342,7 +344,7 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
       CMSPatternLayer pat;
       CMSPatternLayer lowDef_layer;
       try{
-	pat.computeSuperstrip(tracker_layers[j], module, ladder, strip, seg, sectors->getSuperStripSize(tracker_layers[j]), stub_number==-2);
+	pat.computeSuperstrip(tracker_layers[j], module, ladder, strip, seg, SectorTree::getSuperstripSize(tracker_layers[j],CMSPatternLayer::getLadderCode(tracker_layers[j],ladder_ori)), stub_number==-2);
       }
       catch (const std::out_of_range& oor) {
 	std::cerr << "One of the stubs can not be linked to a superstrip"<<endl;
@@ -352,7 +354,7 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
       p->setLayerStrip(j, &pat);
 
       if(getVariableResolutionState()){
-	lowDef_layer.computeSuperstrip(tracker_layers[j], module, ladder, strip, seg, sectors->getSuperStripSize(tracker_layers[j])*(int)pow(2.0,(double)variableRes[tracker_layers[j]]), stub_number==-2);
+	lowDef_layer.computeSuperstrip(tracker_layers[j], module, ladder, strip, seg, SectorTree::getSuperstripSize(tracker_layers[j],CMSPatternLayer::getLadderCode(tracker_layers[j],ladder_ori))*(int)pow(2.0,(double)variableRes[tracker_layers[j]]), stub_number==-2);
 	lowDef_p->setLayerStrip(j, &lowDef_layer);
       }
 

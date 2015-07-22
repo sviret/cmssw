@@ -137,36 +137,37 @@ void CMSPatternLayer::setValues(short m, short phi, short strip, short seg){
 }
 
 void CMSPatternLayer::computeSuperstrip(short layerID, short module, short phi, short strip, short seg, int sstripSize, bool fake){
-    if(fake){
-      setValues(0, 15, 0, 0);
-      return;
-    }
+  if(fake){
+    setValues(0, 15, 0, 0);
+    return;
+  }
+  
+  int superStrip = strip/sstripSize;
+  int segment = seg;
+  
+  /*
+    On P/S modules segment values are ranging from 0 to 31 -> we only want 0 or 1
+  */
+  if((layerID>=5 && layerID<=7) || (layerID>10 && phi<=8))
+    segment = segment/16;
+  
+  if(layerID<11){ //barrel
+    // mix modules and segments
+    int z = (module*2)+(1-segment);
+    // P/S modules are devided by 2 to get the same granularity as S/S modules
+    if(layerID>=5 && layerID<=7)
+      z = z/(2*INNER_LAYER_SEG_DIVIDE);
+    else if (layerID>10 && phi<=8)
+      z = z/(2*INNER_LAYER_SEG_DIVIDE);
+    else
+      z = z/OUTER_LAYER_SEG_DIVIDE;
     
-    int superStrip = strip/sstripSize;
-    int segment = seg;
-    
-    /*
-      On P/S modules segment values are ranging from 0 to 31 -> we only want 0 or 1
-     */
-    if((layerID>=5 && layerID<=7) || (layerID>10 && phi<=8))
-      segment = segment/16;
-
-    if(layerID<11){ //barrel
-      // mix modules and segments
-      int z = (module*2)+(1-segment);
-      // P/S modules are devided by 2 to get the same granularity as S/S modules
-      if(layerID>=5 && layerID<=7)
-	z = z/(2*INNER_LAYER_SEG_DIVIDE);
-      else if (layerID>10 && phi<=8)
-	z = z/(2*INNER_LAYER_SEG_DIVIDE);
-      else
-	z = z/OUTER_LAYER_SEG_DIVIDE;
-      
-      setValues(z/2,phi, superStrip, z%2);//store 4 bits on module and 1 bit on segment
-    }
-    else{//endcap
-      setValues(module,phi, superStrip, segment);
-    }
+    setValues(z/2,phi, superStrip, z%2);//store 4 bits on module and 1 bit on segment
+  }
+  else{//endcap
+    //segment = 0;
+    setValues(module,phi, superStrip, segment);
+  }
 }
 
 short CMSPatternLayer::getModule(){
@@ -595,3 +596,5 @@ vector<int> CMSPatternLayer::getHDSuperstrips(){
   }
   return array;
 }
+
+

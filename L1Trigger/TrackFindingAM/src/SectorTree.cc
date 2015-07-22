@@ -1,9 +1,20 @@
 #include "../interface/SectorTree.h"
 
+map<string, int> SectorTree::superstripSize_lut;
+string SectorTree::ss_size_filename="./ss_size.txt";
+
 SectorTree::SectorTree(){
   srand ( time(NULL) );
-  setSuperStripSize(0,-1);
   mapNeedsUpdate=true;
+}
+
+SectorTree::SectorTree(const SectorTree& st){
+  srand ( time(NULL) );
+  mapNeedsUpdate=true;
+  //copy the superstrip sizes
+  for(map<string, int>::iterator it=st.superstripSize_lut.begin();it!=superstripSize_lut.end();it++){
+    this->superstripSize_lut[it->first]=it->second;
+  }
 }
 
 SectorTree::~SectorTree(){
@@ -153,28 +164,81 @@ vector<Sector*> SectorTree::getActivePatternsPerSectorUsingMissingHit(int max_nb
   return list;
 }
 
-int SectorTree::getSuperStripSize(int layer_id){
-  try{
-    return superStripSize.at(layer_id);
+map< string, int > SectorTree::loadSStripSizeLUT(string name){
+  string line;
+  ifstream myfile (name.c_str());
+  map< string, int > size_lut;
+  if (myfile.is_open()){
+    while ( myfile.good() ){
+      getline (myfile,line);
+      if(line.length()>0 && line.find("#")!=0){
+	stringstream ss(line);
+	std::string item;
+	vector<string> items;
+	while (getline(ss, item, ' ')) {
+	  std::string::iterator end_pos = std::remove(item.begin(), item.end(), ' ');
+	  item.erase(end_pos, item.end());
+	  items.push_back(item);
+	}
+	if(items.size()==2){
+	  istringstream buffer2(items[1]);
+	  int size;
+	  buffer2 >> size;
+	  size_lut[items[0]]=size;
+	}
+      }
+    }
+    myfile.close();
   }
-  catch (const std::out_of_range& oor) {
-    return superStripSize[0];
+  else{
+    cout << "Can not find file "<<name<<" to load the superstrip size lookup table!"<<endl;
+    exit(-1);
+  }
+  return size_lut;
+}
+
+int SectorTree::getSuperstripSize(int layer_id, int ladder_id){
+  if(superstripSize_lut.size()==0)
+    superstripSize_lut = loadSStripSizeLUT(ss_size_filename);
+  if(layer_id<11){ // barrel
+    ostringstream oss;
+    oss<<std::setfill('0');
+    oss<<setw(2)<<(int)layer_id;
+    return superstripSize_lut[oss.str()];
+  }
+  else{//endcap
+    ostringstream oss;
+    oss<<std::setfill('0');
+    oss<<setw(2)<<(int)layer_id;
+    oss<<setw(2)<<(int)ladder_id;
+    return superstripSize_lut[oss.str()];
   }
 }
 
-void SectorTree::setSuperStripSize(int s, int layer_id){
-  if(s>0 && layer_id>-1)
-    superStripSize[layer_id]=s;
+bool SectorTree::hasSameSuperstripSizes(const SectorTree& st){
+  //all of this is in st
+  for(map<string, int>::iterator it=superstripSize_lut.begin();it!=superstripSize_lut.end();it++){
+    if(it->second!=st.superstripSize_lut[it->first])
+      return false;
+  }
+  //all of st is in this
+  for(map<string, int>::iterator it=st.superstripSize_lut.begin();it!=st.superstripSize_lut.end();it++){
+    if(it->second!=superstripSize_lut[it->first])
+      return false;
+  }
+  return true;
 }
 
-vector<int> SectorTree::getSuperStripSizeLayers(){
-  vector<int> keys;
-  for(map<int,int>::iterator it = superStripSize.begin(); it != superStripSize.end(); ++it) {
-    keys.push_back(it->first);
+void SectorTree::displaySuperstripSizes(){
+  for(map<string, int>::iterator it=superstripSize_lut.begin();it!=superstripSize_lut.end();it++){
+    cout<<"\t"<<it->first<<" : "<<it->second<<endl;
   }
-  return keys;
 }
 
 int SectorTree::getNbSectors(){
   return sector_list.size();
+}
+
+void SectorTree::setSuperstripSizeFile(string fileName){
+  ss_size_filename=fileName;
 }
