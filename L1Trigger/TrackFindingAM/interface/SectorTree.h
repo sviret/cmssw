@@ -14,6 +14,7 @@
 #include "HoughFitter.h"
 #include "SeedClusteringFitter.h"
 #include "RetinaTrackFitter.h"
+#include "TCBuilder.h"
 
 #ifdef IPNL_USE_CUDA
 #include "gpu_struct.h"

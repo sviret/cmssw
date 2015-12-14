@@ -4,6 +4,7 @@ from Configuration.StandardSequences.MagneticField_cff import *
 from L1Trigger.TrackFindingAM.L1AMTrack_cfi import *
 from SimTracker.TrackTriggerAssociation.TTStubAssociation_cfi import * 
 from SimTracker.TrackTriggerAssociation.TTClusterAssociation_cfi import *
+from SimTracker.TrackTriggerAssociation.TTTrackAssociation_cfi import *
 import FWCore.ParameterSet.Config as cms
 
 
@@ -28,19 +29,23 @@ TTPatternsFromStubs   = cms.Sequence(TTPatternsFromStub)
 TTPatternsFromStubswStubs   = cms.Sequence(TTPatternsFromStub*MergePROutput*TTStubAssociatorFromPixelDigis)
 
 ############################################
-# STEP 2: Hough transform fit
+# STEP 2: TC builder
 ############################################
 
 # The simple sequence, creates only a track container
 # used in principle only for debugging purposes
 #
+
+
+TTTrackAssociatorFromPixelDigis.TTTracks = cms.VInputTag( cms.InputTag("MergeFITOutput", "AML1Tracks"))
+
 TTTracksFromPatterns  = cms.Sequence(TTTracksFromPattern)
 
 
 # The sequence. Note that we call the Merge plugins because the filtered containers are created
 # here. We just merge one branch...
 
-TTTracksFromPatternswStubs   = cms.Sequence(TTTracksFromPattern*MergeFITOutput*TTStubAssociatorFromPixelDigis)
+TTTracksFromPatternswStubs   = cms.Sequence(TTTracksFromPattern*MergeFITOutput*TTStubAssociatorFromPixelDigis*TTTrackAssociatorFromPixelDigis)
 
 
 ############################################
