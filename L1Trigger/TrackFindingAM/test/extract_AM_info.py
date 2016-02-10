@@ -53,8 +53,8 @@ process.maxEvents = cms.untracked.PSet(
 
 # The file you want to extract
 process.source = cms.Source("PoolSource",
-                            fileNames = cms.untracked.vstring('file:AM_output.root'),
-                            #fileNames = cms.untracked.vstring('file:AMFIT_output.root'),
+                            #fileNames = cms.untracked.vstring('file:AM_output.root'),
+                            fileNames = cms.untracked.vstring('file:AMFIT_output.root'),
                             duplicateCheckMode = cms.untracked.string( 'noDuplicateCheck' )
 )
 
@@ -78,9 +78,9 @@ process.MIBextraction.doL1TRK          = True
 process.MIBextraction.L1pattern_tag    = cms.InputTag( "MergePROutput", "AML1Patterns")
 
 # Choose the first line if you have only the patterns 
-process.MIBextraction.L1track_tag      = cms.InputTag( "", "")
-#process.MIBextraction.L1track_tag      = cms.InputTag( "MergeFITOutput", "AML1Tracks")
-
+#process.MIBextraction.L1track_tag      = cms.InputTag( "", "")
+#process.MIBextraction.L1track_tag      = cms.InputTag( "MergeFITOutput", "AML1Tracks") # Floating point TC
+process.MIBextraction.L1track_tag      = cms.InputTag( "MergeFITOutputb", "AML1BinTracks") # Bit-wise TCs
 process.p = cms.Path(process.MIBextraction)
 
 

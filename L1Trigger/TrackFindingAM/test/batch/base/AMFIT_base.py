@@ -35,6 +35,8 @@ process.source = cms.Source("PoolSource",
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'MYGLOBALTAG', '')
 
+process.TFileService = cms.Service("TFileService", fileName = cms.string('OFFFILENAME'), closeFileFast = cms.untracked.bool(True))
+
 # The name of the stub container over which the association is done, please note that the filtered cluster container is
 # not associated due to the lack of simPixelDigis in official samples
 
@@ -62,7 +64,7 @@ process.MIBextraction.doSTUB           = True
 process.MIBextraction.doL1TRK          = True
 
 process.MIBextraction.L1pattern_tag    = cms.InputTag( "MergePROutput", "AML1Patterns")
-process.MIBextraction.L1track_tag      = cms.InputTag( "MergeFITOutput", "AML1Tracks")
+process.MIBextraction.L1track_tag      = cms.InputTag( "MergeFITOutputb", "AML1BinTracks")
 process.MIBextraction.CLUS_container   = cms.string( "TTStubsFromPixelDigis")
 process.MIBextraction.CLUS_name        = cms.string( "ClusterAccepted" )
 process.MIBextraction.extractedRootFile= cms.string('EXTRFILENAME')
@@ -75,13 +77,23 @@ process.RAWSIMoutput.outputCommands.append('keep  *_*_*_AMFITBASE')
 process.RAWSIMoutput.outputCommands.append('drop *_TTTracksFromPattern_*_*')
 process.RAWSIMoutput.outputCommands.append('keep  *_*_MergedTrackTruth_*')
 
+process.L1TrackNtuple = cms.EDAnalyzer('L1TrackNtupleMaker',
+                                       MyProcess = cms.int32(1),
+                                       NTrkPar   = cms.int32(5),
+                                       DebugMode = cms.bool(False),
+                                       L1TrackInputTag = cms.InputTag("MergeFITOutputb", "AML1BinTracks"),               ## TTTrack input
+                                       MCTruthTrackInputTag = cms.InputTag("TTTrackAssociatorFromPixelDigis", "AML1BinTracks") ## MCTruth input 
+
+                                       )
+
 # Path and EndPath definitions
 process.L1AMFIT_step         = cms.Path(process.TTTracksFromPatternswStubs)
 process.p                    = cms.Path(process.MIBextraction)
+process.ana                  = cms.Path(process.L1TrackNtuple)
 process.endjob_step          = cms.EndPath(process.endOfProcess)
 process.RAWSIMoutput_step    = cms.EndPath(process.RAWSIMoutput)
 
-process.schedule = cms.Schedule(process.L1AMFIT_step,process.p,process.endjob_step,process.RAWSIMoutput_step)
+process.schedule = cms.Schedule(process.L1AMFIT_step,process.p,process.ana,process.endjob_step,process.RAWSIMoutput_step)
 
 
 # Automatic addition of the customisation function

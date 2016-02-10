@@ -22,10 +22,11 @@ TTTracksFromPattern = ( cms.EDProducer("TrackFitRetinaProducer",
                                        removeDuplicates   = cms.untracked.int32(1)
                                        )
                         if doRetinaFit else
-                        cms.EDProducer("TrackFitHoughProducer",
+                        cms.EDProducer("TrackFitTCProducer",
                                        TTInputStubs       = cms.InputTag("TTStubsFromPixelDigis", "StubAccepted"),
                                        TTInputPatterns    = cms.InputTag("MergePROutput", "AML1Patterns"),
                                        TTTrackName        = cms.string("AML1Tracks"),
+                                       TTTrackBinaryName  = cms.string("AML1BinTracks")
                                        )
                         )
 
@@ -47,4 +48,13 @@ MergeFITOutput = cms.EDProducer("AMOutputMerger",
    TTFiltClustersName  = cms.string("ClusInTrack"),
    TTFiltStubsName     = cms.string("StubInTrack"),
    TTPatternsName      = cms.string("AML1Tracks")                         
+)
+
+MergeFITOutputb = cms.EDProducer("AMOutputMerger",
+   TTInputClusters     = cms.InputTag("TTStubsFromPixelDigis", "ClusterAccepted"),
+   TTInputStubs        = cms.InputTag("TTStubsFromPixelDigis", "StubAccepted"),
+   TTInputPatterns     = cms.VInputTag(cms.InputTag("TTTracksFromPattern", "AML1BinTracks")),                               
+   TTFiltClustersName  = cms.string("ClusInTrack"),
+   TTFiltStubsName     = cms.string("StubInTrack"),
+   TTPatternsName      = cms.string("AML1BinTracks")                         
 )

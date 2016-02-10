@@ -37,6 +37,12 @@ class Sector{
   int officialID;
   void getRecKeys(vector< vector<int> > &v, int level, string temp, vector<string> &res);
 
+  static map<string,int> toLadderCode;
+  static map<string,int> toModuleCode;
+
+  void buildLadderCodeMap();
+  void buildModuleCodeMap();
+
   friend class boost::serialization::access;
   
   template<class Archive> void save(Archive & ar, const unsigned int version) const{
@@ -152,6 +158,13 @@ class Sector{
   int getNbLayers();
 
   /**
+     \brief Get the number of ladders in the layer
+     \param layerID The layer ID
+     \return The number of ladder
+  **/
+  int getNbLadders(int layerID);
+
+  /**
      \brief Get all the possible paths in this sector (1 ladder per layer)
      \return A list of strings. Each string uses 2 digits per ladder (01 02 03 ...). The format is 020406 for ladders 2,4 and 6 respectively on layers 0,1 and 2
   **/
@@ -247,9 +260,9 @@ class Sector{
   int getFDPatternNumber();
   /**
      \brief Replace all LD patterns with adapatative patterns. All FD patterns are removed.
-     \param r The number of DC bits used between FD and LD
+     \param r The number of DC bits used between FD and LD for each layer ID
   **/
-  void computeAdaptativePatterns(short r);
+  void computeAdaptativePatterns(map<int, int> r);
   /**
      Link all the patterns contained in the sector to the super strips contained in the Detector object
      \param d The Detector object
@@ -294,6 +307,19 @@ class Sector{
      \brief Update the Phi Rotation value of the current fitter
    **/
   void updateFitterPhiRotation();
+
+  /**
+     \brief Get a map allowing the conversion from global ladder ID to sector numbering
+     \return A map between layer ID + ladder ID and the local ladder numbering (map[0515]=2 -> id of ladder 15 on layer 5 is 2)
+   **/
+  map<string,int> getLadderCodeMap();
+
+  /**
+     \brief Get a map allowing the conversion from global module ID to sector numbering
+     \return A map between layer ID + ladder ID + module ID and the local module numbering (map[051521]=2 -> id of module 21 on ladder 15, layer 5 is 2)
+   **/
+  map<string,int> getModuleCodeMap();
+
 
   static map< int, vector<int> > readConfig(string name);
 };
