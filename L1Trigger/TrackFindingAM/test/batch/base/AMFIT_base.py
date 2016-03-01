@@ -89,11 +89,13 @@ process.L1TrackNtuple = cms.EDAnalyzer('L1TrackNtupleMaker',
 # Path and EndPath definitions
 process.L1AMFIT_step         = cms.Path(process.TTTracksFromPatternswStubs)
 process.p                    = cms.Path(process.MIBextraction)
-process.ana                  = cms.Path(process.L1TrackNtuple)
+#process.ana                  = cms.Path(process.L1TrackNtuple)
 process.endjob_step          = cms.EndPath(process.endOfProcess)
 process.RAWSIMoutput_step    = cms.EndPath(process.RAWSIMoutput)
 
-process.schedule = cms.Schedule(process.L1AMFIT_step,process.p,process.ana,process.endjob_step,process.RAWSIMoutput_step)
+#process.schedule = cms.Schedule(process.L1AMFIT_step,process.p,process.ana,process.endjob_step,process.RAWSIMoutput_step)
+
+process.schedule = cms.Schedule(process.L1AMFIT_step,process.p,process.endjob_step,process.RAWSIMoutput_step)
 
 
 # Automatic addition of the customisation function

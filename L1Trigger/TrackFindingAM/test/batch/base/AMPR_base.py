@@ -19,7 +19,7 @@
 
 import FWCore.ParameterSet.Config as cms
 
-process = cms.Process('AMPRBASE')
+process = cms.Process('AMPRBASENUM')
 
 # import of standard configurations
 process.load('Configuration.StandardSequences.Services_cff')

@@ -3,7 +3,7 @@
 # This script is the main interface for pattern recognition on
 # CMSSW files.
 #
-# It is called by AMPR_batch.sh
+# It is called by AMPR_parallel_XRD.csh
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # You're not supposed to touch anything here
@@ -24,11 +24,11 @@ if [ ${1} = "PRMERGE" ]; then
     CMSSW_PROJECT_SRC=${6}        # The CMSSW project release dir
     GT=${7}                       # The global tag
     FNAME=${8}                    # A tag to enable parallel processing
-    INTMP=$PWD/${9}               # 
+    INTMP=${9}                    # 
     BANKDIR=${10}                 # 
     START=${11}                   # The first event to process in the input file
     STOP=${12}                    # The last event to process in the input file
-    OUTTMP=$PWD/${13}             # 
+    OUTTMP=${13}                  # 
 
     #
     # Setting up environment variables
@@ -165,12 +165,12 @@ if [ ${1} = "FINAL" ]; then
     echo "Doing the final merging"
 
     TAG=${2} 
-    INPUTDIR=$PWD/${3}  
-    INPUTROOTDIR=$PWD/${4}  
+    INPUTDIR=${3}  
+    INPUTROOTDIR=${4}  
     OUTPUTFILE=${5}  
     CMSSW_PROJECT_SRC=${6}
     FNAME=${7}               # A tag to enable parallel processing
-    INTMP=$PWD/${8}          # 
+    INTMP=${8}          # 
 
     #
     # Setting up environment variables
@@ -235,7 +235,7 @@ if [ ${1} = "FIT" ]; then
 
     echo "Doing the fit"
 
-    INPUT=$PWD/${2}           # The input xrootd file name and address
+    INPUT=${2}                # The input xrootd file name and address
     OUTPUT=${3}               # Output file name 
     OUTPUTE=${4}              # Output extracted file name 
     NEVT=${5}                 # #evts/file
@@ -243,7 +243,7 @@ if [ ${1} = "FIT" ]; then
     CMSSW_PROJECT_SRC=${7}    # The CMSSW project release dir
     GT=${8}                   # The global tag
     FNAME=${9}                # A tag to enable parallel processing
-    INTMP=$PWD/${10}          # 
+    INTMP=${10}               # 
 
     INFILE=`basename $INPUT`
     echo $INPUT,$INFILE
