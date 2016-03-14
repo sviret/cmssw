@@ -28,12 +28,12 @@ class Track{
   Track();
   /**
      \brief Constructor
-     \param cg The charge of the track
      \param c The PT of the track
      \param d The D0 of the track
      \param p The PHI0 of the track
      \param p_a The Eta0 of the track
      \param p_b The Z0 of the track
+     \param cg The charge of the track
      \param Wxy The weight of the XY-retina maximum
      \param Wrz The weight of the RZ-retina maximum
   **/

@@ -36,7 +36,6 @@ Track::Track(const Track& ref){
   }
 }
 
-
 void Track::setCharge(double cg){
   charge=cg;
 }
@@ -81,7 +80,6 @@ vector<int> Track::getStubs(){
 void Track::clearStubList(){
   stub_ids.clear();
 }
-
 
 double Track::getCharge(){
   return charge;
