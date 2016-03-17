@@ -28,7 +28,6 @@
 #include "DataFormats/L1TrackTrigger/interface/TTCluster.h"
 #include "DataFormats/L1TrackTrigger/interface/TTStub.h"
 #include "DataFormats/L1TrackTrigger/interface/TTTrack.h"
-#include "DataFormats/L1TrackTrigger/interface/TTPixelTrack.h"
 #include "SimDataFormats/TrackingAnalysis/interface/TrackingParticle.h"
 #include "SimDataFormats/TrackingAnalysis/interface/TrackingVertex.h"
 #include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
@@ -103,17 +102,22 @@ protected:
   
 private:
   
+  //-----------------------------------------------------------------------------------------------
   // Containers of parameters passed by python configuration file
   edm::ParameterSet config; 
   
-  int MyProcess;
-  bool DebugMode;
-  bool SaveAllTracks;
-  bool DoPixelTrack;
-  bool SaveStubs;
-
-  edm::InputTag L1TrackInputTag;
-  edm::InputTag MCTruthTrackInputTag;
+  int MyProcess;       // 11/13/15/211 for single electrons/muons/taus/pions, 6 for pions in ttbar, 1 for inclusive
+  bool DebugMode;      // lots of debug printout statements
+  bool SaveAllTracks;  // store in ntuples not only truth-matched tracks but ALL tracks
+  bool SaveStubs;      // option to save also stubs in the ntuples (makes them large...)
+  int L1Tk_nPar;       // use 4 or 5 parameter track fit? 
+  int TP_minNStub;     // require TPs to have >= minNStubs (defining efficiency denominator) (==0 means to only require >= 1 cluster)
+  double TP_minPt;     // save TPs with pt > minPt 
+  double TP_maxEta;    // save TPs with |eta| < maxEta 
+  double TP_maxZ0;     // save TPs with |z0| < maxZ0 
+  
+  edm::InputTag L1TrackInputTag;        // L1 track collection
+  edm::InputTag MCTruthTrackInputTag;   // MC truth collection
 
 
   //-----------------------------------------------------------------------------------------------
@@ -125,6 +129,7 @@ private:
   std::vector<float>* m_trk_pt;
   std::vector<float>* m_trk_eta;
   std::vector<float>* m_trk_phi;
+  std::vector<float>* m_trk_d0;   // (filled if L1Tk_nPar==5, else 999)
   std::vector<float>* m_trk_z0;
   std::vector<float>* m_trk_chi2; 
   std::vector<float>* m_trk_consistency; 
@@ -140,16 +145,6 @@ private:
   std::vector<float>* m_trk_matchtp_z0;
   std::vector<float>* m_trk_matchtp_dxy;
 
-  // all L1 pixel tracks
-  std::vector<float>* m_pixtrk_pt;
-  std::vector<float>* m_pixtrk_eta;  
-  std::vector<float>* m_pixtrk_phi;
-  std::vector<float>* m_pixtrk_z0;
-  std::vector<float>* m_pixtrk_d0;
-  std::vector<float>* m_pixtrk_chi2;    //this is the chi2 of the combined track with pixel information
-  std::vector<float>* m_pixtrk_trkchi2; //this is the chi2 of the non-pixel track part only
-  std::vector<int>*   m_pixtrk_nstub; 
-
   // all tracking particles
   std::vector<float>* m_tp_pt;
   std::vector<float>* m_tp_eta;
@@ -161,37 +156,18 @@ private:
   std::vector<float>* m_tp_z0_prod;
   std::vector<int>*   m_tp_pdgid;
   std::vector<int>*   m_tp_nmatch;
-  std::vector<int>*   m_tp_npixmatch;
   std::vector<int>*   m_tp_nstub;
 
   // *L1 track* properties if m_tp_nmatch > 0
   std::vector<float>* m_matchtrk_pt;
   std::vector<float>* m_matchtrk_eta;
   std::vector<float>* m_matchtrk_phi;
+  std::vector<float>* m_matchtrk_d0; //this variable is only filled if L1Tk_nPar==5
   std::vector<float>* m_matchtrk_z0;
   std::vector<float>* m_matchtrk_chi2; 
   std::vector<float>* m_matchtrk_consistency; 
   std::vector<int>*   m_matchtrk_nstub;
   std::vector<int>*   m_matchtrk_genuine;
-
-  // *L1 track* properties ***for 5-parameter fit*** if m_tp_nmatch > 0
-  std::vector<float>* m_matchtrk5p_pt;
-  std::vector<float>* m_matchtrk5p_eta;
-  std::vector<float>* m_matchtrk5p_phi;
-  std::vector<float>* m_matchtrk5p_z0;
-  std::vector<float>* m_matchtrk5p_d0;
-  std::vector<float>* m_matchtrk5p_chi2; 
-  std::vector<float>* m_matchtrk5p_consistency; 
-
-  // *L1 pixel track* properties if m_tp_npixmatch > 0
-  std::vector<float>* m_matchpixtrk_pt;
-  std::vector<float>* m_matchpixtrk_eta;  
-  std::vector<float>* m_matchpixtrk_phi;
-  std::vector<float>* m_matchpixtrk_z0;
-  std::vector<float>* m_matchpixtrk_d0;
-  std::vector<float>* m_matchpixtrk_chi2;    //this is the chi2 of the combined track with pixel information
-  std::vector<float>* m_matchpixtrk_trkchi2; //this is the chi2 of the non-pixel track part only
-  std::vector<int>*   m_matchpixtrk_nstub; 
 
   // ALL stubs
   std::vector<float>* m_allstub_x;
@@ -218,12 +194,16 @@ L1TrackNtupleMaker::L1TrackNtupleMaker(edm::ParameterSet const& iConfig) :
   config(iConfig)
 {
 
-  MyProcess = iConfig.getParameter< int >("MyProcess");
-  DebugMode = iConfig.getParameter< bool >("DebugMode");
+  MyProcess     = iConfig.getParameter< int >("MyProcess");
+  DebugMode     = iConfig.getParameter< bool >("DebugMode");
   SaveAllTracks = iConfig.getParameter< bool >("SaveAllTracks");
-  DoPixelTrack = iConfig.getParameter< bool >("DoPixelTrack");
-  SaveStubs = iConfig.getParameter< bool >("SaveStubs");
-  L1TrackInputTag = iConfig.getParameter<edm::InputTag>("L1TrackInputTag");
+  SaveStubs     = iConfig.getParameter< bool >("SaveStubs");
+  L1Tk_nPar     = iConfig.getParameter< int >("L1Tk_nPar");
+  TP_minNStub   = iConfig.getParameter< int >("TP_minNStub");
+  TP_minPt      = iConfig.getParameter< double >("TP_minPt");
+  TP_maxEta     = iConfig.getParameter< double >("TP_maxEta");
+  TP_maxZ0      = iConfig.getParameter< double >("TP_maxZ0");
+  L1TrackInputTag      = iConfig.getParameter<edm::InputTag>("L1TrackInputTag");
   MCTruthTrackInputTag = iConfig.getParameter<edm::InputTag>("MCTruthTrackInputTag");
 
 }
@@ -262,6 +242,7 @@ void L1TrackNtupleMaker::beginJob()
   m_trk_eta   = new std::vector<float>;
   m_trk_phi   = new std::vector<float>;
   m_trk_z0    = new std::vector<float>;
+  m_trk_d0    = new std::vector<float>;
   m_trk_chi2  = new std::vector<float>;
   m_trk_nstub = new std::vector<int>;
   m_trk_consistency  = new std::vector<float>;
@@ -276,15 +257,6 @@ void L1TrackNtupleMaker::beginJob()
   m_trk_matchtp_z0 = new std::vector<float>;
   m_trk_matchtp_dxy = new std::vector<float>;
 
-  m_pixtrk_pt    = new std::vector<float>;
-  m_pixtrk_eta   = new std::vector<float>;
-  m_pixtrk_phi   = new std::vector<float>;
-  m_pixtrk_z0    = new std::vector<float>;
-  m_pixtrk_d0    = new std::vector<float>;
-  m_pixtrk_chi2  = new std::vector<float>;
-  m_pixtrk_trkchi2  = new std::vector<float>;
-  m_pixtrk_nstub = new std::vector<int>;
-
   m_tp_pt     = new std::vector<float>;
   m_tp_eta    = new std::vector<float>;
   m_tp_phi    = new std::vector<float>;
@@ -295,34 +267,17 @@ void L1TrackNtupleMaker::beginJob()
   m_tp_z0_prod = new std::vector<float>;
   m_tp_pdgid  = new std::vector<int>;
   m_tp_nmatch = new std::vector<int>;
-  m_tp_npixmatch = new std::vector<int>;
   m_tp_nstub = new std::vector<int>;
 
   m_matchtrk_pt    = new std::vector<float>;
   m_matchtrk_eta   = new std::vector<float>;
   m_matchtrk_phi   = new std::vector<float>;
   m_matchtrk_z0    = new std::vector<float>;
+  m_matchtrk_d0    = new std::vector<float>;
   m_matchtrk_chi2  = new std::vector<float>;
   m_matchtrk_nstub = new std::vector<int>;
   m_matchtrk_consistency = new std::vector<float>;
   m_matchtrk_genuine     = new std::vector<int>;
-
-  m_matchtrk5p_pt    = new std::vector<float>;
-  m_matchtrk5p_eta   = new std::vector<float>;
-  m_matchtrk5p_phi   = new std::vector<float>;
-  m_matchtrk5p_z0    = new std::vector<float>;
-  m_matchtrk5p_d0    = new std::vector<float>;
-  m_matchtrk5p_chi2  = new std::vector<float>;
-  m_matchtrk5p_consistency = new std::vector<float>;
-  
-  m_matchpixtrk_pt    = new std::vector<float>;
-  m_matchpixtrk_eta   = new std::vector<float>;
-  m_matchpixtrk_phi   = new std::vector<float>;
-  m_matchpixtrk_z0    = new std::vector<float>;
-  m_matchpixtrk_d0    = new std::vector<float>;
-  m_matchpixtrk_chi2  = new std::vector<float>;
-  m_matchpixtrk_trkchi2  = new std::vector<float>;
-  m_matchpixtrk_nstub = new std::vector<int>;
 
   m_allstub_x = new std::vector<float>;
   m_allstub_y = new std::vector<float>;
@@ -341,6 +296,7 @@ void L1TrackNtupleMaker::beginJob()
     eventTree->Branch("trk_pt",    &m_trk_pt);
     eventTree->Branch("trk_eta",   &m_trk_eta);
     eventTree->Branch("trk_phi",   &m_trk_phi);
+    eventTree->Branch("trk_d0",    &m_trk_d0);
     eventTree->Branch("trk_z0",    &m_trk_z0);
     eventTree->Branch("trk_chi2",  &m_trk_chi2);
     eventTree->Branch("trk_nstub", &m_trk_nstub);
@@ -356,16 +312,6 @@ void L1TrackNtupleMaker::beginJob()
     eventTree->Branch("trk_matchtp_z0", &m_trk_matchtp_z0);
     eventTree->Branch("trk_matchtp_dxy", &m_trk_matchtp_dxy);
   }
-  if (SaveAllTracks && DoPixelTrack) {
-    eventTree->Branch("pixtrk_pt",    &m_pixtrk_pt);
-    eventTree->Branch("pixtrk_eta",   &m_pixtrk_eta);
-    eventTree->Branch("pixtrk_phi",   &m_pixtrk_phi);
-    eventTree->Branch("pixtrk_z0",    &m_pixtrk_z0);
-    eventTree->Branch("pixtrk_d0",    &m_pixtrk_d0);
-    eventTree->Branch("pixtrk_chi2",  &m_pixtrk_chi2);
-    eventTree->Branch("pixtrk_trkchi2",  &m_pixtrk_trkchi2);
-    eventTree->Branch("pixtrk_nstub", &m_pixtrk_nstub);
-  }
 
   eventTree->Branch("tp_pt",     &m_tp_pt);
   eventTree->Branch("tp_eta",    &m_tp_eta);
@@ -377,36 +323,17 @@ void L1TrackNtupleMaker::beginJob()
   eventTree->Branch("tp_z0_prod",&m_tp_z0_prod);
   eventTree->Branch("tp_pdgid",  &m_tp_pdgid);
   eventTree->Branch("tp_nmatch", &m_tp_nmatch);
-  eventTree->Branch("tp_npixmatch", &m_tp_npixmatch);
   eventTree->Branch("tp_nstub", &m_tp_nstub);
 
   eventTree->Branch("matchtrk_pt",      &m_matchtrk_pt);
   eventTree->Branch("matchtrk_eta",     &m_matchtrk_eta);
   eventTree->Branch("matchtrk_phi",     &m_matchtrk_phi);
   eventTree->Branch("matchtrk_z0",      &m_matchtrk_z0);
+  eventTree->Branch("matchtrk_d0",      &m_matchtrk_d0);
   eventTree->Branch("matchtrk_chi2",    &m_matchtrk_chi2);
   eventTree->Branch("matchtrk_nstub",   &m_matchtrk_nstub);
   eventTree->Branch("matchtrk_genuine", &m_matchtrk_genuine);
   eventTree->Branch("matchtrk_consistency", &m_matchtrk_consistency);
-
-  eventTree->Branch("matchtrk5p_pt",      &m_matchtrk5p_pt);
-  eventTree->Branch("matchtrk5p_eta",     &m_matchtrk5p_eta);
-  eventTree->Branch("matchtrk5p_phi",     &m_matchtrk5p_phi);
-  eventTree->Branch("matchtrk5p_z0",      &m_matchtrk5p_z0);
-  eventTree->Branch("matchtrk5p_d0",      &m_matchtrk5p_d0);
-  eventTree->Branch("matchtrk5p_chi2",    &m_matchtrk5p_chi2);
-  eventTree->Branch("matchtrk5p_consistency", &m_matchtrk5p_consistency);
-
-  if (DoPixelTrack) {
-    eventTree->Branch("matchpixtrk_pt",      &m_matchpixtrk_pt);
-    eventTree->Branch("matchpixtrk_eta",     &m_matchpixtrk_eta);
-    eventTree->Branch("matchpixtrk_phi",     &m_matchpixtrk_phi);
-    eventTree->Branch("matchpixtrk_z0",      &m_matchpixtrk_z0);
-    eventTree->Branch("matchpixtrk_d0",      &m_matchpixtrk_d0);
-    eventTree->Branch("matchpixtrk_chi2",    &m_matchpixtrk_chi2);
-    eventTree->Branch("matchpixtrk_trkchi2", &m_matchpixtrk_trkchi2);
-    eventTree->Branch("matchpixtrk_nstub",   &m_matchpixtrk_nstub);
-  }
 
   if (SaveStubs) {
     eventTree->Branch("allstub_x", &m_allstub_x);
@@ -432,35 +359,34 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     return;
   }
 
+  if ( !(L1Tk_nPar==4 || L1Tk_nPar==5) ) {
+    cout << "Invalid number of track parameters, specified L1Tk_nPar == " << L1Tk_nPar << " but only 4/5 are valid options! Exiting..." << endl;
+    return;
+  }
+
 
   // clear variables
-  m_trk_pt->clear();
-  m_trk_eta->clear();
-  m_trk_phi->clear();
-  m_trk_z0->clear();
-  m_trk_chi2->clear();
-  m_trk_nstub->clear();
-  m_trk_consistency->clear();
-  m_trk_genuine->clear();
-  m_trk_unknown->clear();
-  m_trk_combinatoric->clear();
-  m_trk_fake->clear();
-  m_trk_matchtp_pdgid->clear();
-  m_trk_matchtp_pt->clear();
-  m_trk_matchtp_eta->clear();
-  m_trk_matchtp_phi->clear();
-  m_trk_matchtp_z0->clear();
-  m_trk_matchtp_dxy->clear();
-
-  m_pixtrk_pt->clear();
-  m_pixtrk_eta->clear();
-  m_pixtrk_phi->clear();
-  m_pixtrk_z0->clear();
-  m_pixtrk_d0->clear();
-  m_pixtrk_chi2->clear();
-  m_pixtrk_trkchi2->clear();
-  m_pixtrk_nstub->clear();
-
+  if (SaveAllTracks) {
+    m_trk_pt->clear();
+    m_trk_eta->clear();
+    m_trk_phi->clear();
+    m_trk_d0->clear();
+    m_trk_z0->clear();
+    m_trk_chi2->clear();
+    m_trk_nstub->clear();
+    m_trk_consistency->clear();
+    m_trk_genuine->clear();
+    m_trk_unknown->clear();
+    m_trk_combinatoric->clear();
+    m_trk_fake->clear();
+    m_trk_matchtp_pdgid->clear();
+    m_trk_matchtp_pt->clear();
+    m_trk_matchtp_eta->clear();
+    m_trk_matchtp_phi->clear();
+    m_trk_matchtp_z0->clear();
+    m_trk_matchtp_dxy->clear();
+  }
+  
   m_tp_pt->clear();
   m_tp_eta->clear();
   m_tp_phi->clear();
@@ -471,34 +397,17 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
   m_tp_z0_prod->clear();
   m_tp_pdgid->clear();
   m_tp_nmatch->clear();
-  m_tp_npixmatch->clear();
   m_tp_nstub->clear();
 
   m_matchtrk_pt->clear();
   m_matchtrk_eta->clear();
   m_matchtrk_phi->clear();
   m_matchtrk_z0->clear();
+  m_matchtrk_d0->clear();
   m_matchtrk_chi2->clear();
   m_matchtrk_consistency->clear();
   m_matchtrk_nstub->clear();
   m_matchtrk_genuine->clear();
-
-  m_matchtrk5p_pt->clear();
-  m_matchtrk5p_eta->clear();
-  m_matchtrk5p_phi->clear();
-  m_matchtrk5p_z0->clear();
-  m_matchtrk5p_d0->clear();
-  m_matchtrk5p_chi2->clear();
-  m_matchtrk5p_consistency->clear();
-
-  m_matchpixtrk_pt->clear();
-  m_matchpixtrk_eta->clear();
-  m_matchpixtrk_phi->clear();
-  m_matchpixtrk_z0->clear();
-  m_matchpixtrk_d0->clear();
-  m_matchpixtrk_chi2->clear();
-  m_matchpixtrk_trkchi2->clear();
-  m_matchpixtrk_nstub->clear();
 
   if (SaveStubs) {
     m_allstub_x->clear();
@@ -518,20 +427,14 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 
   // L1 tracks
   edm::Handle< std::vector< TTTrack< Ref_PixelDigi_ > > > TTTrackHandle;
-  //iEvent.getByLabel("TTTracksFromPixelDigis", "Level1TTTracks", TTTrackHandle);
   iEvent.getByLabel(L1TrackInputTag, TTTrackHandle);
   
   // L1 stubs
   edm::Handle< edmNew::DetSetVector< TTStub< Ref_PixelDigi_ > > > TTStubHandle;
   if (SaveStubs) iEvent.getByLabel("TTStubsFromPixelDigis", "StubAccepted", TTStubHandle);
 
-  // L1PixelTracks
-  edm::Handle< std::vector< TTPixelTrack > > TTPixelTrackHandle;
-  iEvent.getByLabel("L1PixelTrackFit", "Level1PixelTracks", TTPixelTrackHandle);
-
   // MC truth association maps
   edm::Handle< TTTrackAssociationMap< Ref_PixelDigi_ > > MCTruthTTTrackHandle;
-  //iEvent.getByLabel("TTTrackAssociatorFromPixelDigis", "Level1TTTracks", MCTruthTTTrackHandle);
   iEvent.getByLabel(MCTruthTrackInputTag, MCTruthTTTrackHandle);
   edm::Handle< TTClusterAssociationMap< Ref_PixelDigi_ > > MCTruthTTClusterHandle;
   iEvent.getByLabel("TTClusterAssociatorFromPixelDigis", "ClusterAccepted", MCTruthTTClusterHandle);
@@ -628,7 +531,10 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 
   if (SaveAllTracks) {
     
-    if (DebugMode) cout << endl << "Loop over L1 tracks!" << endl;
+    if (DebugMode) {
+      cout << endl << "Loop over L1 tracks!" << endl;
+      cout << endl << "Looking at " << L1Tk_nPar << "-parameter tracks!" << endl;
+    }
     
     int this_l1track = 0;
     std::vector< TTTrack< Ref_PixelDigi_ > >::const_iterator iterL1Track;
@@ -637,16 +543,22 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       edm::Ptr< TTTrack< Ref_PixelDigi_ > > l1track_ptr(TTTrackHandle, this_l1track);
       this_l1track++;
       
-      float tmp_trk_pt   = iterL1Track->getMomentum().perp();
-      float tmp_trk_eta  = iterL1Track->getMomentum().eta();
-      float tmp_trk_phi  = iterL1Track->getMomentum().phi();
-      float tmp_trk_z0   = iterL1Track->getPOCA().z(); //cm
-      float tmp_trk_chi2 = iterL1Track->getChi2();
-      float tmp_trk_consistency = iterL1Track->getStubPtConsistency();
+      float tmp_trk_pt   = iterL1Track->getMomentum(L1Tk_nPar).perp();
+      float tmp_trk_eta  = iterL1Track->getMomentum(L1Tk_nPar).eta();
+      float tmp_trk_phi  = iterL1Track->getMomentum(L1Tk_nPar).phi();
+      float tmp_trk_z0   = iterL1Track->getPOCA(L1Tk_nPar).z(); //cm
+
+      float tmp_trk_d0 = -999;
+      if (L1Tk_nPar == 5) {
+	float tmp_trk_x0   = iterL1Track->getPOCA(L1Tk_nPar).x();
+	float tmp_trk_y0   = iterL1Track->getPOCA(L1Tk_nPar).y();	
+	tmp_trk_d0 = -tmp_trk_x0*sin(tmp_trk_phi) + tmp_trk_y0*cos(tmp_trk_phi);
+      }
+
+      float tmp_trk_chi2 = iterL1Track->getChi2(L1Tk_nPar);
+      float tmp_trk_consistency = iterL1Track->getStubPtConsistency(L1Tk_nPar);
       int tmp_trk_nstub  = (int) iterL1Track->getStubRefs().size();
-      
-      if (tmp_trk_pt < 2.0) continue; 
-      
+            
       int tmp_trk_genuine = 0;
       int tmp_trk_unknown = 0;
       int tmp_trk_combinatoric = 0;
@@ -666,6 +578,8 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       m_trk_eta->push_back(tmp_trk_eta);
       m_trk_phi->push_back(tmp_trk_phi);
       m_trk_z0 ->push_back(tmp_trk_z0);
+      if (L1Tk_nPar==5) m_trk_d0->push_back(tmp_trk_d0);
+      else m_trk_d0->push_back(999.);
       m_trk_chi2 ->push_back(tmp_trk_chi2);
       m_trk_consistency->push_back(tmp_trk_consistency);
       m_trk_nstub->push_back(tmp_trk_nstub);
@@ -722,64 +636,9 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       m_trk_matchtp_z0->push_back(myTP_z0);
       m_trk_matchtp_dxy->push_back(myTP_dxy);
 
-
     }//end track loop
 
   }//end if SaveAllTracks
-
-
-
-  // ----------------------------------------------------------------------------------------------
-  // loop over L1 pixel tracks
-  // ----------------------------------------------------------------------------------------------
-
-  if (SaveAllTracks && DoPixelTrack) {
-    
-    if (DebugMode) cout << endl << "Loop over L1 pixel tracks!" << endl;
-    
-    int this_l1pixeltrack = 0;
-    std::vector<TTPixelTrack>::const_iterator iterL1PixelTrack;
-    for ( iterL1PixelTrack = TTPixelTrackHandle->begin(); iterL1PixelTrack != TTPixelTrackHandle->end(); iterL1PixelTrack++ ) {
-      
-      edm::Ptr< TTPixelTrack > l1pixeltrack_ptr(TTPixelTrackHandle, this_l1pixeltrack);
-      this_l1pixeltrack++;
-      
-      float tmp_pixtrk_pt   = iterL1PixelTrack->getMomentum().perp();
-      float tmp_pixtrk_eta  = iterL1PixelTrack->getMomentum().eta();
-      float tmp_pixtrk_phi  = iterL1PixelTrack->getMomentum().phi();
-      float tmp_pixtrk_z0   = iterL1PixelTrack->getPOCA().z(); //cm
-      float tmp_pixtrk_chi2 = iterL1PixelTrack->getChi2();
-      float tmp_pixtrk_x0   = iterL1PixelTrack->getPOCA().x(); //cm
-      float tmp_pixtrk_y0   = iterL1PixelTrack->getPOCA().y(); //cm
-
-      float tmp_pixtrk_d0   = -tmp_pixtrk_x0*sin(tmp_pixtrk_phi) + tmp_pixtrk_y0*cos(tmp_pixtrk_phi);
-
-      if (tmp_pixtrk_pt < 2.0) continue;
-
-
-      // get L1 track corresponding to pixel track for # stubs
-      const edm::Ref<std::vector<TTTrack<Ref_PixelDigi_> >, TTTrack<Ref_PixelDigi_> > matched_tttrack = iterL1PixelTrack->getL1Track();
-
-      int tmp_pixtrk_nstub  = (int) matched_tttrack->getStubRefs().size();
-      float tmp_pixtrk_trkchi2 = matched_tttrack->getChi2(5);  //pixel tracks are formed from 5-parameter L1 tracks
-            
-      if (DebugMode) {
-	cout << "L1 pixel track, pt: " << tmp_pixtrk_pt << " eta: " << tmp_pixtrk_eta << " phi: " << tmp_pixtrk_phi 
-	     << " z0: " << tmp_pixtrk_z0 << " d0: " << tmp_pixtrk_d0 << " chi2: " << tmp_pixtrk_chi2 << " nstub: " << tmp_pixtrk_nstub << endl;
-      }
-      
-      m_pixtrk_pt ->push_back(tmp_pixtrk_pt);
-      m_pixtrk_eta->push_back(tmp_pixtrk_eta);
-      m_pixtrk_phi->push_back(tmp_pixtrk_phi);
-      m_pixtrk_z0 ->push_back(tmp_pixtrk_z0);
-      m_pixtrk_d0 ->push_back(tmp_pixtrk_d0);
-      m_pixtrk_chi2 ->push_back(tmp_pixtrk_chi2);
-      m_pixtrk_trkchi2 ->push_back(tmp_pixtrk_trkchi2);
-      m_pixtrk_nstub->push_back(tmp_pixtrk_nstub);
-    
-    }
-
-  }//end if (SaveAllTracks && DoPixelTrack)
 
 
 
@@ -814,8 +673,8 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     if ((MyProcess==6 || MyProcess==15 || MyProcess==211) && abs(tmp_tp_pdgid) != 211) continue;
 
 
-    if (tmp_tp_pt < 1.0) continue;
-    if (fabs(tmp_tp_eta) > 2.5) continue;
+    if (tmp_tp_pt < TP_minPt) continue;
+    if (fabs(tmp_tp_eta) > TP_maxEta) continue;
     if ((MyProcess==6 || MyProcess==15 || MyProcess==1) && tmp_tp_pt < 2.0) continue;
 
 
@@ -848,7 +707,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     float tmp_tp_z0 = tmp_tp_vz+tmp_tp_t*delphi/(2.0*K);
     // ----------------------------------------------------------------------------------------------
     
-    if (fabs(tmp_tp_z0) > 30.0) continue;
+    if (fabs(tmp_tp_z0) > TP_maxZ0) continue;
 
 
     // for pions in ttbar, only consider TPs coming from near the IP!
@@ -877,9 +736,18 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     
     int nMatch = 0;
     int i_track = -1;
-    int nPixelMatch = 0;
     
     int nStubTP = (int) MCTruthTTStubHandle->findTTStubRefs(tp_ptr).size();
+
+
+    if (TP_minNStub > 0) {
+      if (DebugMode) cout << "Only consider TPs with >= " << TP_minNStub << " stubs" << endl;
+      if (nStubTP < TP_minNStub) {
+	if (DebugMode) cout << "TP fails minimum nbr stubs requirement! Continuing..." << endl;
+	continue;
+      }
+    }
+
 
     if (matchedTracks.size() > 0) { 
     
@@ -903,18 +771,19 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 	    cout << "TP matched to track matched to TP ... tp pt = " << my_tp->p4().pt() << " eta = " << my_tp->momentum().eta() 
 		 << " phi = " << my_tp->momentum().phi() << " z0 = " << my_tp->vertex().z() << endl;
 	  }
-	  cout << "   ... matched L1 track has pt = " << matchedTracks.at(it)->getMomentum().perp() 
-	       << " eta = " << matchedTracks.at(it)->getMomentum().eta()
-	       << " phi = " << matchedTracks.at(it)->getMomentum().phi()
-	       << " chi2 = " << matchedTracks.at(it)->getChi2() 
-	       << " consistency = " << matchedTracks.at(it)->getStubPtConsistency() 
-	       << " z0 = " << matchedTracks.at(it)->getPOCA().z() 
+	  cout << "   ... matched L1 track has pt = " << matchedTracks.at(it)->getMomentum(L1Tk_nPar).perp() 
+	       << " eta = " << matchedTracks.at(it)->getMomentum(L1Tk_nPar).eta()
+	       << " phi = " << matchedTracks.at(it)->getMomentum(L1Tk_nPar).phi()
+	       << " chi2 = " << matchedTracks.at(it)->getChi2(L1Tk_nPar) 
+	       << " consistency = " << matchedTracks.at(it)->getStubPtConsistency(L1Tk_nPar) 
+	       << " z0 = " << matchedTracks.at(it)->getPOCA(L1Tk_nPar).z() 
 	       << " nstub = " << matchedTracks.at(it)->getStubRefs().size();
 	  if (tmp_trk_genuine) cout << " (genuine!) " << endl;
 	  else cout << " (NOT genuine) !!!!!" << endl;
 	}
 
 	// require L1 track to be genuine and have at least three stubs for it to be a valid match
+	if (matchedTracks.at(it)->getStubRefs().size() < 3) cout << " matchedTracks.at(it)->getStubRefs().size() = " << matchedTracks.at(it)->getStubRefs().size() << endl;
 	if (matchedTracks.at(it)->getStubRefs().size() < 3) continue;
 	
 	float dmatch_pt  = 999;
@@ -928,7 +797,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 	dmatch_phi = fabs(my_tp->p4().phi() - tmp_tp_phi);
 	match_id = my_tp->pdgId();
 	
-	if (dmatch_pt<0.1 && dmatch_eta<0.1 && dmatch_phi<0.1 && tmp_tp_pdgid==match_id) {
+	if (dmatch_pt<0.1 && dmatch_eta<0.1 && dmatch_phi<0.1 && tmp_tp_pdgid==match_id) {	    
 	  nMatch++;
 	  if (i_track < 0) i_track = it;
 	}
@@ -943,100 +812,33 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     float tmp_matchtrk_eta  = -999;
     float tmp_matchtrk_phi  = -999;
     float tmp_matchtrk_z0   = -999;
+    float tmp_matchtrk_d0   = -999;
     float tmp_matchtrk_chi2 = -999;
     float tmp_matchtrk_consistency = -999;
     int tmp_matchtrk_nstub  = -999;
     int tmp_matchtrk_genuine = -999;
-
-    float tmp_matchtrk5p_pt   = -999;
-    float tmp_matchtrk5p_eta  = -999;
-    float tmp_matchtrk5p_phi  = -999;
-    float tmp_matchtrk5p_x0   = -999;
-    float tmp_matchtrk5p_y0   = -999;
-    float tmp_matchtrk5p_z0   = -999;
-    float tmp_matchtrk5p_d0   = -999;
-    float tmp_matchtrk5p_chi2 = -999;
-    float tmp_matchtrk5p_consistency = -999;
-
-    float tmp_matchpixtrk_pt   = -999;
-    float tmp_matchpixtrk_eta  = -999;
-    float tmp_matchpixtrk_phi  = -999;
-    float tmp_matchpixtrk_x0   = -999;
-    float tmp_matchpixtrk_y0   = -999;
-    float tmp_matchpixtrk_z0   = -999;
-    float tmp_matchpixtrk_d0   = -999;
-    int tmp_matchpixtrk_nstub  = -999;
-    float tmp_matchpixtrk_chi2 = -999;
-    float tmp_matchpixtrk_trkchi2 = -999;
     
 
-    if (nMatch > 1) cout << "WARNING *** 2 or more matches to genuine L1 tracks ***" << endl;
+    if (nMatch > 1 && DebugMode) cout << "WARNING *** 2 or more matches to genuine L1 tracks ***" << endl;
 
     if (nMatch > 0) {
-      tmp_matchtrk_pt   = matchedTracks.at(i_track)->getMomentum().perp();
-      tmp_matchtrk_eta  = matchedTracks.at(i_track)->getMomentum().eta();
-      tmp_matchtrk_phi  = matchedTracks.at(i_track)->getMomentum().phi();
-      tmp_matchtrk_z0   = matchedTracks.at(i_track)->getPOCA().z();
-      tmp_matchtrk_chi2 = matchedTracks.at(i_track)->getChi2();
-      tmp_matchtrk_consistency = matchedTracks.at(i_track)->getStubPtConsistency();
+      tmp_matchtrk_pt   = matchedTracks.at(i_track)->getMomentum(L1Tk_nPar).perp();
+      tmp_matchtrk_eta  = matchedTracks.at(i_track)->getMomentum(L1Tk_nPar).eta();
+      tmp_matchtrk_phi  = matchedTracks.at(i_track)->getMomentum(L1Tk_nPar).phi();
+      tmp_matchtrk_z0   = matchedTracks.at(i_track)->getPOCA(L1Tk_nPar).z();
+
+      if (L1Tk_nPar == 5) {
+	float tmp_matchtrk_x0 = matchedTracks.at(i_track)->getPOCA(L1Tk_nPar).x();
+	float tmp_matchtrk_y0 = matchedTracks.at(i_track)->getPOCA(L1Tk_nPar).y();
+	tmp_matchtrk_d0 = -tmp_matchtrk_x0*sin(tmp_matchtrk_phi) + tmp_matchtrk_y0*cos(tmp_matchtrk_phi);
+      }
+
+      tmp_matchtrk_chi2 = matchedTracks.at(i_track)->getChi2(L1Tk_nPar);
+      tmp_matchtrk_consistency = matchedTracks.at(i_track)->getStubPtConsistency(L1Tk_nPar);
       tmp_matchtrk_nstub  = (int) matchedTracks.at(i_track)->getStubRefs().size();
       tmp_matchtrk_genuine = 1;
 
-      tmp_matchtrk5p_pt   = matchedTracks.at(i_track)->getMomentum(5).perp();
-      tmp_matchtrk5p_eta  = matchedTracks.at(i_track)->getMomentum(5).eta();
-      tmp_matchtrk5p_phi  = matchedTracks.at(i_track)->getMomentum(5).phi();
-      tmp_matchtrk5p_z0   = matchedTracks.at(i_track)->getPOCA(5).z();
-      tmp_matchtrk5p_x0   = matchedTracks.at(i_track)->getPOCA(5).x();
-      tmp_matchtrk5p_y0   = matchedTracks.at(i_track)->getPOCA(5).y();
-
-      tmp_matchtrk5p_d0   = -tmp_matchtrk5p_x0*sin(tmp_matchtrk5p_phi) + tmp_matchtrk5p_y0*cos(tmp_matchtrk5p_phi);
-
-      tmp_matchtrk5p_chi2 = matchedTracks.at(i_track)->getChi2(5);
-      tmp_matchtrk5p_consistency = matchedTracks.at(i_track)->getStubPtConsistency(5);
-
-
-      if (DoPixelTrack) {
-	
-	bool pixelmatch = false;	
-	
-	// ----------------------------------------------------------------------------------------------
-	// CHECK FOR MATCHING PIXEL TRACK 
-	
-	int this_l1pixeltrack = 0;
-	std::vector<TTPixelTrack>::const_iterator iterL1PixelTrack;
-	for ( iterL1PixelTrack = TTPixelTrackHandle->begin(); iterL1PixelTrack != TTPixelTrackHandle->end(); iterL1PixelTrack++ ) {
-	  
-	  edm::Ptr< TTPixelTrack > l1pixeltrack_ptr(TTPixelTrackHandle, this_l1pixeltrack);
-	  this_l1pixeltrack++;
-	  
-	  // get L1 track corresponding to pixel track
-	  const edm::Ref<std::vector<TTTrack<Ref_PixelDigi_> >, TTTrack<Ref_PixelDigi_> > matched_tttrack = iterL1PixelTrack->getL1Track();
-
-	  if (!pixelmatch && matchedTracks.at(i_track)->isTheSameAs(*matched_tttrack) == true) {
-	    
-	    pixelmatch = true;
-	    nPixelMatch++;
-
-	    tmp_matchpixtrk_pt  = iterL1PixelTrack->getMomentum().perp();
-	    tmp_matchpixtrk_eta = iterL1PixelTrack->getMomentum().eta();
-	    tmp_matchpixtrk_phi = iterL1PixelTrack->getMomentum().phi();
-	    tmp_matchpixtrk_x0  = iterL1PixelTrack->getPOCA().x();
-	    tmp_matchpixtrk_y0  = iterL1PixelTrack->getPOCA().y();
-	    tmp_matchpixtrk_z0  = iterL1PixelTrack->getPOCA().z();
-	    tmp_matchpixtrk_chi2 = iterL1PixelTrack->getChi2();
-	    
-	    tmp_matchpixtrk_d0   = -tmp_matchpixtrk_x0*sin(tmp_matchpixtrk_phi) + tmp_matchpixtrk_y0*cos(tmp_matchpixtrk_phi);
-
-	    tmp_matchpixtrk_nstub = (int) matched_tttrack->getStubRefs().size();
-	    tmp_matchpixtrk_trkchi2 = matched_tttrack->getChi2(5);
-
-	  }
-	}//end loop match pixel track
-      }//end if DoPixelTrack
-
     }//end (nMatch > 0)
-
-    if (DebugMode) cout << "Matching 5p track, d0 = " << tmp_matchtrk5p_d0 << ", matching pixel track, d0 = " << tmp_matchpixtrk_d0 << endl << endl;
 
     m_tp_pt->push_back(tmp_tp_pt);
     m_tp_eta->push_back(tmp_tp_eta);
@@ -1048,38 +850,17 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     m_tp_d0_prod->push_back(tmp_tp_d0_prod);
     m_tp_pdgid->push_back(tmp_tp_pdgid);
     m_tp_nmatch->push_back(nMatch);
-    m_tp_npixmatch->push_back(nPixelMatch);
     m_tp_nstub->push_back(nStubTP);
 
     m_matchtrk_pt ->push_back(tmp_matchtrk_pt);
     m_matchtrk_eta->push_back(tmp_matchtrk_eta);
     m_matchtrk_phi->push_back(tmp_matchtrk_phi);
     m_matchtrk_z0 ->push_back(tmp_matchtrk_z0);
+    m_matchtrk_d0 ->push_back(tmp_matchtrk_d0);
     m_matchtrk_chi2 ->push_back(tmp_matchtrk_chi2);
     m_matchtrk_consistency->push_back(tmp_matchtrk_consistency);
     m_matchtrk_nstub->push_back(tmp_matchtrk_nstub);
     m_matchtrk_genuine->push_back(tmp_matchtrk_genuine);
-
-    m_matchtrk5p_pt ->push_back(tmp_matchtrk5p_pt);
-    m_matchtrk5p_eta->push_back(tmp_matchtrk5p_eta);
-    m_matchtrk5p_phi->push_back(tmp_matchtrk5p_phi);
-    m_matchtrk5p_z0 ->push_back(tmp_matchtrk5p_z0);
-    m_matchtrk5p_d0 ->push_back(tmp_matchtrk5p_d0);
-    m_matchtrk5p_chi2->push_back(tmp_matchtrk5p_chi2);
-    m_matchtrk5p_consistency->push_back(tmp_matchtrk5p_consistency);
-
-
-    if (DoPixelTrack) {
-      m_matchpixtrk_pt ->push_back(tmp_matchpixtrk_pt);
-      m_matchpixtrk_eta->push_back(tmp_matchpixtrk_eta);
-      m_matchpixtrk_phi->push_back(tmp_matchpixtrk_phi);
-      m_matchpixtrk_z0 ->push_back(tmp_matchpixtrk_z0);
-      m_matchpixtrk_d0 ->push_back(tmp_matchpixtrk_d0);
-      m_matchpixtrk_chi2 ->push_back(tmp_matchpixtrk_chi2);
-      m_matchpixtrk_nstub->push_back(tmp_matchpixtrk_nstub);
-      m_matchpixtrk_trkchi2 ->push_back(tmp_matchpixtrk_trkchi2);
-    }
-
     
   } //end loop tracking particles
   

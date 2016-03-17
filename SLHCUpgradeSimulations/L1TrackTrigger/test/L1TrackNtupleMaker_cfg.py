@@ -24,11 +24,6 @@ process.load('IOMC.EventVertexGenerators.VtxSmearedGauss_cfi')
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'PH2_1K_FB_V3::All', '')
 
-## pixel additions
-#process.load('Configuration.StandardSequences.RawToDigi_cff')
-#process.load('Configuration.StandardSequences.Reconstruction_cff')
-#process.load('SimGeneral.MixingModule.mixNoPU_cfi')
-
 
 ############################################################
 # input and output
@@ -37,13 +32,14 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'PH2_1K_FB_V3::All', '')
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
 Source_Files = cms.untracked.vstring(
     ## single muons PU=0
-    '/store/group/dpg_trigger/comm_trigger/L1TrackTrigger/620_SLHC12/Extended2023TTI/Muons/NoPU/SingleMuon_E2023TTI_NoPU.root',
-    '/store/group/dpg_trigger/comm_trigger/L1TrackTrigger/620_SLHC12/Extended2023TTI/Muons/NoPU/SingleMuPlus_E2023TTI_NoPU.root'
-	#'/store/group/dpg_trigger/comm_trigger/L1TrackTrigger/620_SLHC12/Extended2023TTI/TTbar/NoPU/TTbar_E2023TTI_NoPU.root'
+    #'/store/group/dpg_trigger/comm_trigger/L1TrackTrigger/620_SLHC12/Extended2023TTI/Muons/NoPU/SingleMuon_E2023TTI_NoPU.root',
+    #'/store/group/dpg_trigger/comm_trigger/L1TrackTrigger/620_SLHC12/Extended2023TTI/Muons/NoPU/SingleMuPlus_E2023TTI_NoPU.root'
+    ## ttbar PU=140
+    '/store/group/upgrade/Tracker/L1Tracking/Synchro/Input/TTbar/CMSSW_6_2_0_SLHC26-DES23_62_V1_LHCCRefPU140-v1/FC5CDAC1-4E2F-E511-8085-0026189438D9.root'
 	)
 process.source = cms.Source("PoolSource", fileNames = Source_Files)
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string('SingleMuon_noPU_TrkPerf.root'), closeFileFast = cms.untracked.bool(True))
+process.TFileService = cms.Service("TFileService", fileName = cms.string('TTbar_PU140_TrkPerf.root'), closeFileFast = cms.untracked.bool(True))
 
 
 ############################################################
@@ -58,23 +54,6 @@ process.TTAssociator_step = cms.Path(process.TrackTriggerAssociatorTracks)
 
 
 ############################################################
-# pixel stuff, uncomment if needed
-############################################################
-#
-#from RecoLocalTracker.SiPixelRecHits.SiPixelRecHits_cfi import *
-#process.siPixelRecHits = siPixelRecHits
-#
-#process.L1PixelTrackFit = cms.EDProducer("L1PixelTrackFit")
-#process.pixTrk = cms.Path(process.L1PixelTrackFit)
-#
-#process.pixRec = cms.Path(
-#    process.RawToDigi+
-#    process.siPixelRecHits
-#)
-#process.raw2digi_step = cms.Path(process.RawToDigi)
-
-
-############################################################
 # Define the track ntuple process, MyProcess is the (unsigned) PDGID corresponding to the process which is run
 # e.g. single electron/positron = 11
 #      single pion+/pion- = 211
@@ -85,13 +64,17 @@ process.TTAssociator_step = cms.Path(process.TrackTriggerAssociatorTracks)
 ############################################################
 
 process.L1TrackNtuple = cms.EDAnalyzer('L1TrackNtupleMaker',
-                                       MyProcess = cms.int32(13),
-                                       DebugMode = cms.bool(False),      ## printout lots of debug statements
-                                       SaveAllTracks = cms.bool(True),   ## save all L1 tracks, not just truth matched to primary particle
-                                       DoPixelTrack = cms.bool(False),   ## save information for pixel tracks
-                                       SaveStubs = cms.bool(False),      ## save some info for *all* stubs
-                                       L1TrackInputTag = cms.InputTag("TTTracksFromPixelDigis", "Level1TTTracks"),               ## TTTrack input
-                                       MCTruthTrackInputTag = cms.InputTag("TTTrackAssociatorFromPixelDigis", "Level1TTTracks"), ## MCTruth input 
+                                       MyProcess = cms.int32(1),
+                                       DebugMode = cms.bool(False),      # printout lots of debug statements
+                                       SaveAllTracks = cms.bool(True),   # save all L1 tracks, not just truth matched to primary particle
+                                       SaveStubs = cms.bool(False),      # save some info for *all* stubs
+                                       L1Tk_nPar = cms.int32(4),         # use 4 or 5-parameter L1 track fit ??
+                                       TP_minNStub = cms.int32(4),       # require TP to have >= minNstub (efficiency denominator)
+                                       TP_minPt = cms.double(1.0),       # only save TPs with pt > X GeV
+                                       TP_maxEta = cms.double(2.5),      # only save TPs with |eta| < X
+                                       TP_maxZ0 = cms.double(30.0),      # only save TPs with |z0| < X cm
+                                       L1TrackInputTag = cms.InputTag("TTTracksFromPixelDigis", "Level1TTTracks"),               # TTTrack input
+                                       MCTruthTrackInputTag = cms.InputTag("TTTrackAssociatorFromPixelDigis", "Level1TTTracks"), # MCTruth input 
                                        )
 process.ana = cms.Path(process.L1TrackNtuple)
 
@@ -100,7 +83,6 @@ process.ana = cms.Path(process.L1TrackNtuple)
 #                                fileName = cms.untracked.string("FileOut.root"),
 #                                fastCloning = cms.untracked.bool( False ),
 #                                outputCommands = cms.untracked.vstring('drop *',
-#                                                                       'keep *_*_Level1PixelTracks_*',
 #                                                                       'keep *_*_Level1TTTracks_*',
 #                                                                       'keep *_*_StubAccepted_*',
 #                                                                       'keep *_*_ClusterAccepted_*',
@@ -113,5 +95,4 @@ process.ana = cms.Path(process.L1TrackNtuple)
 from SLHCUpgradeSimulations.Configuration.combinedCustoms import cust_2023TTI
 process = cust_2023TTI(process)
 
-#process.schedule = cms.Schedule(process.TT_step,process.TTAssociator_step,process.pixRec,process.pixTrk,process.FEVToutput_step)
 process.schedule = cms.Schedule(process.TT_step,process.TTAssociator_step,process.ana)
