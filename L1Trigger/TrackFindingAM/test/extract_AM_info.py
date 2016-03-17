@@ -16,8 +16,9 @@
 #
 # Author: S.Viret (viret@in2p3.fr)
 # Date  : 27/02/2014
+# Maj. upd : 17/03/2016
 #
-# Script tested with release CMSSW_6_2_0_SLHC13
+# Script tested with release CMSSW_6_2_0_SLHC27
 #
 #########
 
@@ -32,8 +33,8 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 process.load("TrackingTools.TransientTrack.TransientTrackBuilder_cfi")
 process.load('L1Trigger.TrackTrigger.TrackTrigger_cff')
 process.load('SimTracker.TrackTriggerAssociation.TrackTriggerAssociator_cff')
-process.load('Configuration.Geometry.GeometryExtendedPhase2TkBE5DReco_cff')
-process.load('Configuration.Geometry.GeometryExtendedPhase2TkBE5D_cff')
+process.load('Configuration.Geometry.GeometryExtendedPhase2TkBE5DPixel10DReco_cff')
+process.load('Configuration.Geometry.GeometryExtendedPhase2TkBE5DPixel10D_cff')
 
 
 # Other statements
@@ -53,8 +54,8 @@ process.maxEvents = cms.untracked.PSet(
 
 # The file you want to extract
 process.source = cms.Source("PoolSource",
-                            #fileNames = cms.untracked.vstring('file:AM_output.root'),
-                            fileNames = cms.untracked.vstring('file:AMFIT_output.root'),
+                            #fileNames = cms.untracked.vstring('file:AMFIT_output.root'),
+                            fileNames = cms.untracked.vstring('file:AMTC_output.root'),
                             duplicateCheckMode = cms.untracked.string( 'noDuplicateCheck' )
 )
 
@@ -77,10 +78,13 @@ process.MIBextraction.CLUS_name        = cms.string( "ClusterAccepted" )
 process.MIBextraction.doL1TRK          = True
 process.MIBextraction.L1pattern_tag    = cms.InputTag( "MergePROutput", "AML1Patterns")
 
-# Choose the first line if you have only the patterns 
-#process.MIBextraction.L1track_tag      = cms.InputTag( "", "")
-#process.MIBextraction.L1track_tag      = cms.InputTag( "MergeFITOutput", "AML1Tracks") # Floating point TC
-process.MIBextraction.L1track_tag      = cms.InputTag( "MergeFITOutputb", "AML1BinTracks") # Bit-wise TCs
-process.p = cms.Path(process.MIBextraction)
+# Choose the appropriate lines
+process.MIBextraction.L1track_tag      = cms.InputTag( "", "") # No L1Tracks
+#process.MIBextraction.L1tc_tag         = cms.InputTag( "", "") # No TCs
+#process.MIBextraction.L1track_tag      = cms.InputTag( "MergeFITOutput", "AML1Tracks") # Floating point tracks
+#process.MIBextraction.L1track_tag      = cms.InputTag( "MergeFITOutputb", "AML1BinTracks") # Bit-wise tracks
+process.MIBextraction.L1tc_tag         = cms.InputTag( "MergeTCOutputb", "AML1BinTCs") # Bit-wise TCs
+#process.MIBextraction.L1tc_tag         = cms.InputTag( "MergeTCOutput", "AML1TCs") # Floating point TCs
 
+process.p = cms.Path(process.MIBextraction)
 

@@ -35,7 +35,7 @@ void TCBuilder::updateThresholds(){
 
   if (m_bHardwareSimulation){
     //// Hardware format LUT constants ////
-  
+    /*
     //Barrel
     addThresholds( 0,  1,  2, SEC_BARREL, 0.002117, 0.298828);
     addThresholds( 0,  1,  8, SEC_BARREL, 0.005257, 2.695801);
@@ -113,7 +113,90 @@ void TCBuilder::updateThresholds(){
     addThresholds( 3,  4, 13, SEC_ENDCAP, 0.004448, 7.303711);
     addThresholds( 3,  4, 14, SEC_ENDCAP, 0.005508, 8.145264);
     addThresholds( 3,  4, 15, SEC_ENDCAP, 0.006287, 11.077881);
+    */
 
+    //Electron-friendly tuning
+
+//BARREL Thresholds
+
+addThresholds( 0,  1,  2, SEC_BARREL, 0.002430, 0.258545);
+addThresholds( 0,  1,  8, SEC_BARREL, 0.007214, 2.565430);
+addThresholds( 0,  1,  9, SEC_BARREL, 0.013851, 2.884277);
+addThresholds( 0,  1, 10, SEC_BARREL, 0.020172, 3.101318);
+addThresholds( 0,  2,  8, SEC_BARREL, 0.002853, 2.481934);
+addThresholds( 0,  2,  9, SEC_BARREL, 0.007881, 2.641846);
+addThresholds( 0,  2, 10, SEC_BARREL, 0.013268, 2.653564);
+addThresholds( 1,  2,  8, SEC_BARREL, 0.002102, 2.533447);
+addThresholds( 1,  2,  9, SEC_BARREL, 0.006767, 2.750977);
+addThresholds( 1,  2, 10, SEC_BARREL, 0.010689, 2.840576);
+
+//HYBRID Thresholds
+
+addThresholds( 0,  1,  2, SEC_HYBRID, 0.003571, 0.342285);
+addThresholds( 0,  1,  8, SEC_HYBRID, 0.008400, 2.596680);
+addThresholds( 0,  1,  9, SEC_HYBRID, 0.017197, 13.469482);
+addThresholds( 0,  1, 10, SEC_HYBRID, 0.024376, 2.769043);
+addThresholds( 0,  1, 11, SEC_HYBRID, 0.014572, 4.973389);
+addThresholds( 0,  1, 12, SEC_HYBRID, 0.020790, 5.323242);
+addThresholds( 0,  1, 13, SEC_HYBRID, 0.034599, 5.161133);
+addThresholds( 0,  2,  8, SEC_HYBRID, 0.004368, 2.557861);
+addThresholds( 0,  2,  9, SEC_HYBRID, 0.011086, 14.265869);
+addThresholds( 0,  2, 10, SEC_HYBRID, 0.019115, 2.652344);
+addThresholds( 0,  2, 11, SEC_HYBRID, 0.008831, 4.853760);
+addThresholds( 0,  2, 12, SEC_HYBRID, 0.013206, 5.266602);
+addThresholds( 0,  2, 13, SEC_HYBRID, 0.019588, 4.985596);
+addThresholds( 1,  2,  8, SEC_HYBRID, 0.002937, 2.502197);
+addThresholds( 1,  2,  9, SEC_HYBRID, 0.008301, 2.742432);
+addThresholds( 1,  2, 10, SEC_HYBRID, 0.015064, 2.649414);
+addThresholds( 1,  2, 11, SEC_HYBRID, 0.006542, 4.904053);
+addThresholds( 1,  2, 12, SEC_HYBRID, 0.011208, 5.251953);
+addThresholds( 1,  2, 13, SEC_HYBRID, 0.020657, 5.178711);
+
+//ENDCAP Thresholds
+
+addThresholds( 0,  1,  3, SEC_ENDCAP, 0.006020, 0.723389);
+addThresholds( 0,  1,  4, SEC_ENDCAP, 0.007324, 1.444092);
+addThresholds( 0,  1,  5, SEC_ENDCAP, 0.015270, 3.011719);
+addThresholds( 0,  1, 11, SEC_ENDCAP, 0.010128, 5.459717);
+addThresholds( 0,  1, 12, SEC_ENDCAP, 0.017727, 6.568848);
+addThresholds( 0,  1, 13, SEC_ENDCAP, 0.021851, 7.088379);
+addThresholds( 0,  1, 14, SEC_ENDCAP, 0.027161, 7.716064);
+addThresholds( 0,  1, 15, SEC_ENDCAP, 0.029243, 13.599121);
+addThresholds( 0,  3,  4, SEC_ENDCAP, 0.003147, 0.819824);
+addThresholds( 0,  3,  5, SEC_ENDCAP, 0.009666, 1.820801);
+addThresholds( 0,  3,  6, SEC_ENDCAP, 0.024063, 4.271484);
+addThresholds( 0,  3,  7, SEC_ENDCAP, 0.027016, 4.478516);
+addThresholds( 0,  3, 11, SEC_ENDCAP, 0.003677, 5.475830);
+addThresholds( 0,  3, 12, SEC_ENDCAP, 0.003544, 6.346191);
+addThresholds( 0,  3, 13, SEC_ENDCAP, 0.008240, 7.268311);
+addThresholds( 0,  3, 14, SEC_ENDCAP, 0.013584, 8.404053);
+addThresholds( 0,  3, 15, SEC_ENDCAP, 0.023396, 11.208008);
+addThresholds( 0,  4,  5, SEC_ENDCAP, 0.004978, 0.670410);
+addThresholds( 0,  4,  6, SEC_ENDCAP, 0.015648, 1.067627);
+addThresholds( 0,  4,  7, SEC_ENDCAP, 0.017376, 1.441406);
+addThresholds( 0,  4, 12, SEC_ENDCAP, 0.002266, 6.742188);
+addThresholds( 0,  4, 13, SEC_ENDCAP, 0.004456, 7.393311);
+addThresholds( 0,  4, 14, SEC_ENDCAP, 0.009815, 8.468262);
+addThresholds( 0,  4, 15, SEC_ENDCAP, 0.021973, 10.123779);
+addThresholds( 1,  3,  4, SEC_ENDCAP, 0.001705, 0.680664);
+addThresholds( 1,  3,  5, SEC_ENDCAP, 0.004986, 1.090088);
+addThresholds( 1,  3, 11, SEC_ENDCAP, 0.002178, 5.776855);
+addThresholds( 1,  3, 12, SEC_ENDCAP, 0.003033, 6.407715);
+addThresholds( 1,  3, 13, SEC_ENDCAP, 0.005295, 7.295410);
+addThresholds( 1,  3, 14, SEC_ENDCAP, 0.010818, 7.772949);
+addThresholds( 1,  3, 15, SEC_ENDCAP, 0.017426, 9.492676);
+addThresholds( 1,  4,  5, SEC_ENDCAP, 0.002354, 0.566895);
+addThresholds( 1,  4, 12, SEC_ENDCAP, 0.002506, 6.736816);
+addThresholds( 1,  4, 13, SEC_ENDCAP, 0.003357, 7.362305);
+addThresholds( 1,  4, 14, SEC_ENDCAP, 0.007397, 7.603760);
+addThresholds( 1,  4, 15, SEC_ENDCAP, 0.013905, 8.285400);
+addThresholds( 3,  4,  5, SEC_ENDCAP, 0.002979, 1.090332);
+addThresholds( 3,  4,  6, SEC_ENDCAP, 0.015022, 1.979980);
+addThresholds( 3,  4,  7, SEC_ENDCAP, 0.012508, 3.361328);
+addThresholds( 3,  4, 12, SEC_ENDCAP, 0.002728, 6.763672);
+addThresholds( 3,  4, 13, SEC_ENDCAP, 0.002956, 7.253662);
+addThresholds( 3,  4, 14, SEC_ENDCAP, 0.006905, 9.328613);
+addThresholds( 3,  4, 15, SEC_ENDCAP, 0.015789, 11.533936);
 
     //// Hardware format LUT constants ////
 

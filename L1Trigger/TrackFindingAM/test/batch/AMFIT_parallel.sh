@@ -18,13 +18,9 @@
 # with:
 # p1 : The directory containing the data file you want to analyze (best is to copy them beforehand on the machine scratch area)
 # p2 : Name of the SE subdirectory where you will store the data
-# p3 : The directory where you will retrieve the bank files, the pattern reco will
-#      run over all the pbk files contained in this directory
-# p4 : How many events per input data file? 
-# p5 : How many events per job (should be below p3...)?
-# p6 : The global tag name
-# p7 : How many cores you want to use in parallel (if one then parallel is not used)
-# p8 : How many events per job to process
+# p3 : The global tag name
+# p4 : How many cores you want to use in parallel (if one then parallel is not used)
+# p5 : How many events per job to process
 #
 # For more details, and examples, have a look at:
 # 
@@ -56,7 +52,7 @@ NFILES=${5}    # #files per job
 export LFC_HOST=lyogrid06.in2p3.fr
 
 # I/O Directory info on the grid
-BAREPATH=/dpm/in2p3.fr/home/cms/data/store/user/sviret/SLHC
+BAREPATH=/dpm/in2p3.fr/home/cms/data/store/user/sviret/SLHC/PR
 SRMPATH=srm://$LFC_HOST/$BAREPATH
 XRDPATH=root://$LFC_HOST/$BAREPATH
 
@@ -93,8 +89,8 @@ echo 'The final pattern reco output files will be written in: '$OUTDIR_GRID
 # https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideLcgAccess
 #
 
-voms-proxy-init --voms cms --valid 100:00 -out $HOME/.globus/gridproxy.cert
-export X509_USER_PROXY=${HOME}/.globus/gridproxy.cert
+#voms-proxy-init --voms cms --valid 100:00 -out $HOME/.globus/gridproxy.cert
+#export X509_USER_PROXY=${HOME}/.globus/gridproxy.cert
 
 lfc-mkdir -p $BAREPATH/$OUTPUTDIR
 
@@ -117,9 +113,6 @@ echo "#\!/bin/bash" > global_stuff_${MATTER}.sh
 for ll in `lcg-ls $INDIR_GRID | grep AMPR` 
 do   
     l=`basename $ll`
-
-    i=0
-    j=$NPFILE
 
     val=`expr $ninput % $npsc`
 

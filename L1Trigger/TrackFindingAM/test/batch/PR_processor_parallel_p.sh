@@ -267,32 +267,36 @@ if [ ${1} = "FIT" ]; then
     #  
 
     cd $TOP
-    cp $CMSSW_PROJECT_SRC/src/L1Trigger/TrackFindingAM/test/batch_new/base/AMFIT_base.py BH_dummy_${FNAME}.py 
+    cp $CMSSW_PROJECT_SRC/src/L1Trigger/TrackFindingAM/data/*.txt .   
+    cp $CMSSW_PROJECT_SRC/src/L1Trigger/TrackFindingAM/test/batch/base/AMTC_base.py  TC_dummy_${FNAME}.py 
+    cp $CMSSW_PROJECT_SRC/src/L1Trigger/TrackFindingAM/test/batch/base/AMFIT_base.py FIT_dummy_${FNAME}.py 
 
     # Finally the script is modified according to the requests
     
-    sed "s/NEVTS/$NEVT/"                                   -i BH_dummy_${FNAME}.py
-    sed "s#INPUTFILENAME#file:$INPUT#"                     -i BH_dummy_${FNAME}.py
-    sed "s#OUTPUTFILENAME#$OUTPUT#"                        -i BH_dummy_${FNAME}.py
-    sed "s#EXTRFILENAME#EXTR_$OUTPUT#"                     -i BH_dummy_${FNAME}.py
-    sed "s/MYGLOBALTAG/$GT/"                               -i BH_dummy_${FNAME}.py
+    sed "s/NEVTS/$NEVT/"                                   -i TC_dummy_${FNAME}.py
+    sed "s#INPUTFILENAME#$INPUT#"                          -i TC_dummy_${FNAME}.py
+    sed "s#OUTPUTFILENAME#TC_$OUTPUT#"                     -i TC_dummy_${FNAME}.py
+    sed "s/MYGLOBALTAG/$GT/"                               -i TC_dummy_${FNAME}.py
 
-    cmsRun BH_dummy_${FNAME}.py 
+    sed "s/NEVTS/$NEVT/"                                   -i FIT_dummy_${FNAME}.py
+    sed "s#INPUTFILENAME#file:TC_$OUTPUT#"                 -i FIT_dummy_${FNAME}.py
+    sed "s#OUTPUTFILENAME#$OUTPUT#"                        -i FIT_dummy_${FNAME}.py
+    sed "s#EXTRFILENAME#EXTR_$OUTPUT#"                     -i FIT_dummy_${FNAME}.py
+    sed "s#OFFFILENAME#OFF_$OUTPUT#"                       -i FIT_dummy_${FNAME}.py
+    sed "s/MYGLOBALTAG/$GT/"                               -i FIT_dummy_${FNAME}.py
 
-    rm BH_dummy_${FNAME}.py 
+    cmsRun TC_dummy_${FNAME}.py 
+    cmsRun FIT_dummy_${FNAME}.py 
+
+    rm *_dummy_${FNAME}.py 
 
     # Recover the data
     #  
 
-    lcg-cp file://$INPUT            ${OUTDIR}/$INFILE
     lcg-cp file://$TOP/$OUTPUT      ${OUTDIR}/$OUTPUT
     lcg-cp file://$TOP/EXTR_$OUTPUT ${OUTDIR}/$OUTPUTE
+    lcg-cp file://$TOP/OFF_$OUTPUT  ${OUTDIR}/off_$OUTPUTE
 
-    deal=`lcg-ls ${OUTDIR}/$INFILE | wc -l`
-
-    if [ $deal = "0" ]; then
-	mv $INPUT ${INTMP}/RECOVERY/$INFILE
-    fi
 
     deal=`lcg-ls ${OUTDIR}/$OUTPUT | wc -l`
 
@@ -308,6 +312,6 @@ if [ ${1} = "FIT" ]; then
 
     rm $OUTPUT
     rm EXTR_$OUTPUT
-    rm $INPUT
+    rm OFF_$OUTPUT
 
 fi
