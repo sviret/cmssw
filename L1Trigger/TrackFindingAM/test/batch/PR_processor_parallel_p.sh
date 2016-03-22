@@ -223,6 +223,7 @@ if [ ${1} = "FINAL" ]; then
     #ls -l
     mv $TOP/$OUTPUTFILE $OUTPUTFULL
     rm list_${FNAME}.txt
+
 fi
 
 #
@@ -267,7 +268,7 @@ if [ ${1} = "FIT" ]; then
     #  
 
     cd $TOP
-    cp $CMSSW_PROJECT_SRC/src/L1Trigger/TrackFindingAM/data/*.txt .   
+    cp -rf $CMSSW_PROJECT_SRC/src/L1Trigger/TrackFindingAM/data/* .   
     cp $CMSSW_PROJECT_SRC/src/L1Trigger/TrackFindingAM/test/batch/base/AMTC_base.py  TC_dummy_${FNAME}.py 
     cp $CMSSW_PROJECT_SRC/src/L1Trigger/TrackFindingAM/test/batch/base/AMFIT_base.py FIT_dummy_${FNAME}.py 
 

@@ -38,7 +38,7 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('L1Trigger.TrackTrigger.TrackTrigger_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(5)
+    input = cms.untracked.int32(-1)
 )
 
 # Input source
@@ -49,8 +49,7 @@ process.maxEvents = cms.untracked.PSet(
 #
 
 process.source = cms.Source("PoolSource",
-#                            fileNames = cms.untracked.vstring('file:AM_output.root'),
-                            fileNames = cms.untracked.vstring('file:/data/viret/test.root'),
+                            fileNames = cms.untracked.vstring('file:AM_output.root'),
                             duplicateCheckMode = cms.untracked.string( 'noDuplicateCheck' )
 )
 

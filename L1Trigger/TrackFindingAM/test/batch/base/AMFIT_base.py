@@ -45,6 +45,8 @@ process.TTStubAssociatorFromPixelDigis.TTClusterTruth = cms.VInputTag( cms.Input
 process.TTTrackAssociatorFromPixelDigis.TTTracks      = cms.VInputTag( cms.InputTag("MergeFITOutput", "AML1Tracks"))
 
 
+process.TTTracksTAMUFromTC.ConstantsDir                = cms.FileInPath("L1Trigger/TrackFindingAM/data/PreEstimate_Transverse/matrixVD_2016.txt")
+
 process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
     splitLevel = cms.untracked.int32(0),
     eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
@@ -77,7 +79,7 @@ process.RAWSIMoutput.outputCommands.append('keep  *_*_*_AMTC*')
 
 # Keep the FIT output
 process.RAWSIMoutput.outputCommands.append('keep  *_*_*_AMFIT*')
-process.RAWSIMoutput.outputCommands.append('drop *_TTTracksFromPattern_*_*')
+process.RAWSIMoutput.outputCommands.append('drop *_TTTracks*From*_*_*')
 process.RAWSIMoutput.outputCommands.append('keep  *_*_MergedTrackTruth_*')
 
 process.L1TrackNtuple = cms.EDAnalyzer('L1TrackNtupleMaker',

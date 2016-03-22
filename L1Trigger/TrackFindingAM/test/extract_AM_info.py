@@ -54,8 +54,7 @@ process.maxEvents = cms.untracked.PSet(
 
 # The file you want to extract
 process.source = cms.Source("PoolSource",
-                            #fileNames = cms.untracked.vstring('file:AMFIT_output.root'),
-                            fileNames = cms.untracked.vstring('file:AMTC_output.root'),
+                            fileNames = cms.untracked.vstring('file:AMFIT_output.root'),
                             duplicateCheckMode = cms.untracked.string( 'noDuplicateCheck' )
 )
 
@@ -64,11 +63,10 @@ process.load("Extractors.RecoExtractor.MIB_extractor_cff")
 
 # Tune some options (see MIB_extractor_cfi.py for details)
 
-#process.MIBextraction.doPixel          = True
 process.MIBextraction.doMatch          = True
 process.MIBextraction.doMC             = True
-
 process.MIBextraction.doSTUB           = True
+
 # You can choose to extract the info from filtered stubs only
 #process.MIBextraction.STUB_container   = cms.string( "MergePROutput" )
 #process.MIBextraction.STUB_name        = cms.string( "StubInPattern" )
@@ -79,9 +77,9 @@ process.MIBextraction.doL1TRK          = True
 process.MIBextraction.L1pattern_tag    = cms.InputTag( "MergePROutput", "AML1Patterns")
 
 # Choose the appropriate lines
-process.MIBextraction.L1track_tag      = cms.InputTag( "", "") # No L1Tracks
+#process.MIBextraction.L1track_tag      = cms.InputTag( "", "") # No L1Tracks
 #process.MIBextraction.L1tc_tag         = cms.InputTag( "", "") # No TCs
-#process.MIBextraction.L1track_tag      = cms.InputTag( "MergeFITOutput", "AML1Tracks") # Floating point tracks
+process.MIBextraction.L1track_tag      = cms.InputTag( "MergeFITOutput", "AML1Tracks") # Floating point tracks
 #process.MIBextraction.L1track_tag      = cms.InputTag( "MergeFITOutputb", "AML1BinTracks") # Bit-wise tracks
 process.MIBextraction.L1tc_tag         = cms.InputTag( "MergeTCOutputb", "AML1BinTCs") # Bit-wise TCs
 #process.MIBextraction.L1tc_tag         = cms.InputTag( "MergeTCOutput", "AML1TCs") # Floating point TCs

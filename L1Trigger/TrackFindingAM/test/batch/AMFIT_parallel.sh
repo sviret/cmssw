@@ -90,7 +90,7 @@ echo 'The final pattern reco output files will be written in: '$OUTDIR_GRID
 #
 
 #voms-proxy-init --voms cms --valid 100:00 -out $HOME/.globus/gridproxy.cert
-#export X509_USER_PROXY=${HOME}/.globus/gridproxy.cert
+export X509_USER_PROXY=${HOME}/.globus/gridproxy.cert
 
 lfc-mkdir -p $BAREPATH/$OUTPUTDIR
 

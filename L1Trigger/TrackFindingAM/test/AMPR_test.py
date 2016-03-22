@@ -61,7 +61,7 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:upgradePLS3', '')
 
 # Some pattern recognition options
-process.TTPatternsFromStub.inputBankFile = cms.string('/afs/cern.ch/work/s/sviret/public/PatternBanks/TP2014/620_SLHC7_MUBANK_lowmidhig_sec30_varDC_1000000.pbk')
+process.TTPatternsFromStub.inputBankFile = cms.string('/afs/cern.ch/work/s/sviret/public/PatternBanks/TP2014_extended/620_SLHC7_MUBANK_lowmidhig_sec30_varDC_1000000.pbk')
 process.TTPatternsFromStub.threshold     = cms.int32(5)
 process.TTPatternsFromStub.nbMissingHits = cms.int32(1)
 process.TTPatternsFromStub.debugMode     = cms.int32(0)

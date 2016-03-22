@@ -64,12 +64,14 @@ class TrackFitPCAProducer : public edm::EDProducer
   private:
   
   /// Data members
+
   double                       mMagneticField;
+  const StackedTrackerGeometry *theStackedTracker;
   unsigned int                 nSectors;
   unsigned int                 nWedges;
   std::string                  nBKName;
   int                          nThresh;
-  const StackedTrackerGeometry *theStackedTracker;
+
   edm::InputTag                TTStubsInputTag;
   edm::InputTag                TTPatternsInputTag;
   std::string                  TTTrackOutputTag;
