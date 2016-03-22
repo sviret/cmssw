@@ -153,7 +153,7 @@ void AMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
       aTrack.setSector( seedSector );
       aTrack.setMomentum(p3);
       aTrack.setRInv(0.003 * 3.8114 * pars[0]);
-      aTrack.setChi2(normChi2, 4);
+      aTrack.setChi2(normChi2);
       GlobalPoint POCA(0, 0, pars[3]);
       aTrack.setPOCA(POCA);
       L1TkTracksForOutput->push_back(aTrack);
