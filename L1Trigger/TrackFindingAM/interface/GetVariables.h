@@ -9,9 +9,9 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <fstream>
-#include "AMCMSSWInterface/AMTrackProducer/interface/L1TrackTriggerTree.h"
-#include "AMCMSSWInterface/AMTrackProducer/interface/GetTrackParameters.h"
-#include "AMCMSSWInterface/AMTrackProducer/interface/StubsCombination.h"
+#include "../interface/L1TrackTriggerTree.h"
+#include "../interface/GetTrackParameters.h"
+#include "../interface/StubsCombination.h"
 
 
 // Extrapolate R to from the outermost PS module to the given z position using the given tgTheta
