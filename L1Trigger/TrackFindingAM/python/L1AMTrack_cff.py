@@ -56,7 +56,7 @@ TTTCsFromPatternswStubs   = cms.Sequence(TTTCsFromPattern*MergeTCOutput*MergeTCO
 
 #TTTrackAssociatorFromPixelDigis.TTTracks = cms.VInputTag( cms.InputTag("MergeFITOutput", "AML1Tracks"))
 
-TTTracksFromTCs  = cms.Sequence(TTTracksFromTC)
+TTTracksFromTCs  = cms.Sequence(TTTracksTAMUFromTC)
 
 
 # The sequence. Note that we call the Merge plugins because the filtered containers are created
