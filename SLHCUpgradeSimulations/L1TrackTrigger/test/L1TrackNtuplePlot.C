@@ -74,10 +74,9 @@ void L1TrackNtuplePlot(TString type) {
   // ----------------------------------------------------------------------------------------------------------------
   // read ntuples
   TChain* tree = new TChain("L1TrackNtuple/eventTree");
+  tree->Add(type+"_TrkPerf.root");
 
-  if (type=="test") tree->Add("test_TrkPerf.root");
-  else tree->Add(type+"_TrkPerf.root");
-
+  
   if (tree->GetEntries() == 0) {
     cout << "File doesn't exist or is empty, returning..." << endl;
     return;
