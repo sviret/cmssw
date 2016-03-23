@@ -16,7 +16,7 @@ char PatternLayer::getDC(int index){
 }
 
 void PatternLayer::setDC(int index, char val){
-  if(val<0 || val>3)
+  if(val<0 || val>4)
     val=3;
   if(index<0 || index>=DC_BITS)
     index=0;
@@ -51,7 +51,7 @@ int PatternLayer::getDCBitsNumber(){
 }
 
 void PatternLayer::getPositionsFromDC(vector<char> dc, vector<short>& positions){
-  while(dc.size()!=0 && dc[0]!=3){
+  while(dc.size()!=0 && dc[0]!=3 && dc[0]!=4){
     char val = dc[0];
 
     if(positions.size()==0){
