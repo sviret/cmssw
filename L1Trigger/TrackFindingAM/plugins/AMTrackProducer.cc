@@ -29,6 +29,7 @@
 #include "L1Trigger/TrackFindingAM/interface/LinearizedTrackFitter.h"
 #include<map>
 
+
 class AMTrackProducer : public edm::EDProducer
 {
 public:
@@ -65,6 +66,7 @@ void AMTrackProducer::beginRun( const edm::Run& run, const edm::EventSetup& iSet
   double mMagneticFieldStrength = theMagneticField->inTesla(GlobalPoint(0,0,0)).z();
   mMagneticField = (floor(mMagneticFieldStrength*10.0 + 0.5))/10.0;
 }
+
 
 /// End run
 void AMTrackProducer::endRun( const edm::Run& run, const edm::EventSetup& iSetup ) {}
@@ -142,11 +144,10 @@ void AMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
       double normChi2 = linearizedTrackFitter_->fit(vars, bits);	
       const std::vector<double>& pars = linearizedTrackFitter_->estimatedPars();
       float pt=1.0/fabs(pars[0]);
-      float px=pt*cos(fabs(pars[1]));
-      float py=pt*sin(fabs(pars[1]));
+      float px=pt*cos(pars[1]);
+      float py=pt*sin(pars[1]);
       float pz=pt*pars[2];
       GlobalVector p3(px,py,pz);
-
 
       TTTrack<Ref_PixelDigi_> aTrack( trackStubs );
 
@@ -160,7 +161,6 @@ void AMTrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     }
   }
 
-  //  std::cout<<"Tracks "<<L1TkTracksForOutput->size()<<std::endl;
   iEvent.put( L1TkTracksForOutput, TracksTag_ );
 }
 
