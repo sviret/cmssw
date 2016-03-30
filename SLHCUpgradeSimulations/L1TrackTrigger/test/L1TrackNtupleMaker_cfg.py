@@ -39,7 +39,7 @@ Source_Files = cms.untracked.vstring(
 	)
 process.source = cms.Source("PoolSource", fileNames = Source_Files)
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string('TTbar_PU140_TrkPerf.root'), closeFileFast = cms.untracked.bool(True))
+process.TFileService = cms.Service("TFileService", fileName = cms.string('TTbar_PU140.root'), closeFileFast = cms.untracked.bool(True))
 
 
 ############################################################

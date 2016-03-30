@@ -74,7 +74,7 @@ void L1TrackNtuplePlot(TString type) {
   // ----------------------------------------------------------------------------------------------------------------
   // read ntuples
   TChain* tree = new TChain("L1TrackNtuple/eventTree");
-  tree->Add(type+"_TrkPerf.root");
+  tree->Add(type+".root");
 
   
   if (tree->GetEntries() == 0) {
