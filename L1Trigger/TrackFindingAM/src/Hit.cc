@@ -1,6 +1,6 @@
 #include "../interface/Hit.h"
 
-Hit::Hit(char l, char lad, char zp, char seg, short strip, int idx, int tp, float pt, float ip, float eta, float phi0, float p_x, float p_y, float p_z, float p_x0, float p_y0, float p_z0, float p_b){
+Hit::Hit(char l, char lad, char zp, char seg, float strip, int idx, int tp, float pt, float ip, float eta, float phi0, float p_x, float p_y, float p_z, float p_x0, float p_y0, float p_z0, float p_b){
   layer = l;
   ladder = lad;
   zPos = zp;
@@ -59,6 +59,10 @@ char Hit::getSegment() const{
 }
 
 short Hit::getStripNumber() const{
+  return (short)stripNumber;
+}
+
+float Hit::getHDStripNumber() const{
   return stripNumber;
 }
 
@@ -112,6 +116,14 @@ float Hit::getZ0() const{
 
 float Hit::getBend() const{
   return bend;
+}
+
+float Hit::getPolarPhi() const{
+  return atan(y/x);
+}
+
+float Hit::getPolarDistance() const{
+  return sqrt(x*x+y*y);
 }
 
 ostream& operator<<(ostream& out, const Hit& h){

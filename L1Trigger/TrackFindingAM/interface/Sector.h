@@ -140,7 +140,7 @@ class Sector{
      \param ladder The ladder ID
      \return The position of the ladder in the layer which is the code to use in the pattern
   **/
-  int getLadderCode(int layer, int ladder);
+  int getLadderCode(int layer, int ladder) const;
 
   /**
      \brief Get the module code in the sector (to be used in the patternLayer). This is the position of the module in the ladder
@@ -149,7 +149,7 @@ class Sector{
      \param module The module ID
      \return The position of the module in the ladder, which is the code to use in the pattern
   **/
-  int getModuleCode(int layer, int ladder, int module);
+  int getModuleCode(int layer, int ladder, int module) const;
 
   /**
      \brief Get the number of layers in the sector
@@ -186,7 +186,7 @@ class Sector{
      \brief Get the TKLayout ID of the sector
      \return The TKLayout ID of the sector, -1 if not known
   **/
-  int getOfficialID();
+  int getOfficialID() const;
 
   /**
      \brief Set the Sector official ID (id must be > -1)

@@ -33,10 +33,16 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
 
   tracker.setSectorMaps(sector_list[0]->getLadderCodeMap(),sector_list[0]->getModuleCodeMap());
 
+  converter = new LocalToGlobalConverter(*(sector_list[0]),"./modules_position.txt");
+
   //Link the patterns with the tracker representation
   cout<<"linking..."<<endl;
   sectors->link(tracker);
   cout<<"done."<<endl;
+}
+
+PatternFinder::~PatternFinder(){
+  delete converter;
 }
 
 #ifdef IPNL_USE_CUDA
@@ -182,6 +188,14 @@ void PatternFinder::find(int start, int& stop){
   std::vector<int> *m_patt_secid   = new  std::vector<int>;
   std::vector<int> *m_patt_miss    = new  std::vector<int>;
   
+  int nb_tc=0;
+  std::vector<float> *m_tc_pt       = new  std::vector<float>;
+  std::vector<float> *m_tc_eta      = new  std::vector<float>;
+  std::vector<float> *m_tc_phi      = new  std::vector<float>;
+  std::vector<float> *m_tc_z        = new  std::vector<float>;
+  std::vector< std::vector<int> > *m_tc_links    = new  std::vector< std::vector<int> >;
+  std::vector<int> *m_tc_secid    = new  std::vector<int>;
+
   int nb_tracks=0;
   std::vector<float> *m_trk_pt       = new  std::vector<float>;
   std::vector<float> *m_trk_eta      = new  std::vector<float>;
@@ -189,6 +203,7 @@ void PatternFinder::find(int start, int& stop){
   std::vector<float> *m_trk_z        = new  std::vector<float>;
   std::vector< std::vector<int> > *m_trk_links    = new  std::vector< std::vector<int> >;
   std::vector<int> *m_trk_secid    = new  std::vector<int>;
+  std::vector<float> *m_trk_chi2        = new  std::vector<float>;
   /////////////////////////////////////////
 
   // Branches definition
@@ -200,6 +215,14 @@ void PatternFinder::find(int start, int& stop){
   Out->Branch("L1PATT_secid",       &m_patt_secid);
   Out->Branch("L1PATT_nmiss",       &m_patt_miss);
   
+  Out->Branch("L1TC_n",            &nb_tc);
+  Out->Branch("L1TC_links",        &m_tc_links);
+  Out->Branch("L1TC_secid",        &m_tc_secid);
+  Out->Branch("L1TC_pt",           &m_tc_pt);
+  Out->Branch("L1TC_phi",          &m_tc_phi);
+  Out->Branch("L1TC_z",            &m_tc_z);
+  Out->Branch("L1TC_eta",          &m_tc_eta);
+
   Out->Branch("L1TRK_n",            &nb_tracks);
   Out->Branch("L1TRK_links",        &m_trk_links);
   Out->Branch("L1TRK_secid",        &m_trk_secid);
@@ -207,6 +230,7 @@ void PatternFinder::find(int start, int& stop){
   Out->Branch("L1TRK_phi",          &m_trk_phi);
   Out->Branch("L1TRK_z",            &m_trk_z);
   Out->Branch("L1TRK_eta",          &m_trk_eta);
+  Out->Branch("L1TRK_chi2",          &m_trk_chi2);
 
 
   int n_entries_TT = TT->GetEntries();
@@ -224,12 +248,19 @@ void PatternFinder::find(int start, int& stop){
     m_patt_links->clear();
     m_patt_secid->clear();
     m_patt_miss->clear();
+    m_tc_pt->clear();
+    m_tc_eta->clear();
+    m_tc_phi->clear();
+    m_tc_z->clear();
+    m_tc_links->clear();
+    m_tc_secid->clear();
     m_trk_pt->clear();
     m_trk_eta->clear();
     m_trk_phi->clear();
     m_trk_z->clear();
     m_trk_links->clear();
     m_trk_secid->clear();
+    m_trk_chi2->clear();
 
     vector<Hit*> hits;
 
@@ -242,7 +273,7 @@ void PatternFinder::find(int start, int& stop){
       int ladder = CMSPatternLayer::getLadderCode(layer, m_stub_ladder[i]);
       int segment =  CMSPatternLayer::getSegmentCode(layer, ladder, m_stub_seg[i]);
 
-      int strip = m_stub_strip[i];
+      float strip = m_stub_strip[i];
       int tp = m_stub_tp[i];
       float eta = m_stub_eta_gen[i];
       float phi0 = m_stub_phi0[i];
@@ -310,6 +341,32 @@ void PatternFinder::find(int start, int& stop){
 	for(unsigned k=0;k<active_hits.size();k++){
 	  stub_layers.insert(active_hits[k]->getLayer());
 	  stub_index.push_back(active_hits[k]->getID());
+
+	  /***** TEST OF LocalToGlobalConverter *********
+	  try{
+	    int hit_layer = active_hits[k]->getLayer();
+	    int hit_ladder = active_hits[k]->getLadder();
+	    int hit_module = active_hits[k]->getModule();
+	    
+	    bool isPSModule = false;
+	    if((hit_layer>=5 && hit_layer<=7) || (hit_layer>10 && hit_ladder<=8)){
+	      isPSModule=true;
+	    }
+	    int prbf2_layer = CMSPatternLayer::cmssw_layer_to_prbf2_layer(hit_layer,isPSModule);
+	    int prbf2_ladder = pattern_list[i]->getLadderCode(hit_layer, hit_ladder);
+	    int prbf2_module = pattern_list[i]->getModuleCode(hit_layer, hit_ladder, hit_module);
+	    
+	    vector<float> coords = converter->toGlobal(prbf2_layer, prbf2_ladder, prbf2_module, active_hits[k]->getSegment(), active_hits[k]->getHDStripNumber());
+	    cout<<*active_hits[k]<<endl;
+	    Hit global_hit(0,0,0,0,0,0,0,0,0,0,0,coords[0],coords[1],coords[2],0,0,0,0);
+	    cout<<"Cartesian coordinates : ("<<global_hit.getX()<<","<<global_hit.getY()<<","<<global_hit.getZ()<<")"<<endl;
+	    cout<<"Polar coordinates : PHI="<<global_hit.getPolarPhi()<<", R="<<global_hit.getPolarDistance()<<", Z="<<global_hit.getZ()<<endl;
+	  }
+	  catch(const std::runtime_error& e){
+	    cout<<e.what()<<endl;
+	  }
+
+	  *************************************************/
 	}
 	m_patt_links->push_back(stub_index);
 	m_patt_miss->push_back(stub_layers.size());
@@ -318,16 +375,16 @@ void PatternFinder::find(int start, int& stop){
       }
 
       // loop over tracks
-      nb_tracks = (int)tracks.size();
+      nb_tc = (int)tracks.size();
       for(unsigned int k=0;k<tracks.size();k++){
-	m_trk_pt->push_back(tracks[k]->getCurve());
-	m_trk_phi->push_back(tracks[k]->getPhi0());
-	m_trk_eta->push_back(tracks[k]->getEta0());
-	m_trk_z->push_back(tracks[k]->getZ0());
+	m_tc_pt->push_back(tracks[k]->getCurve());
+	m_tc_phi->push_back(tracks[k]->getPhi0());
+	m_tc_eta->push_back(tracks[k]->getEta0());
+	m_tc_z->push_back(tracks[k]->getZ0());
 	
 	vector<int> stubsInTrack = tracks[k]->getStubs();
-	m_trk_links->push_back(stubsInTrack);
-	m_trk_secid->push_back(sector_id);
+	m_tc_links->push_back(stubsInTrack);
+	m_tc_secid->push_back(sector_id);
 
 	delete tracks[k];
       }
@@ -359,12 +416,20 @@ void PatternFinder::find(int start, int& stop){
   delete m_patt_secid;
   delete m_patt_miss;
 
+  delete m_tc_pt;
+  delete m_tc_eta;
+  delete m_tc_phi;
+  delete m_tc_z;
+  delete m_tc_links;
+  delete m_tc_secid;  
+
   delete m_trk_pt;
   delete m_trk_eta;
   delete m_trk_phi;
   delete m_trk_z;
   delete m_trk_links;
   delete m_trk_secid;  
+  delete m_trk_chi2;
 }
 
 #ifdef IPNL_USE_CUDA
@@ -385,7 +450,7 @@ void PatternFinder::findCuda(int start, int& stop, deviceStubs* d_stubs){
   int nb_patterns=0;
   int ori_nb_stubs=0;
   int sel_nb_stubs=0;
-  int nb_tracks=0;
+  int nb_tc=0;
   int event_id;
   int superStrip_layer_0[MAX_NB_PATTERNS];
   int superStrip_layer_1[MAX_NB_PATTERNS];
@@ -483,7 +548,7 @@ void PatternFinder::findCuda(int start, int& stop, deviceStubs* d_stubs){
   Out->Branch("nbStubsInEvt",        &ori_nb_stubs);
   Out->Branch("nbStubsInPat",        &sel_nb_stubs);
 
-  Out->Branch("nbTracks",            &nb_tracks);
+  Out->Branch("nbTracks",            &nb_tc);
 
   Out->Branch("eventID",             &event_id);
   Out->Branch("sectorID",            pattern_sector_id, "sectorID[nbPatterns]/I");
@@ -707,7 +772,7 @@ void PatternFinder::findCuda(int start, int& stop, deviceStubs* d_stubs){
     event_id=num_evt;//we use the index in the file as event_id (most of our input files do not have a valid event_id)
     ori_nb_stubs = (int)hits.size();
     
-    nb_tracks = 0;
+    nb_tc = 0;
     for(int i=0;i<nb_layers;i++){
       memset(superStrips[i],0,MAX_NB_PATTERNS*sizeof(int));
     }
