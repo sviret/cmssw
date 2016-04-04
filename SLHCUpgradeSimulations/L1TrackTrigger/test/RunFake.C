@@ -413,6 +413,17 @@ void RunFake(TString type) {
   h_trkGoodNP_qc_eta_pt10->Sumw2();
   h_trkFake_qc_eta_pt10->Sumw2();
 
+  
+  // total rate vs pt
+  TCanvas ctot;
+  TH1F* h_rate_pt = (TH1F*) h_trk_pt->Clone();
+  h_rate_pt->SetName("rate_pt");
+  h_rate_pt->Scale(1.0/nevt);
+  h_rate_pt->Write();
+  h_rate_pt->GetYaxis()->SetTitle("Tracks / event");
+  h_rate_pt->Draw();
+  ctot.SaveAs("FakePlots/tot_vspt_"+type+".png");
+  ctot.SaveAs("FakePlots/tot_vspt_"+type+".eps");
 
 
   // actual fakes
