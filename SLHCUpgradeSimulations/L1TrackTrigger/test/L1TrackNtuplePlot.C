@@ -415,7 +415,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
 
       // cut on PDG ID at plot stage?
       if (TP_select_pdgid != 0) {
-	if (abs(tp_pt->at(it)) != abs(TP_select_pdgid)) continue;
+	if (abs(tp_pdgid->at(it)) != abs(TP_select_pdgid)) continue;
       }
 
       // cut on event ID (eventid=0 means the TP is from the primary interaction, so *not* selecting only eventid=0 means including stuff from pileup)
