@@ -106,15 +106,16 @@ private:
   // Containers of parameters passed by python configuration file
   edm::ParameterSet config; 
   
-  int MyProcess;       // 11/13/15/211 for single electrons/muons/taus/pions, 6 for pions in ttbar, 1 for inclusive
-  bool DebugMode;      // lots of debug printout statements
-  bool SaveAllTracks;  // store in ntuples not only truth-matched tracks but ALL tracks
-  bool SaveStubs;      // option to save also stubs in the ntuples (makes them large...)
-  int L1Tk_nPar;       // use 4 or 5 parameter track fit? 
-  int TP_minNStub;     // require TPs to have >= minNStubs (defining efficiency denominator) (==0 means to only require >= 1 cluster)
-  double TP_minPt;     // save TPs with pt > minPt 
-  double TP_maxEta;    // save TPs with |eta| < maxEta 
-  double TP_maxZ0;     // save TPs with |z0| < maxZ0 
+  int MyProcess;        // 11/13/211 for single electrons/muons/pions, 6/15 for pions from ttbar/taus, 1 for inclusive
+  bool DebugMode;       // lots of debug printout statements
+  bool SaveAllTracks;   // store in ntuples not only truth-matched tracks but ALL tracks
+  bool SaveStubs;       // option to save also stubs in the ntuples (makes them large...)
+  int L1Tk_nPar;        // use 4 or 5 parameter track fit? 
+  int TP_minNStub;      // require TPs to have >= minNStub (defining efficiency denominator) (==0 means to only require >= 1 cluster)
+  int TP_minNStubLayer; // require TPs to have stubs in >= minNStubLayer layers/disks (defining efficiency denominator)
+  double TP_minPt;      // save TPs with pt > minPt 
+  double TP_maxEta;     // save TPs with |eta| < maxEta 
+  double TP_maxZ0;      // save TPs with |z0| < maxZ0 
   
   edm::InputTag L1TrackInputTag;        // L1 track collection
   edm::InputTag MCTruthTrackInputTag;   // MC truth collection
@@ -157,6 +158,8 @@ private:
   std::vector<int>*   m_tp_pdgid;
   std::vector<int>*   m_tp_nmatch;
   std::vector<int>*   m_tp_nstub;
+  //std::vector<int>*   m_tp_nstublayer;
+  std::vector<int>*   m_tp_eventid;
 
   // *L1 track* properties if m_tp_nmatch > 0
   std::vector<float>* m_matchtrk_pt;
@@ -194,15 +197,16 @@ L1TrackNtupleMaker::L1TrackNtupleMaker(edm::ParameterSet const& iConfig) :
   config(iConfig)
 {
 
-  MyProcess     = iConfig.getParameter< int >("MyProcess");
-  DebugMode     = iConfig.getParameter< bool >("DebugMode");
-  SaveAllTracks = iConfig.getParameter< bool >("SaveAllTracks");
-  SaveStubs     = iConfig.getParameter< bool >("SaveStubs");
-  L1Tk_nPar     = iConfig.getParameter< int >("L1Tk_nPar");
-  TP_minNStub   = iConfig.getParameter< int >("TP_minNStub");
-  TP_minPt      = iConfig.getParameter< double >("TP_minPt");
-  TP_maxEta     = iConfig.getParameter< double >("TP_maxEta");
-  TP_maxZ0      = iConfig.getParameter< double >("TP_maxZ0");
+  MyProcess        = iConfig.getParameter< int >("MyProcess");
+  DebugMode        = iConfig.getParameter< bool >("DebugMode");
+  SaveAllTracks    = iConfig.getParameter< bool >("SaveAllTracks");
+  SaveStubs        = iConfig.getParameter< bool >("SaveStubs");
+  L1Tk_nPar        = iConfig.getParameter< int >("L1Tk_nPar");
+  TP_minNStub      = iConfig.getParameter< int >("TP_minNStub");
+  TP_minNStubLayer = iConfig.getParameter< int >("TP_minNStubLayer");
+  TP_minPt         = iConfig.getParameter< double >("TP_minPt");
+  TP_maxEta        = iConfig.getParameter< double >("TP_maxEta");
+  TP_maxZ0         = iConfig.getParameter< double >("TP_maxZ0");
   L1TrackInputTag      = iConfig.getParameter<edm::InputTag>("L1TrackInputTag");
   MCTruthTrackInputTag = iConfig.getParameter<edm::InputTag>("MCTruthTrackInputTag");
 
@@ -267,7 +271,9 @@ void L1TrackNtupleMaker::beginJob()
   m_tp_z0_prod = new std::vector<float>;
   m_tp_pdgid  = new std::vector<int>;
   m_tp_nmatch = new std::vector<int>;
-  m_tp_nstub = new std::vector<int>;
+  m_tp_nstub  = new std::vector<int>;
+  //m_tp_nstublayer = new std::vector<int>;
+  m_tp_eventid = new std::vector<int>;
 
   m_matchtrk_pt    = new std::vector<float>;
   m_matchtrk_eta   = new std::vector<float>;
@@ -323,7 +329,9 @@ void L1TrackNtupleMaker::beginJob()
   eventTree->Branch("tp_z0_prod",&m_tp_z0_prod);
   eventTree->Branch("tp_pdgid",  &m_tp_pdgid);
   eventTree->Branch("tp_nmatch", &m_tp_nmatch);
-  eventTree->Branch("tp_nstub", &m_tp_nstub);
+  eventTree->Branch("tp_nstub",  &m_tp_nstub);
+  //eventTree->Branch("tp_nstublayer", &m_tp_nstublayer);
+  eventTree->Branch("tp_eventid",&m_tp_eventid);
 
   eventTree->Branch("matchtrk_pt",      &m_matchtrk_pt);
   eventTree->Branch("matchtrk_eta",     &m_matchtrk_eta);
@@ -398,6 +406,8 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
   m_tp_pdgid->clear();
   m_tp_nmatch->clear();
   m_tp_nstub->clear();
+  //m_tp_nstublayer->clear();
+  m_tp_eventid->clear();
 
   m_matchtrk_pt->clear();
   m_matchtrk_eta->clear();
@@ -656,7 +666,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     this_tp++;
 
     int tmp_eventid = iterTP->eventId().event();
-    if (MyProcess != 1 && tmp_eventid > 0) continue; //only care about tracking particles from the primary interaction
+    if (MyProcess != 1 && tmp_eventid > 0) continue; //only care about tracking particles from the primary interaction (except for MyProcess==1, i.e. looking at all TPs)
 
     float tmp_tp_pt  = iterTP->pt();
     float tmp_tp_eta = iterTP->eta();
@@ -675,7 +685,6 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 
     if (tmp_tp_pt < TP_minPt) continue;
     if (fabs(tmp_tp_eta) > TP_maxEta) continue;
-    if ((MyProcess==6 || MyProcess==15 || MyProcess==1) && tmp_tp_pt < 2.0) continue;
 
 
     // ----------------------------------------------------------------------------------------------
@@ -724,22 +733,42 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 			<< " ttstubs " << MCTruthTTStubHandle->findTTStubRefs(tp_ptr).size()
 			<< " tttracks " << MCTruthTTTrackHandle->findTTTrackPtrs(tp_ptr).size() << endl;
 
+    
+    
+    // ----------------------------------------------------------------------------------------------
+    // only consider TPs associated with >= 1 cluster, or >= X stubs, or have stubs in >= X layers (configurable options)
+    
     if (MCTruthTTClusterHandle->findTTClusterRefs(tp_ptr).size() < 1) {
       if (DebugMode) cout << "No matching TTClusters for TP, continuing..." << endl;
       continue;
     }
-
-
-    // ----------------------------------------------------------------------------------------------
-    // look for L1 tracks matched to the tracking particle
-    std::vector< edm::Ptr< TTTrack< Ref_PixelDigi_ > > > matchedTracks = MCTruthTTTrackHandle->findTTTrackPtrs(tp_ptr);
     
-    int nMatch = 0;
-    int i_track = -1;
+    std::vector< edm::Ref< edmNew::DetSetVector< TTStub< Ref_PixelDigi_ > >, TTStub< Ref_PixelDigi_ > > > theStubRefs = MCTruthTTStubHandle->findTTStubRefs(tp_ptr);
+    int nStubTP = (int) theStubRefs.size(); 
+
+    // how many layers/disks have stubs?
+    int hasStubInLayer[11] = {0};
+    for (unsigned int is=0; is<theStubRefs.size(); is++) {
+
+      StackedTrackerDetId thisDetId( theStubRefs.at(is)->getDetId() );
+      //GlobalPoint posStub = theStackedGeometry->findGlobalPosition( &(*theStubRefs.at(is)) );
+      //bool isPS = theStackedGeometry->isPSModule(thisDetId);
+
+      bool isBarrel = thisDetId.isBarrel();
+      int layer = -1;
+      if (isBarrel) layer = thisDetId.iLayer()-1; //fill in array as entries 0-5
+      else layer = thisDetId.iDisk()+5; //fill in array as entries 6-10
+      hasStubInLayer[layer] = 1;
+    }
+
+    int nStubLayerTP = 0;
+    for (int isum=0; isum<11; isum++) {
+      nStubLayerTP += hasStubInLayer[isum];
+    }
+
+    if (DebugMode) cout << "TP is associated with " << nStubTP << " stubs, and has stubs in " << nStubLayerTP << " different layers/disks." << endl;
+
     
-    int nStubTP = (int) MCTruthTTStubHandle->findTTStubRefs(tp_ptr).size();
-
-
     if (TP_minNStub > 0) {
       if (DebugMode) cout << "Only consider TPs with >= " << TP_minNStub << " stubs" << endl;
       if (nStubTP < TP_minNStub) {
@@ -747,7 +776,22 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 	continue;
       }
     }
+    if (TP_minNStubLayer > 0) {
+      if (DebugMode) cout << "Only consider TPs with stubs in >= " << TP_minNStubLayer << " layers/disks" << endl;
+      if (nStubLayerTP < TP_minNStubLayer) {
+	if (DebugMode) cout << "TP fails stubs in minimum nbr of layers/disks requirement! Continuing..." << endl;
+	continue;
+      }
+    }
 
+    
+
+    // ----------------------------------------------------------------------------------------------
+    // look for L1 tracks matched to the tracking particle
+    std::vector< edm::Ptr< TTTrack< Ref_PixelDigi_ > > > matchedTracks = MCTruthTTTrackHandle->findTTTrackPtrs(tp_ptr);
+    
+    int nMatch = 0;
+    int i_track = -1;
 
     if (matchedTracks.size() > 0) { 
     
@@ -851,6 +895,8 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     m_tp_pdgid->push_back(tmp_tp_pdgid);
     m_tp_nmatch->push_back(nMatch);
     m_tp_nstub->push_back(nStubTP);
+    //m_tp_nstublayer->push_back(nStubLayerTP);
+    m_tp_eventid->push_back(tmp_eventid);
 
     m_matchtrk_pt ->push_back(tmp_matchtrk_pt);
     m_matchtrk_eta->push_back(tmp_matchtrk_eta);
