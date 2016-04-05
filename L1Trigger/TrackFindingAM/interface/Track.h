@@ -11,6 +11,7 @@ using namespace std;
 class Track{
 
  private:
+  double charge;
   double curve;
   double d0;
   double phi0;
@@ -32,15 +33,26 @@ class Track{
      \param p The PHI0 of the track
      \param p_a The Eta0 of the track
      \param p_b The Z0 of the track
-     \param w_xy The weight of the XY-retina maximum
-     \param w_rz The weight of the RZ-retina maximum
+     \param cg The charge of the track
+     \param Wxy The weight of the XY-retina maximum
+     \param Wrz The weight of the RZ-retina maximum
   **/
-  Track(double c, double d, double p, double p_a, double p_b, double Wxy=-1., double Wrz=-1.);
+  Track(double c, double d, double p, double p_a, double p_b, double cg=0., double Wxy=-1., double Wrz=-1.);
   /**
      \brief Copy Constructor
   **/
   Track(const Track&);
 
+  /**
+     \brief Set the charge of the track
+     \param cg The charge of the track
+  **/
+  void setCharge(double cg);
+  /**
+     \brief Get the charge of the track estimated from Fit Module
+     \return The charge of the track
+  **/
+  double getCharge();
   /**
      \brief Set the PT of the track
      \param p The PT of the track
