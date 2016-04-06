@@ -157,8 +157,9 @@ private:
   std::vector<float>* m_tp_z0_prod;
   std::vector<int>*   m_tp_pdgid;
   std::vector<int>*   m_tp_nmatch;
-  std::vector<int>*   m_tp_nstub;
-  //std::vector<int>*   m_tp_nstublayer;
+  std::vector<int>*   m_tp_nstub;          //total number of stubs associated with the TP
+  std::vector<int>*   m_tp_nstublayer;     //number of layers/disks with at least one stub associated to the TP
+  std::vector<int>*   m_tp_ngenstublayer;  //number of layers/disks with at least one GENUINE stub associated to the TP
   std::vector<int>*   m_tp_eventid;
 
   // *L1 track* properties if m_tp_nmatch > 0
@@ -272,7 +273,8 @@ void L1TrackNtupleMaker::beginJob()
   m_tp_pdgid  = new std::vector<int>;
   m_tp_nmatch = new std::vector<int>;
   m_tp_nstub  = new std::vector<int>;
-  //m_tp_nstublayer = new std::vector<int>;
+  m_tp_nstublayer = new std::vector<int>;
+  m_tp_ngenstublayer = new std::vector<int>;
   m_tp_eventid = new std::vector<int>;
 
   m_matchtrk_pt    = new std::vector<float>;
@@ -311,12 +313,12 @@ void L1TrackNtupleMaker::beginJob()
     eventTree->Branch("trk_unknown",      &m_trk_unknown);
     eventTree->Branch("trk_combinatoric", &m_trk_combinatoric);
     eventTree->Branch("trk_fake", &m_trk_fake);
-    eventTree->Branch("trk_matchtp_pdgid", &m_trk_matchtp_pdgid);
-    eventTree->Branch("trk_matchtp_pt", &m_trk_matchtp_pt);
-    eventTree->Branch("trk_matchtp_eta", &m_trk_matchtp_eta);
-    eventTree->Branch("trk_matchtp_phi", &m_trk_matchtp_phi);
-    eventTree->Branch("trk_matchtp_z0", &m_trk_matchtp_z0);
-    eventTree->Branch("trk_matchtp_dxy", &m_trk_matchtp_dxy);
+    eventTree->Branch("trk_matchtp_pdgid",&m_trk_matchtp_pdgid);
+    eventTree->Branch("trk_matchtp_pt",   &m_trk_matchtp_pt);
+    eventTree->Branch("trk_matchtp_eta",  &m_trk_matchtp_eta);
+    eventTree->Branch("trk_matchtp_phi",  &m_trk_matchtp_phi);
+    eventTree->Branch("trk_matchtp_z0",   &m_trk_matchtp_z0);
+    eventTree->Branch("trk_matchtp_dxy",  &m_trk_matchtp_dxy);
   }
 
   eventTree->Branch("tp_pt",     &m_tp_pt);
@@ -330,7 +332,8 @@ void L1TrackNtupleMaker::beginJob()
   eventTree->Branch("tp_pdgid",  &m_tp_pdgid);
   eventTree->Branch("tp_nmatch", &m_tp_nmatch);
   eventTree->Branch("tp_nstub",  &m_tp_nstub);
-  //eventTree->Branch("tp_nstublayer", &m_tp_nstublayer);
+  eventTree->Branch("tp_nstublayer",    &m_tp_nstublayer);
+  eventTree->Branch("tp_ngenstublayer", &m_tp_ngenstublayer);
   eventTree->Branch("tp_eventid",&m_tp_eventid);
 
   eventTree->Branch("matchtrk_pt",      &m_matchtrk_pt);
@@ -406,7 +409,8 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
   m_tp_pdgid->clear();
   m_tp_nmatch->clear();
   m_tp_nstub->clear();
-  //m_tp_nstublayer->clear();
+  m_tp_nstublayer->clear();
+  m_tp_ngenstublayer->clear();
   m_tp_eventid->clear();
 
   m_matchtrk_pt->clear();
@@ -749,7 +753,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     // how many layers/disks have stubs?
     int hasStubInLayer[11] = {0};
     for (unsigned int is=0; is<theStubRefs.size(); is++) {
-
+      
       StackedTrackerDetId thisDetId( theStubRefs.at(is)->getDetId() );
       //GlobalPoint posStub = theStackedGeometry->findGlobalPosition( &(*theStubRefs.at(is)) );
       //bool isPS = theStackedGeometry->isPSModule(thisDetId);
@@ -758,15 +762,25 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       int layer = -1;
       if (isBarrel) layer = thisDetId.iLayer()-1; //fill in array as entries 0-5
       else layer = thisDetId.iDisk()+5; //fill in array as entries 6-10
-      hasStubInLayer[layer] = 1;
+
+       //treat genuine stubs separately (==2 is genuine, ==1 is not)
+      if (MCTruthTTStubHandle->findTrackingParticlePtr(theStubRefs.at(is)).isNull() && hasStubInLayer[layer]<2)
+	hasStubInLayer[layer] = 1;
+      else 
+	hasStubInLayer[layer] = 2;
     }
+
 
     int nStubLayerTP = 0;
+    int nStubLayerTP_g = 0;
     for (int isum=0; isum<11; isum++) {
-      nStubLayerTP += hasStubInLayer[isum];
+      if ( hasStubInLayer[isum] >= 1) nStubLayerTP   += 1;
+      if ( hasStubInLayer[isum] == 2) nStubLayerTP_g += 1;
     }
 
-    if (DebugMode) cout << "TP is associated with " << nStubTP << " stubs, and has stubs in " << nStubLayerTP << " different layers/disks." << endl;
+
+    if (DebugMode) cout << "TP is associated with " << nStubTP << " stubs, and has stubs in " << nStubLayerTP << " different layers/disks, and has GENUINE stubs in "
+			<< nStubLayerTP_g << " layers " << endl;
 
     
     if (TP_minNStub > 0) {
@@ -895,7 +909,8 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     m_tp_pdgid->push_back(tmp_tp_pdgid);
     m_tp_nmatch->push_back(nMatch);
     m_tp_nstub->push_back(nStubTP);
-    //m_tp_nstublayer->push_back(nStubLayerTP);
+    m_tp_nstublayer->push_back(nStubLayerTP);
+    m_tp_ngenstublayer->push_back(nStubLayerTP_g);
     m_tp_eventid->push_back(tmp_eventid);
 
     m_matchtrk_pt ->push_back(tmp_matchtrk_pt);
