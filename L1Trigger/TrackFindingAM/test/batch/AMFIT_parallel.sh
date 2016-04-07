@@ -155,15 +155,13 @@ do
     processed=0
     section=0
 
-    FIT_FILE=${OUTDIR_GRID}/$OUTE
-    EXTR_FILE=${OUTDIR_GRID}/$OUTD
-    OFF_FILE=${OUTDIR_GRID}/$OUTC
+    FIT_FILE_I=${OUTDIR_GRID}/INFN_$OUTE
+    FIT_FILE_T=${OUTDIR_GRID}/TAMU_$OUTE
 
-    dealE=`lcg-ls $FIT_FILE | wc -l`
-    dealD=`lcg-ls $EXTR_FILE | wc -l`
-    dealC=`lcg-ls $OFF_FILE | wc -l`
+    dealI=`lcg-ls $FIT_FILE_I | wc -l`
+    dealT=`lcg-ls $FIT_FILE_T | wc -l`
 
-    if [ $dealE != "0" ] && [ $dealD != "0" ] && [ $dealC != "0" ]; then
+    if [ $dealI != "0" ] && [ $dealT != "0" ]; then
 	
 	echo "File "$l" has already processed, skip it..."
 	continue;

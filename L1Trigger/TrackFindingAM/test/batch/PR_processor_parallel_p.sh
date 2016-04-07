@@ -270,7 +270,8 @@ if [ ${1} = "FIT" ]; then
     cd $TOP
     cp -rf $CMSSW_PROJECT_SRC/src/L1Trigger/TrackFindingAM/data/* .   
     cp $CMSSW_PROJECT_SRC/src/L1Trigger/TrackFindingAM/test/batch/base/AMTC_base.py  TC_dummy_${FNAME}.py 
-    cp $CMSSW_PROJECT_SRC/src/L1Trigger/TrackFindingAM/test/batch/base/AMFIT_base.py FIT_dummy_${FNAME}.py 
+    cp $CMSSW_PROJECT_SRC/src/L1Trigger/TrackFindingAM/test/batch/base/AMFIT_base_INFN.py FIT_dummy_I_${FNAME}.py 
+    cp $CMSSW_PROJECT_SRC/src/L1Trigger/TrackFindingAM/test/batch/base/AMFIT_base_TAMU.py FIT_dummy_T_${FNAME}.py 
 
     # Finally the script is modified according to the requests
     
@@ -279,40 +280,47 @@ if [ ${1} = "FIT" ]; then
     sed "s#OUTPUTFILENAME#TC_$OUTPUT#"                     -i TC_dummy_${FNAME}.py
     sed "s/MYGLOBALTAG/$GT/"                               -i TC_dummy_${FNAME}.py
 
-    sed "s/NEVTS/$NEVT/"                                   -i FIT_dummy_${FNAME}.py
-    sed "s#INPUTFILENAME#file:TC_$OUTPUT#"                 -i FIT_dummy_${FNAME}.py
-    sed "s#OUTPUTFILENAME#$OUTPUT#"                        -i FIT_dummy_${FNAME}.py
-    sed "s#EXTRFILENAME#EXTR_$OUTPUT#"                     -i FIT_dummy_${FNAME}.py
-    sed "s#OFFFILENAME#OFF_$OUTPUT#"                       -i FIT_dummy_${FNAME}.py
-    sed "s/MYGLOBALTAG/$GT/"                               -i FIT_dummy_${FNAME}.py
+    sed "s/NEVTS/$NEVT/"                                   -i FIT_dummy_I_${FNAME}.py
+    sed "s#INPUTFILENAME#file:TC_$OUTPUT#"                 -i FIT_dummy_I_${FNAME}.py
+    sed "s#OUTPUTFILENAME#I_$OUTPUT#"                      -i FIT_dummy_I_${FNAME}.py
+    sed "s#EXTRFILENAME#EXTR_I_$OUTPUT#"                   -i FIT_dummy_I_${FNAME}.py
+    sed "s#OFFFILENAME#OFF_I_$OUTPUT#"                     -i FIT_dummy_I_${FNAME}.py
+    sed "s/MYGLOBALTAG/$GT/"                               -i FIT_dummy_I_${FNAME}.py
+
+    sed "s/NEVTS/$NEVT/"                                   -i FIT_dummy_T_${FNAME}.py
+    sed "s#INPUTFILENAME#file:TC_$OUTPUT#"                 -i FIT_dummy_T_${FNAME}.py
+    sed "s#OUTPUTFILENAME#T_$OUTPUT#"                      -i FIT_dummy_T_${FNAME}.py
+    sed "s#EXTRFILENAME#EXTR_T_$OUTPUT#"                   -i FIT_dummy_T_${FNAME}.py
+    sed "s#OFFFILENAME#OFF_T_$OUTPUT#"                     -i FIT_dummy_T_${FNAME}.py
+    sed "s/MYGLOBALTAG/$GT/"                               -i FIT_dummy_T_${FNAME}.py
 
     cmsRun TC_dummy_${FNAME}.py 
-    cmsRun FIT_dummy_${FNAME}.py 
+    cmsRun FIT_dummy_I_${FNAME}.py 
+    cmsRun FIT_dummy_T_${FNAME}.py 
 
-    rm *_dummy_${FNAME}.py 
 
     # Recover the data
     #  
 
-    lcg-cp file://$TOP/$OUTPUT      ${OUTDIR}/$OUTPUT
-    lcg-cp file://$TOP/EXTR_$OUTPUT ${OUTDIR}/$OUTPUTE
-    lcg-cp file://$TOP/OFF_$OUTPUT  ${OUTDIR}/off_$OUTPUTE
+    lcg-cp file://$TOP/I_$OUTPUT      ${OUTDIR}/INFN_$OUTPUT
+    lcg-cp file://$TOP/EXTR_I_$OUTPUT ${OUTDIR}/INFN_$OUTPUTE
+    lcg-cp file://$TOP/OFF_I_$OUTPUT  ${OUTDIR}/INFN_off_$OUTPUTE
 
+    lcg-cp file://$TOP/T_$OUTPUT      ${OUTDIR}/TAMU_$OUTPUT
+    lcg-cp file://$TOP/EXTR_T_$OUTPUT ${OUTDIR}/TAMU_$OUTPUTE
+    lcg-cp file://$TOP/OFF_T_$OUTPUT  ${OUTDIR}/TAMU_off_$OUTPUTE
 
-    deal=`lcg-ls ${OUTDIR}/$OUTPUT | wc -l`
+    deali=`lcg-ls ${OUTDIR}/I_$OUTPUT | wc -l`
+    dealt=`lcg-ls ${OUTDIR}/T_$OUTPUT | wc -l`
 
-    if [ $deal = "0" ]; then
-	mv $TOP/$OUTPUT ${INTMP}/RECOVERY/$OUTPUT
+    if [ $deal_i = "0" ]; then
+	mv $TOP/I_$OUTPUT ${INTMP}/RECOVERY/I_$OUTPUT
     fi
 
-    deal=`lcg-ls ${OUTDIR}/$OUTPUTE | wc -l`
-
-    if [ $deal = "0" ]; then
-	mv $TOP/EXTR_$OUTPUT ${INTMP}/RECOVERY/$OUTPUTE
+    if [ $deal_t = "0" ]; then
+	mv $TOP/T_$OUTPUT ${INTMP}/RECOVERY/T_$OUTPUT
     fi
 
-    rm $OUTPUT
-    rm EXTR_$OUTPUT
-    rm OFF_$OUTPUT
+    rm *_dummy*${FNAME}.py 
 
 fi

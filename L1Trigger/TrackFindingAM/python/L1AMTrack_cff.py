@@ -56,14 +56,15 @@ TTTCsFromPatternswStubs   = cms.Sequence(TTTCsFromPattern*MergeTCOutput*MergeTCO
 
 #TTTrackAssociatorFromPixelDigis.TTTracks = cms.VInputTag( cms.InputTag("MergeFITOutput", "AML1Tracks"))
 
-TTTracksFromTCs  = cms.Sequence(TTTracksTAMUFromTC)
+TTTracksTFromTCs  = cms.Sequence(TTTracksTAMUFromTC)
+TTTracksIFromTCs  = cms.Sequence(TTTracksINFNFromTC)
 
 
 # The sequence. Note that we call the Merge plugins because the filtered containers are created
 # here. We just merge one branch...
 
-#TTTracksFromTCswStubs   = cms.Sequence(TTTracksINFNFromTC*MergeFITOutput*TTStubAssociatorFromPixelDigis*TTTrackAssociatorFromPixelDigis)
-TTTracksFromTCswStubs   = cms.Sequence(TTTracksTAMUFromTC*MergeFITOutput*TTStubAssociatorFromPixelDigis*TTTrackAssociatorFromPixelDigis)
+TTTracksIFromTCswStubs   = cms.Sequence(TTTracksINFNFromTC*MergeFITOutputI*TTStubAssociatorFromPixelDigis*TTTrackAssociatorFromPixelDigis)
+TTTracksTFromTCswStubs   = cms.Sequence(TTTracksTAMUFromTC*MergeFITOutputT*TTStubAssociatorFromPixelDigis*TTTrackAssociatorFromPixelDigis)
 
 ############################################
 # STEP 4: MERGE PR outputs

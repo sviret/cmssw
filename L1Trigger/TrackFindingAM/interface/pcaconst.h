@@ -3,12 +3,39 @@
 
 #include <stdexcept>
 #include <vector>
+
 #include <iostream>
 #include <fstream>
 
+#include <algorithm>
+
 #define RANGE_CHECK
 
-/* L. Storchi: quick and dirty PCA const store class */
+/* Loriano Storchi: quick and dirty PCA const store class */
+
+template< class T >
+struct TypeIsInt32_t
+{
+  static const bool value = false;
+};
+
+template< class T >
+struct TypeIsDouble
+{
+  static const bool value = false;
+};
+
+template<>
+struct TypeIsInt32_t< int32_t >
+{
+  static const bool value = true;
+};
+
+template<>
+struct TypeIsDouble< double >
+{
+  static const bool value = true;
+};
 
 namespace pca
 {
@@ -71,6 +98,7 @@ namespace pca
     
         matrixpcaconst<T>& operator=( const matrixpcaconst<T>& );
     
+        /* IMPORTANT: as compare_non_elements */
         bool operator==( const matrixpcaconst<T>& ) const;
 
         void set_ttype (ttype in) {ttype_ = in;};
@@ -391,6 +419,13 @@ namespace pca
     for (unsigned i=0; i<rows_*cols_; i++)
       this->elements_.push_back((T)0);
   }
+
+  template<typename T>
+  bool pca::matrixpcaconst<T>::operator==( 
+      const pca::matrixpcaconst<T>& cp ) const
+  {
+    return (compare_nonelements(cp));
+  }
   
   template<typename T>
   matrixpcaconst<T>& pca::matrixpcaconst<T>::operator=( 
@@ -476,7 +511,12 @@ namespace pca
           for (unsigned int j = 0; j<matt.n_cols(); ++j)
             infile >> matt(i, j);
 
-        vct.push_back(matt);
+        typename std::vector<matrixpcaconst<T> >::iterator it;
+        it =  std::find (vct.begin(), vct.end(), matt);
+        if (it == vct.end())
+          vct.push_back(matt);
+        else 
+          *it = matt; // operator== compares only non elements
       }
 
       infile.close();
