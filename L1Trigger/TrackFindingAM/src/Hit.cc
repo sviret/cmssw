@@ -119,7 +119,16 @@ float Hit::getBend() const{
 }
 
 float Hit::getPolarPhi() const{
-  return atan(y/x);
+  float val = atan(y/x);
+  if(x<0){
+    if(y<0){
+      val-=M_PI;
+    }
+    else{
+      val+=M_PI;
+    }
+  }
+  return val;
 }
 
 float Hit::getPolarDistance() const{
@@ -129,6 +138,6 @@ float Hit::getPolarDistance() const{
 ostream& operator<<(ostream& out, const Hit& h){
   double d0=(h.getY0()-(tan(h.getParticulePHI0())*h.getX0()))*cos(h.getParticulePHI0());
 
-  out<<"Layer "<<(int)h.getLayer()<<", ladder "<<(int)h.getLadder()<<", module "<<(int)h.getModule()<<", segment "<<(int)h.getSegment()<<", strip "<<h.getStripNumber()<<" (tp "<<h.getParticuleID()<<" - PT : "<<h.getParticulePT()<<" GeV - ip : "<<h.getParticuleIP()<<" - PHI0 : "<<h.getParticulePHI0()<<" - ETA0 : "<<h.getParticuleETA()<<" - D0 : "<<d0<<" - X : "<<h.getX()<<" - Y : "<<h.getY()<<" - Z : "<<h.getZ()<<" - Bend : "<<h.getBend()<<")";
+  out<<"Layer "<<(int)h.getLayer()<<", ladder "<<(int)h.getLadder()<<", module "<<(int)h.getModule()<<", segment "<<(int)h.getSegment()<<", strip "<<h.getStripNumber()<<" (tp "<<h.getParticuleID()<<" - PT : "<<h.getParticulePT()<<" GeV - ip : "<<h.getParticuleIP()<<" - PHI0 : "<<h.getParticulePHI0()<<" - ETA0 : "<<h.getParticuleETA()<<" - D0 : "<<d0<<" - X : "<<h.getX()<<" - Y : "<<h.getY()<<" - Z : "<<h.getZ()<<" - Bend : "<<h.getBend()<<" - Z0 : "<<h.getZ0()<<")";
   return out;
 }

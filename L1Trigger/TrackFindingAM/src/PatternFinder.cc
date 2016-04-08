@@ -263,6 +263,7 @@ void PatternFinder::find(int start, int& stop){
     m_trk_chi2->clear();
 
     vector<Hit*> hits;
+    map<int,Hit*> hits_map;
 
     for(int i=0;i<m_stub;i++){
       int layer = m_stub_layer[i];
@@ -292,8 +293,10 @@ void PatternFinder::find(int start, int& stop){
 
       Hit* h = new Hit(layer,ladder, module, segment, strip, i, tp, spt, ip, eta, phi0, x, y, z, x0, y0, z0, bend);
 
-      if(sectors->getSector(*h)!=NULL)
+      if(sectors->getSector(*h)!=NULL){
 	hits.push_back(h);
+	hits_map[i]=h;
+      }
       else
 	delete(h);
     }
@@ -303,6 +306,10 @@ void PatternFinder::find(int start, int& stop){
     //Traitement des patterns actif : enregistrement, affichage...
     event_id=n_evt;
 
+    //TAMU PCA
+    string dataDir = "./tamu_data/";
+    shared_ptr<LinearizedTrackFitter> linearizedTrackFitter = make_shared<LinearizedTrackFitter>(dataDir.c_str(), true, true);
+    
     // loop on sectors
     for(unsigned int i=0;i<pattern_list.size();i++){
       vector<GradedPattern*> pl = pattern_list[i]->getPatternTree()->getLDPatterns();
@@ -341,42 +348,20 @@ void PatternFinder::find(int start, int& stop){
 	for(unsigned k=0;k<active_hits.size();k++){
 	  stub_layers.insert(active_hits[k]->getLayer());
 	  stub_index.push_back(active_hits[k]->getID());
-
-	  /***** TEST OF LocalToGlobalConverter *********
-	  try{
-	    int hit_layer = active_hits[k]->getLayer();
-	    int hit_ladder = active_hits[k]->getLadder();
-	    int hit_module = active_hits[k]->getModule();
-	    
-	    bool isPSModule = false;
-	    if((hit_layer>=5 && hit_layer<=7) || (hit_layer>10 && hit_ladder<=8)){
-	      isPSModule=true;
-	    }
-	    int prbf2_layer = CMSPatternLayer::cmssw_layer_to_prbf2_layer(hit_layer,isPSModule);
-	    int prbf2_ladder = pattern_list[i]->getLadderCode(hit_layer, hit_ladder);
-	    int prbf2_module = pattern_list[i]->getModuleCode(hit_layer, hit_ladder, hit_module);
-	    
-	    vector<float> coords = converter->toGlobal(prbf2_layer, prbf2_ladder, prbf2_module, active_hits[k]->getSegment(), active_hits[k]->getHDStripNumber());
-	    cout<<*active_hits[k]<<endl;
-	    Hit global_hit(0,0,0,0,0,0,0,0,0,0,0,coords[0],coords[1],coords[2],0,0,0,0);
-	    cout<<"Cartesian coordinates : ("<<global_hit.getX()<<","<<global_hit.getY()<<","<<global_hit.getZ()<<")"<<endl;
-	    cout<<"Polar coordinates : PHI="<<global_hit.getPolarPhi()<<", R="<<global_hit.getPolarDistance()<<", Z="<<global_hit.getZ()<<endl;
-	  }
-	  catch(const std::runtime_error& e){
-	    cout<<e.what()<<endl;
-	  }
-
-	  *************************************************/
 	}
+
 	m_patt_links->push_back(stub_index);
 	m_patt_miss->push_back(stub_layers.size());
 	
 	delete pl[j];
       }
 
-      // loop over tracks
+      // loop over TC
       nb_tc = (int)tracks.size();
+      vector<double> tc_for_fit;
+      vector< shared_ptr<Track> > fit_tracks;
       for(unsigned int k=0;k<tracks.size();k++){
+	vector<int> bit_values={5,6,7,8,9,10};
 	m_tc_pt->push_back(tracks[k]->getCurve());
 	m_tc_phi->push_back(tracks[k]->getPhi0());
 	m_tc_eta->push_back(tracks[k]->getEta0());
@@ -386,8 +371,80 @@ void PatternFinder::find(int start, int& stop){
 	m_tc_links->push_back(stubsInTrack);
 	m_tc_secid->push_back(sector_id);
 
+	for(unsigned int l=0;l<stubsInTrack.size();l++){
+	  int hit_index = stubsInTrack[l];
+	  Hit* current_hit=hits_map[hit_index];
+	  //cout<<*current_hit<<endl;
+	  if(current_hit==NULL){
+	    cout<<"Cannot find hit index "<<hit_index<<endl;
+	    break;
+	  }
+	  int hit_layer = current_hit->getLayer();
+	  int hit_ladder = current_hit->getLadder();
+	  int hit_module = current_hit->getModule();	    
+	  bool isPSModule = false;
+	  if((hit_layer>=5 && hit_layer<=7) || (hit_layer>10 && hit_ladder<=8)){
+	    isPSModule=true;
+	  }
+	  int prbf2_layer = CMSPatternLayer::cmssw_layer_to_prbf2_layer(hit_layer,isPSModule);
+	  int prbf2_ladder = pattern_list[i]->getLadderCode(hit_layer, hit_ladder);
+	  int prbf2_module = pattern_list[i]->getModuleCode(hit_layer, hit_ladder, hit_module);
+	  shared_ptr<Hit> global_hit;
+	  try{
+	    vector<float> coords = converter->toGlobal(prbf2_layer, prbf2_ladder, prbf2_module, current_hit->getSegment(), current_hit->getHDStripNumber());
+	    global_hit = make_shared<Hit>(0,0,0,0,0,0,0,0,0,0,0,coords[0],coords[1],coords[2],0,0,0,0);
+	  }
+	  catch(const std::runtime_error& e){
+	    cout<<e.what()<<endl;
+	    cout<<"Using CMSSW cartesian coordinates instead..."<<endl;
+	    global_hit = make_shared<Hit>(0,0,0,0,0,0,0,0,0,0,0,current_hit->getX(),current_hit->getY(),current_hit->getZ(),0,0,0,0);
+	  }
+	  //cout<<"Polar coordinates : PHI="<<global_hit.getPolarPhi()<<", R="<<global_hit.getPolarDistance()<<", Z="<<global_hit.getZ()<<endl;
+	  tc_for_fit.push_back(global_hit->getPolarPhi());
+	  tc_for_fit.push_back(global_hit->getPolarDistance());
+	  tc_for_fit.push_back(global_hit->getZ());
+	  if(hit_layer>10)
+	    bit_values.push_back(50);//we do not support endcap layers yet
+	  bit_values.erase(std::remove(bit_values.begin(), bit_values.end(), hit_layer), bit_values.end());
+	}
+      
+	int bits=-1;
+	if(bit_values.size()==0)
+	  bits=0;
+	else if(bit_values.size()==1){
+	  bits=bit_values[0]-4;
+	}
+	if(bits!=-1){
+	  double normChi2 = linearizedTrackFitter->fit(tc_for_fit, bits);
+	  const std::vector<double> pars = linearizedTrackFitter->estimatedPars();
+	  float pt=1.0/fabs(pars[0]);
+	  float pz=pt*pars[2];
+	  float phi=pars[1];
+	  shared_ptr<Track> pca_track = make_shared<Track>(pt,0,phi,asinh(pz/pt),pars[3],0,-1,-1,normChi2);
+	  for(unsigned int l=0;l<stubsInTrack.size();l++){
+	    pca_track->addStubIndex(stubsInTrack[l]);
+	  }
+	  fit_tracks.push_back(pca_track);
+	}
+	else
+	  cout<<"Can not use the TAMU PCA FITTER"<<endl;
+
+	tc_for_fit.clear();
 	delete tracks[k];
       }
+      nb_tracks = (int)fit_tracks.size();
+      for(unsigned int k=0;k<fit_tracks.size();k++){
+	m_trk_pt->push_back(fit_tracks[k]->getCurve());
+	m_trk_phi->push_back(fit_tracks[k]->getPhi0());
+	m_trk_eta->push_back(fit_tracks[k]->getEta0());
+	m_trk_chi2->push_back(fit_tracks[k]->getChi2());
+	m_trk_z->push_back(fit_tracks[k]->getZ0());
+	
+	vector<int> stubsInTrack = fit_tracks[k]->getStubs();
+	m_trk_links->push_back(stubsInTrack);
+	m_trk_secid->push_back(sector_id);
+      }
+      fit_tracks.clear();
 
     }
     Out->Fill();

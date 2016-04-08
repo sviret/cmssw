@@ -296,9 +296,16 @@ bool comparePatterns(PatternTrunk* p1, PatternTrunk* p2){
     return p1->getLDPatternGrade()>p2->getLDPatternGrade();
 }
 
+bool comparePatternsbyPT(PatternTrunk* p1, PatternTrunk* p2){
+  if(p1->getLDPatternPT()==p2->getLDPatternPT())
+    return p1->getLDPatternGrade()>p2->getLDPatternGrade();
+  else
+    return p1->getLDPatternPT()>p2->getLDPatternPT();
+}
+
 void PatternTree::truncate(int nbPatterns, vector<unsigned int> defective_addresses){
   switchToVector();
-  sort(v_patterns.begin(),v_patterns.end(), comparePatterns);
+  sort(v_patterns.begin(),v_patterns.end(), comparePatterns);//sort by popularity then PT
 
   if(nbPatterns>0){
     cout<<"Scores ranging from  : "<<v_patterns[0]->getLDPatternGrade()<<" to "<<v_patterns[v_patterns.size()-1]->getLDPatternGrade()<<endl;
@@ -337,6 +344,7 @@ void PatternTree::truncate(int nbPatterns, vector<unsigned int> defective_addres
     cout<<"Keep "<<v_patterns.size()<<" patterns with scores ranging from  : "<<v_patterns[0]->getLDPatternGrade()<<" to "<<v_patterns[v_patterns.size()-1]->getLDPatternGrade()<<endl;
   }
 
+  //sort(v_patterns.begin(),v_patterns.end(), comparePatternsbyPT);//sort by PT then popularity
   for(unsigned int i=0;i<v_patterns.size();i++){
     v_patterns[i]->setOrderInChip(i);
   }
