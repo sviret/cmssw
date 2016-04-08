@@ -115,7 +115,7 @@ class PatternTree{
      \brief Delete the least used patterns to match the given pattern number
      \param nbPatterns The number of patterns to keep
   **/
-  void truncate(int nbPatterns);
+  void truncate(int nbPatterns, vector<unsigned int> defective_patterns=vector<unsigned int>());
 
  private:
   map<string, PatternTrunk*> patterns;
@@ -180,5 +180,6 @@ class PatternTree{
   BOOST_SERIALIZATION_SPLIT_MEMBER()
 };
 bool comparePatterns(PatternTrunk* p1, PatternTrunk* p2);
+bool comparePatternsbyPT(PatternTrunk* p1, PatternTrunk* p2);
 BOOST_CLASS_VERSION(PatternTree, 1)
 #endif

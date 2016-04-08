@@ -6,7 +6,10 @@
 #include <TChain.h>
 #include <TFile.h>
 #include <TROOT.h>
+#include <memory>
 #include "SectorTree.h"
+#include "LocalToGlobalConverter.h"
+#include "LinearizedTrackFitter.h"
 
 #ifdef IPNL_USE_CUDA
 #include "gpu.h"
@@ -27,6 +30,7 @@ class PatternFinder{
   string eventsFilename;
   string outputFileName;
   Detector tracker;
+  LocalToGlobalConverter* converter;
 
 #ifdef IPNL_USE_CUDA
   deviceDetector* d_detector;  
@@ -45,6 +49,11 @@ class PatternFinder{
      \param of The name of the output file
   **/
   PatternFinder(int at, SectorTree* st, string f, string of);
+
+  /**
+     \brief Destructor
+  **/
+  ~PatternFinder();
 
 #ifdef IPNL_USE_CUDA
  /**

@@ -296,12 +296,47 @@ bool comparePatterns(PatternTrunk* p1, PatternTrunk* p2){
     return p1->getLDPatternGrade()>p2->getLDPatternGrade();
 }
 
-void PatternTree::truncate(int nbPatterns){
+bool comparePatternsbyPT(PatternTrunk* p1, PatternTrunk* p2){
+  if(p1->getLDPatternPT()==p2->getLDPatternPT())
+    return p1->getLDPatternGrade()>p2->getLDPatternGrade();
+  else
+    return p1->getLDPatternPT()>p2->getLDPatternPT();
+}
+
+void PatternTree::truncate(int nbPatterns, vector<unsigned int> defective_addresses){
   switchToVector();
-  sort(v_patterns.begin(),v_patterns.end(), comparePatterns);
+  sort(v_patterns.begin(),v_patterns.end(), comparePatterns);//sort by popularity then PT
 
   if(nbPatterns>0){
     cout<<"Scores ranging from  : "<<v_patterns[0]->getLDPatternGrade()<<" to "<<v_patterns[v_patterns.size()-1]->getLDPatternGrade()<<endl;
+
+    if(defective_addresses.size()>2048){
+      cout<<"Too many defective addresses in the chip : can not handle more than 2048!"<<endl;
+      cout<<"DEFECTIVE ADDRESSES WILL BE IGNORED!"<<endl;
+      defective_addresses.clear();
+    }
+
+    for(unsigned int k=0;k<defective_addresses.size();k++){
+      //Creating an invalid pattern to fill the defective addresses of the chip
+      int nbLayers = v_patterns[0]->getLDPattern()->getNbLayers();
+      Pattern* pat = new Pattern(nbLayers);
+      for(int i=0;i<nbLayers;i++){
+	CMSPatternLayer pl;
+	pl.computeSuperstrip(5, 31, k/128, k%128, 0, 1, false, false);
+	int nb_dc = v_patterns[0]->getLDPattern()->getLayerStrip(i)->getDCBitsNumber();
+	for(int j=0;j<nb_dc;j++){
+	  pl.setDC(j,4);
+	}
+	pat->setLayerStrip(i,&pl);
+      }
+      PatternTrunk* invalid_pattern = new PatternTrunk(pat);
+      delete pat;
+      
+      vector<PatternTrunk*>::iterator it;
+      it = v_patterns.begin()+defective_addresses[k];
+      v_patterns.insert(it,invalid_pattern);
+    }
+
     int nbToDelete = v_patterns.size()-nbPatterns;
     for(int i=0;i<nbToDelete;i++){
       v_patterns.pop_back();
@@ -309,6 +344,7 @@ void PatternTree::truncate(int nbPatterns){
     cout<<"Keep "<<v_patterns.size()<<" patterns with scores ranging from  : "<<v_patterns[0]->getLDPatternGrade()<<" to "<<v_patterns[v_patterns.size()-1]->getLDPatternGrade()<<endl;
   }
 
+  //sort(v_patterns.begin(),v_patterns.end(), comparePatternsbyPT);//sort by PT then popularity
   for(unsigned int i=0;i<v_patterns.size();i++){
     v_patterns[i]->setOrderInChip(i);
   }

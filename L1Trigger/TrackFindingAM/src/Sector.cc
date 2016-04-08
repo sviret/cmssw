@@ -156,7 +156,7 @@ void Sector::addModules(int layer, int ladder, int firstModule, int nbModules){
   }
 }
 
-int Sector::getLadderCode(int layer, int ladder){
+int Sector::getLadderCode(int layer, int ladder) const{
   map<int, vector<int> >::const_iterator it = m_ladders.find(layer);
 
   if(it==m_ladders.end())
@@ -194,7 +194,7 @@ map<string,int> Sector::getLadderCodeMap(){
   return toLadderCode;
 }
 
-int Sector::getModuleCode(int layer, int ladder, int module){
+int Sector::getModuleCode(int layer, int ladder, int module) const{
   map<int, map<int, vector<int> > >::const_iterator it = m_modules.find(layer);
 
   if(it==m_modules.end()){
@@ -368,7 +368,7 @@ void Sector::setOfficialID(int id){
     officialID=-1;
 }
 
-int Sector::getOfficialID(){
+int Sector::getOfficialID() const{
   return officialID;
 }
 

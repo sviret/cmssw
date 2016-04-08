@@ -210,6 +210,8 @@ string CMSPatternLayer::toString(){
     for(int i=0;i<DC_BITS;i++){
       if(dc_bits[i]==2)
 	oss<<"X";
+      else if(dc_bits[i]==4)
+	oss<<"I";
       else if(dc_bits[i]!=3)
 	oss<<(int)dc_bits[i];
     }
@@ -226,6 +228,8 @@ string CMSPatternLayer::toStringBinary(){
     for(int i=0;i<DC_BITS;i++){
       if(dc_bits[i]==2)
 	oss<<"X";
+      else if(dc_bits[i]==4)
+	oss<<"I";
       else if(dc_bits[i]!=3)
 	oss<<(int)dc_bits[i];
     }
@@ -331,6 +335,8 @@ string CMSPatternLayer::toAM05Format(bool tagLayer){
       break;
     case 1 : dcbit1_val=2;//10
       break;
+    case 4 : dcbit1_val=3;//11
+      break;
     }
     
     //4 bits for Z + 1 bit for seg + 4 bits for ladder + 5 bits for sstrip + 2 bits for sstrips DC bit 0 + 2 bits for sstrips DC bit 1 = 18 bits
@@ -354,6 +360,8 @@ string CMSPatternLayer::toAM05Format(bool tagLayer){
       break;
     case 1 : dcbit0_val=2;//10
       break;
+    case 4 : dcbit1_val=3;//11
+      break;
     }
 
     switch(dcbit1_val){
@@ -362,6 +370,8 @@ string CMSPatternLayer::toAM05Format(bool tagLayer){
     case 0 : dcbit1_val=1;//01
       break;
     case 1 : dcbit1_val=2;//10
+      break;
+    case 4 : dcbit1_val=3;//11
       break;
     }
 
@@ -403,6 +413,8 @@ string CMSPatternLayer::toAM05Format(bool tagLayer){
       break;
     case 1 : dcbit0_val=2;//10
       break;
+    case 4 : dcbit1_val=3;//11
+      break;
     }
 
     switch(dcbit1_val){
@@ -412,6 +424,8 @@ string CMSPatternLayer::toAM05Format(bool tagLayer){
       break;
     case 1 : dcbit1_val=2;//10
       break;
+    case 4 : dcbit1_val=3;//11
+      break;
     }
 
     switch(dcbit2_val){
@@ -420,6 +434,8 @@ string CMSPatternLayer::toAM05Format(bool tagLayer){
     case 0 : dcbit2_val=1;//01
       break;
     case 1 : dcbit2_val=2;//10
+      break;
+    case 4 : dcbit1_val=3;//11
       break;
     }
     
