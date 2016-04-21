@@ -39,9 +39,9 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 #
-# You can use as input file the result of the script AMPR_test.py of part 5.2.2 of the tutorial
+# You can use as input file the result of the script AMTC_test.py of part 6.1.2 of the tutorial
 #
-# Any other EDM file containing patterns and produced with CMSSW 620_SLHC13 should also work
+# Any other EDM file containing TCs and produced with CMSSW 620_SLHC27 should also work
 #
 
 process.source = cms.Source("PoolSource",

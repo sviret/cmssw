@@ -9,9 +9,10 @@ Track::Track(){
   z0    = 0.;
   w_xy  = 0.;
   w_rz  = 0.;
+  chi2  = -1;
 }
 
-Track::Track(double c, double d, double p, double p_a, double p_b, double cg, double Wxy, double Wrz){
+Track::Track(double c, double d, double p, double p_a, double p_b, double cg, double Wxy, double Wrz, double chi){
   charge= cg;
   curve = c;
   d0    = d;
@@ -20,6 +21,7 @@ Track::Track(double c, double d, double p, double p_a, double p_b, double cg, do
   z0    = p_b;
   w_xy  = Wxy;
   w_rz  = Wrz;
+  chi2 = chi;
 }
 
 Track::Track(const Track& ref){
@@ -68,6 +70,10 @@ void Track::setWrz(double Wrz){
   w_rz=Wrz;
 }
 
+void Track::setChi2(double c){
+  chi2=c;
+}
+
 void Track::addStubIndex(int s){
   if(s>=0)
     stub_ids.push_back(s);
@@ -111,4 +117,8 @@ double Track::getWxy(){
 
 double Track::getWrz(){
   return w_rz;
+}
+
+double Track::getChi2(){
+  return chi2;
 }

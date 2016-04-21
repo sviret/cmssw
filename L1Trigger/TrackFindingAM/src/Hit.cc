@@ -1,6 +1,6 @@
 #include "../interface/Hit.h"
 
-Hit::Hit(char l, char lad, char zp, char seg, short strip, int idx, int tp, float pt, float ip, float eta, float phi0, float p_x, float p_y, float p_z, float p_x0, float p_y0, float p_z0, float p_b){
+Hit::Hit(char l, char lad, char zp, char seg, float strip, int idx, int tp, float pt, float ip, float eta, float phi0, float p_x, float p_y, float p_z, float p_x0, float p_y0, float p_z0, float p_b){
   layer = l;
   ladder = lad;
   zPos = zp;
@@ -59,6 +59,10 @@ char Hit::getSegment() const{
 }
 
 short Hit::getStripNumber() const{
+  return (short)stripNumber;
+}
+
+float Hit::getHDStripNumber() const{
   return stripNumber;
 }
 
@@ -114,9 +118,26 @@ float Hit::getBend() const{
   return bend;
 }
 
+float Hit::getPolarPhi() const{
+  float val = atan(y/x);
+  if(x<0){
+    if(y<0){
+      val-=M_PI;
+    }
+    else{
+      val+=M_PI;
+    }
+  }
+  return val;
+}
+
+float Hit::getPolarDistance() const{
+  return sqrt(x*x+y*y);
+}
+
 ostream& operator<<(ostream& out, const Hit& h){
   double d0=(h.getY0()-(tan(h.getParticulePHI0())*h.getX0()))*cos(h.getParticulePHI0());
 
-  out<<"Layer "<<(int)h.getLayer()<<", ladder "<<(int)h.getLadder()<<", module "<<(int)h.getModule()<<", segment "<<(int)h.getSegment()<<", strip "<<h.getStripNumber()<<" (tp "<<h.getParticuleID()<<" - PT : "<<h.getParticulePT()<<" GeV - ip : "<<h.getParticuleIP()<<" - PHI0 : "<<h.getParticulePHI0()<<" - ETA0 : "<<h.getParticuleETA()<<" - D0 : "<<d0<<" - X : "<<h.getX()<<" - Y : "<<h.getY()<<" - Z : "<<h.getZ()<<" - Bend : "<<h.getBend()<<")";
+  out<<"Layer "<<(int)h.getLayer()<<", ladder "<<(int)h.getLadder()<<", module "<<(int)h.getModule()<<", segment "<<(int)h.getSegment()<<", strip "<<h.getStripNumber()<<" (tp "<<h.getParticuleID()<<" - PT : "<<h.getParticulePT()<<" GeV - ip : "<<h.getParticuleIP()<<" - PHI0 : "<<h.getParticulePHI0()<<" - ETA0 : "<<h.getParticuleETA()<<" - D0 : "<<d0<<" - X : "<<h.getX()<<" - Y : "<<h.getY()<<" - Z : "<<h.getZ()<<" - Bend : "<<h.getBend()<<" - Z0 : "<<h.getZ0()<<")";
   return out;
 }

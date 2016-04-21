@@ -156,11 +156,12 @@ class PatternLayer{
    **/
   bitset<LAYER_BITS> bits;
   /**  
-      4 possible values for a DC bit:
+      5 possible values for a DC bit:
         - 0 : 0
         - 1 : 1
 	- 2 : X (Don't Care)
-	- 3 : UNUSED
+	- 3 : UNUSED VALUE
+	- 4 : Inactive (can not be activated)
   **/
   char dc_bits[DC_BITS];
 
