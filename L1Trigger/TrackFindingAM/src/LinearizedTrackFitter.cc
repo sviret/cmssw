@@ -92,8 +92,14 @@ void LinearizedTrackFitter::initialize(const std::vector<double> & vars, const s
 
   computeRotationFactor(vars);
 
-  // for (unsigned int i=0; i<varsNum_; ++i) { correctedVarsPhi_(i) = vars[i*3]; }
-  for (unsigned int i=0; i<varsNum_; ++i) { correctedVarsPhi_(i) = vars[i*3] - rotationFactor_; }
+  // Special care is needed for the +/-pi boundary
+  for (unsigned int i=0; i<varsNum_; ++i) {
+    correctedVarsPhi_(i) = vars[i*3] - rotationFactor_;
+    if (fabs(vars[0]) > M_PI_2) {
+      if (vars[0] < 0. && vars[i * 3] > 0.) correctedVarsPhi_(i) -= 2 * M_PI;
+      else if (vars[0] > 0. && vars[i * 3] < 0.) correctedVarsPhi_(i) += 2 * M_PI;
+    }
+  }
   for (unsigned int i=0; i<varsNum_; ++i) { varsR_.push_back(vars[i*3+1]); }
   for (unsigned int i=0; i<varsNum_; ++i) { correctedVarsZ_(i) = vars[i*3+2]; }
   extrapolatedR_ = varsR_;
@@ -159,8 +165,12 @@ double LinearizedTrackFitter::fit(const double & chargeOverTwoRho, const double 
   // Estimate the track parameters
   estimatedPars_.clear();
   estimatedPars_ = linearFitTransverse->trackParameters(correctedVarsPhi_);
-  // Parameter 1 must be phi0 for the rotation.
-  if (estimatedPars_.size() > 1) estimatedPars_.at(1) += rotationFactor_;
+  // Parameter 1 must be phi0 for the rotation. Keep phi0 in the [-pi, pi] range.
+  if (estimatedPars_.size() > 1) {
+    estimatedPars_.at(1) += rotationFactor_;
+    if (estimatedPars_.at(1) > M_PI) estimatedPars_.at(1) -= 2*M_PI;
+    else if (estimatedPars_.at(1) < -M_PI) estimatedPars_.at(1) += 2*M_PI;
+  }
   auto tempPars = linearFitLongitudinal->trackParameters(correctedVarsZ_);
   estimatedPars_.insert(estimatedPars_.end(), tempPars.begin(), tempPars.end());
 
