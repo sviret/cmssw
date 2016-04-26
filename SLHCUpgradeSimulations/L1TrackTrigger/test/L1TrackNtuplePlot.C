@@ -32,19 +32,25 @@ void mySmallText(Double_t x,Double_t y,Color_t color,char *text);
 
 // ----------------------------------------------------------------------------------------------------------------
 // Main script
-void L1TrackNtuplePlot(TString type) {
+// ----------------------------------------------------------------------------------------------------------------
 
+
+void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventid=0, float TP_minPt=3.0, float TP_maxPt=100.0, float TP_maxEta=2.5) {
+
+  // type:              this is the input file you want to process (minus ".root" extension)
+  // TP_select_pdgid:   if non-zero, only select TPs with a given PDG ID
+  // TP_select_eventid: if zero, only look at TPs from primary interaction, else, include TPs from pileup
+  // TP_minPt:          only look at TPs with pt > X GeV
+  // TP_maxPt:          only look at TPs with pt < X GeV
+  // TP_maxEta:         only look at TPs with |eta| < X
+ 
   
   SetPlotStyle();
 
   
   // ----------------------------------------------------------------------------------------------------------------
   // define input options
-  
-  float TP_minPt  = 1.0;
-  float TP_maxPt  = 100.0;
-  float TP_maxEta = 2.5;
-  float TP_maxZ0  = 30.0;
+
   int L1Tk_minNstub = 4;  
   float L1Tk_maxChi2 = 100.;  
   float L1Tk_maxChi2dof = 9999.;  
@@ -74,7 +80,7 @@ void L1TrackNtuplePlot(TString type) {
   // ----------------------------------------------------------------------------------------------------------------
   // read ntuples
   TChain* tree = new TChain("L1TrackNtuple/eventTree");
-  tree->Add(type+"_TrkPerf.root");
+  tree->Add(type+".root");
 
   
   if (tree->GetEntries() == 0) {
@@ -96,6 +102,7 @@ void L1TrackNtuplePlot(TString type) {
   vector<int>*   tp_pdgid;
   vector<int>*   tp_nmatch;
   vector<int>*   tp_nstub;
+  vector<int>*   tp_eventid;
 
   // *L1 track* properties, for tracking particles matched to a L1 track
   vector<float>* matchtrk_pt;
@@ -116,6 +123,7 @@ void L1TrackNtuplePlot(TString type) {
   TBranch* b_tp_pdgid;
   TBranch* b_tp_nmatch;
   TBranch* b_tp_nstub;
+  TBranch* b_tp_eventid;
 
   TBranch* b_matchtrk_pt;
   TBranch* b_matchtrk_eta;
@@ -135,6 +143,7 @@ void L1TrackNtuplePlot(TString type) {
   tp_pdgid = 0;
   tp_nmatch = 0;
   tp_nstub = 0;
+  tp_eventid = 0;
 
   matchtrk_pt  = 0;
   matchtrk_eta = 0;
@@ -155,6 +164,7 @@ void L1TrackNtuplePlot(TString type) {
   tree->SetBranchAddress("tp_pdgid",  &tp_pdgid,  &b_tp_pdgid);
   tree->SetBranchAddress("tp_nmatch", &tp_nmatch, &b_tp_nmatch);
   tree->SetBranchAddress("tp_nstub",  &tp_nstub,  &b_tp_nstub);
+  tree->SetBranchAddress("tp_eventid",&tp_eventid,&b_tp_eventid);
 
   tree->SetBranchAddress("matchtrk_pt",    &matchtrk_pt,    &b_matchtrk_pt);
   tree->SetBranchAddress("matchtrk_eta",   &matchtrk_eta,   &b_matchtrk_eta);
@@ -402,22 +412,30 @@ void L1TrackNtuplePlot(TString type) {
     // ----------------------------------------------------------------------------------------------------------------
     // tracking particle loop
     for (int it=0; it<(int)tp_pt->size(); it++) {
+
+      // cut on PDG ID at plot stage?
+      if (TP_select_pdgid != 0) {
+	if (abs(tp_pdgid->at(it)) != abs(TP_select_pdgid)) continue;
+      }
+
+      // cut on event ID (eventid=0 means the TP is from the primary interaction, so *not* selecting only eventid=0 means including stuff from pileup)
+      if (TP_select_eventid == 0 && tp_eventid->at(it) != 0) continue;
       
-      if (tp_pt->at(it) < TP_minPt) continue;
+      if (tp_pt->at(it) < 0.2) continue;
       if (tp_pt->at(it) > TP_maxPt) continue;
       if (fabs(tp_eta->at(it)) > TP_maxEta) continue;
-      if (fabs(tp_z0->at(it)) > TP_maxZ0) continue;
 
       h_tp_pt->Fill(tp_pt->at(it));
       if (tp_pt->at(it) < 5.0) h_tp_pt_L->Fill(tp_pt->at(it));
       
-      if (tp_pt->at(it) > 2.0) {
+      if (tp_pt->at(it) > TP_minPt) {
 
 	if (fabs(tp_eta->at(it)) < 1.0) n_all_eta1p0++;
 	else if (fabs(tp_eta->at(it)) < 1.75) n_all_eta1p75++;
 	else n_all_eta2p5++;
 
 	if (tp_pt->at(it) > 10.0) {
+	  h_tp_eta_H->Fill(tp_eta->at(it));
 	  if (fabs(tp_eta->at(it)) < 1.0) n10_all_eta1p0++;
 	  else if (fabs(tp_eta->at(it)) < 1.75) n10_all_eta1p75++;
 	  else n10_all_eta2p5++;
@@ -428,9 +446,6 @@ void L1TrackNtuplePlot(TString type) {
 	h_tp_z0->Fill(tp_z0->at(it));
 	h_tp_d0->Fill(tp_d0->at(it));
       }
-      if (tp_pt->at(it) > 10.0) {
-	h_tp_eta_H->Fill(tp_eta->at(it));
-      }	
     
 
       // ----------------------------------------------------------------------------------------------------------------
@@ -443,69 +458,75 @@ void L1TrackNtuplePlot(TString type) {
 
       
       // fill chi2 & chi2/dof histograms before making chi2 cut
-      h_2d_logchi2_eta    ->Fill(tp_eta->at(it), log(matchtrk_chi2->at(it)));
-      h_2d_logchi2_dof_eta->Fill(tp_eta->at(it), log(matchtrk_chi2->at(it)/(2*matchtrk_nstub->at(it)-4)));
-    
+      if (tp_pt->at(it) > TP_minPt) {
+	h_2d_logchi2_eta    ->Fill(tp_eta->at(it), log(matchtrk_chi2->at(it)));
+	h_2d_logchi2_dof_eta->Fill(tp_eta->at(it), log(matchtrk_chi2->at(it)/(2*matchtrk_nstub->at(it)-4)));
+      }
+      
       float chi2 = matchtrk_chi2->at(it);
       int ndof = 2*matchtrk_nstub->at(it)-4;
       float chi2dof = (float)chi2/ndof;
       if (chi2 > 100) chi2 = 99.9; //for overflow bin
       if (chi2dof > 20) chi2dof = 19.99; //for overflow bin
-  
-      h_match_trk_chi2->Fill(chi2);
-      h_match_trk_chi2_dof->Fill(chi2dof);
 
-      // central eta
-      if (fabs(matchtrk_eta->at(it)) < 0.8) {
-	if (matchtrk_pt->at(it) < 5) {
-	  h_match_trk_chi2_C_L->Fill(chi2);
-          h_match_trk_chi2_dof_C_L->Fill(chi2dof);
-	} 
-	else if (matchtrk_pt->at(it) < 15 && matchtrk_pt->at(it) >= 5) {
-	  h_match_trk_chi2_C_M->Fill(chi2);
-	  h_match_trk_chi2_dof_C_M->Fill(chi2dof);
+      
+      if (tp_pt->at(it) > TP_minPt) { //TP pt > TP_minPt
+	
+	h_match_trk_chi2->Fill(chi2);
+	h_match_trk_chi2_dof->Fill(chi2dof);
+      
+	// central eta
+	if (fabs(tp_eta->at(it)) < 0.8) {
+	  if (tp_pt->at(it) < 5) {
+	    h_match_trk_chi2_C_L->Fill(chi2);
+	    h_match_trk_chi2_dof_C_L->Fill(chi2dof);
+	  } 
+	  else if (tp_pt->at(it) < 15 && tp_pt->at(it) >= 5) {
+	    h_match_trk_chi2_C_M->Fill(chi2);
+	    h_match_trk_chi2_dof_C_M->Fill(chi2dof);
+	  }
+	  else {
+	    h_match_trk_chi2_C_H->Fill(chi2);
+	    h_match_trk_chi2_dof_C_H->Fill(chi2dof);
+	  }
 	}
-	else {
-	  h_match_trk_chi2_C_H->Fill(chi2);
-	  h_match_trk_chi2_dof_C_H->Fill(chi2dof);
+	// intermediate eta
+	else if (fabs(tp_eta->at(it)) < 1.6 && fabs(tp_eta->at(it)) >= 0.8) {
+	  if (tp_pt->at(it) < 5) {
+	    h_match_trk_chi2_I_L->Fill(chi2);
+	    h_match_trk_chi2_dof_I_L->Fill(chi2dof);
+	  }
+	  else if (tp_pt->at(it) < 15 && tp_pt->at(it) >= 5) {
+	    h_match_trk_chi2_I_M->Fill(chi2);
+	    h_match_trk_chi2_dof_I_M->Fill(chi2dof);
+	  } 
+	  else {
+	    h_match_trk_chi2_I_H->Fill(chi2);
+	    h_match_trk_chi2_dof_I_H->Fill(chi2dof);
+	  }
 	}
-      }
-      // intermediate eta
-      else if (fabs(matchtrk_eta->at(it)) < 1.6 && fabs(matchtrk_eta->at(it)) >= 0.8) {
-	if (matchtrk_pt->at(it) < 5) {
-          h_match_trk_chi2_I_L->Fill(chi2);
-          h_match_trk_chi2_dof_I_L->Fill(chi2dof);
+	// forward eta
+	else if (fabs(tp_eta->at(it)) >= 1.6) {
+	  if (tp_pt->at(it) < 5) {
+	    h_match_trk_chi2_F_L->Fill(chi2);
+	    h_match_trk_chi2_dof_F_L->Fill(chi2dof);
+	  } 
+	  else if (tp_pt->at(it) < 15 && tp_pt->at(it) >= 5) {
+	    h_match_trk_chi2_F_M->Fill(chi2);
+	    h_match_trk_chi2_dof_F_M->Fill(chi2dof);
+	  } 
+	  else {
+	    h_match_trk_chi2_F_H->Fill(chi2);
+	    h_match_trk_chi2_dof_F_H->Fill(chi2dof);
+	  }
 	}
-	else if (matchtrk_pt->at(it) < 15 && matchtrk_pt->at(it) >= 5) {
-          h_match_trk_chi2_I_M->Fill(chi2);
-          h_match_trk_chi2_dof_I_M->Fill(chi2dof);
-	} 
-	else {
-          h_match_trk_chi2_I_H->Fill(chi2);
-          h_match_trk_chi2_dof_I_H->Fill(chi2dof);
-	}
-      }
-      // forward eta
-      else if (fabs(matchtrk_eta->at(it)) >= 1.6) {
-        if (matchtrk_pt->at(it) < 5) {
-          h_match_trk_chi2_F_L->Fill(chi2);
-          h_match_trk_chi2_dof_F_L->Fill(chi2dof);
-	} 
-	else if (matchtrk_pt->at(it) < 15 && matchtrk_pt->at(it) >= 5) {
-          h_match_trk_chi2_F_M->Fill(chi2);
-          h_match_trk_chi2_dof_F_M->Fill(chi2dof);
-       	} 
-	else {
-          h_match_trk_chi2_F_H->Fill(chi2);
-          h_match_trk_chi2_dof_F_H->Fill(chi2dof);
-	}
-      }
+      }//end TP pt > TP_minPt
       
 
       // ----------------------------------------------------------------------------------------------------------------
       // cut on chi2?
-      if (chi2 > L1Tk_maxChi2) continue;
-      if (chi2dof > L1Tk_maxChi2dof) continue;
+      if (matchtrk_chi2->at(it) > L1Tk_maxChi2) continue;
+      if (matchtrk_chi2->at(it)/ndof > L1Tk_maxChi2dof) continue;
 
       
       // use tight quality cut selection?
@@ -525,7 +546,7 @@ void L1TrackNtuplePlot(TString type) {
       h_match_tp_pt->Fill(tp_pt->at(it));
       if (tp_pt->at(it) < 5) h_match_tp_pt_L->Fill(tp_pt->at(it));
 
-      if (tp_pt->at(it) > 2.0) {
+      if (tp_pt->at(it) > TP_minPt) {
 	h_match_tp_eta->Fill(tp_eta->at(it));
 	h_match_tp_phi->Fill(tp_phi->at(it));
 	h_match_tp_z0->Fill(tp_z0->at(it));
@@ -536,21 +557,22 @@ void L1TrackNtuplePlot(TString type) {
 	else n_match_eta2p5++;
 
 	if (tp_pt->at(it) > 10.0) {
+	h_match_tp_eta_H->Fill(tp_eta->at(it));
 	  if (fabs(tp_eta->at(it)) < 1.0) n10_match_eta1p0++;
 	  else if (fabs(tp_eta->at(it)) < 1.75) n10_match_eta1p75++;
 	  else n10_match_eta2p5++;
 	}
+      }
 
-      }
-      if (tp_pt->at(it) > 10) {
-	h_match_tp_eta_H->Fill(tp_eta->at(it));
-      }
+      // for the following, only consider TPs with pt > TP_minPt
+      if (tp_pt->at(it) < TP_minPt) continue;
+
       
       // fill nstub histograms
       h_match_trk_nstub->Fill(matchtrk_nstub->at(it));
-      if (fabs(matchtrk_eta->at(it)) < 0.8) h_match_trk_nstub_C->Fill(matchtrk_nstub->at(it));
-      else if (fabs(matchtrk_eta->at(it)) < 1.6 && fabs(matchtrk_eta->at(it)) >= 0.8) h_match_trk_nstub_I->Fill(matchtrk_nstub->at(it));
-      else if (fabs(matchtrk_eta->at(it)) >= 1.6) h_match_trk_nstub_F->Fill(matchtrk_nstub->at(it));
+      if (fabs(tp_eta->at(it)) < 0.8) h_match_trk_nstub_C->Fill(matchtrk_nstub->at(it));
+      else if (fabs(tp_eta->at(it)) < 1.6 && fabs(tp_eta->at(it)) >= 0.8) h_match_trk_nstub_I->Fill(matchtrk_nstub->at(it));
+      else if (fabs(tp_eta->at(it)) >= 1.6) h_match_trk_nstub_F->Fill(matchtrk_nstub->at(it));
       
 
       // ----------------------------------------------------------------------------------------------------------------
@@ -563,41 +585,41 @@ void L1TrackNtuplePlot(TString type) {
       if (matchtrk_d0->at(it) < 999.) h_res_d0->Fill(matchtrk_d0->at(it) - tp_d0->at(it));
 
       
-      if (fabs(matchtrk_eta->at(it)) < 0.8) h_res_z0_C->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
-      else if (fabs(matchtrk_eta->at(it)) < 1.6 && fabs(matchtrk_eta->at(it)) >= 0.8) h_res_z0_I->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
-      else if (fabs(matchtrk_eta->at(it)) >= 1.6) h_res_z0_F->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
+      if (fabs(tp_eta->at(it)) < 0.8) h_res_z0_C->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
+      else if (fabs(tp_eta->at(it)) < 1.6 && fabs(tp_eta->at(it)) >= 0.8) h_res_z0_I->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
+      else if (fabs(tp_eta->at(it)) >= 1.6) h_res_z0_F->Fill(tp_z0->at(it) - tp_z0->at(it));
       
 
       if (tp_pt->at(it) < 5.0) {
-	if (fabs(matchtrk_eta->at(it)) < 1.0) h_res_z0_C_low->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
+	if (fabs(tp_eta->at(it)) < 1.0) h_res_z0_C_low->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
 	else  h_res_z0_F_low->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
       }
       else if (tp_pt->at(it) > 10.0) {
-	if (fabs(matchtrk_eta->at(it)) < 1.0) h_res_z0_C_high->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
+	if (fabs(tp_eta->at(it)) < 1.0) h_res_z0_C_high->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
 	else h_res_z0_F_high->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
       }
 
-      if (matchtrk_pt->at(it) < 5.0) h_res_z0_L->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
-      else if (matchtrk_pt->at(it) < 15.0) h_res_z0_M->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
+      if (tp_pt->at(it) < 5.0) h_res_z0_L->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
+      else if (tp_pt->at(it) < 15.0) h_res_z0_M->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
       else h_res_z0_H->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
       
 
       if (matchtrk_d0->at(it) < 999.) {	
-	if (fabs(matchtrk_eta->at(it)) < 0.8) h_res_d0_C->Fill(matchtrk_d0->at(it) - tp_d0->at(it));
-	else if (fabs(matchtrk_eta->at(it)) < 1.6 && fabs(matchtrk_eta->at(it)) >= 0.8) h_res_d0_I->Fill(matchtrk_d0->at(it) - tp_d0->at(it));
-	else if (fabs(matchtrk_eta->at(it)) >= 1.6) h_res_d0_F->Fill(matchtrk_d0->at(it) - tp_d0->at(it));
+	if (fabs(tp_eta->at(it)) < 0.8) h_res_d0_C->Fill(matchtrk_d0->at(it) - tp_d0->at(it));
+	else if (fabs(tp_eta->at(it)) < 1.6 && fabs(tp_eta->at(it)) >= 0.8) h_res_d0_I->Fill(matchtrk_d0->at(it) - tp_d0->at(it));
+	else if (fabs(tp_eta->at(it)) >= 1.6) h_res_d0_F->Fill(matchtrk_d0->at(it) - tp_d0->at(it));
 	
 	if (tp_pt->at(it) < 5.0) {
-	  if (fabs(matchtrk_eta->at(it)) < 1.0) h_res_d0_C_low->Fill(matchtrk_d0->at(it) - tp_d0->at(it));
+	  if (fabs(tp_eta->at(it)) < 1.0) h_res_d0_C_low->Fill(matchtrk_d0->at(it) - tp_d0->at(it));
 	  else h_res_d0_F_low->Fill(matchtrk_d0->at(it) - tp_d0->at(it));
 	}
 	else if (tp_pt->at(it) > 10.0) {
-	  if (fabs(matchtrk_eta->at(it)) < 1.0) h_res_d0_C_high->Fill(matchtrk_d0->at(it) - tp_d0->at(it));
+	  if (fabs(tp_eta->at(it)) < 1.0) h_res_d0_C_high->Fill(matchtrk_d0->at(it) - tp_d0->at(it));
 	  else h_res_d0_F_high->Fill(matchtrk_d0->at(it) - tp_d0->at(it));
 	}
 	
-	if (matchtrk_pt->at(it) < 5.0) h_res_d0_L->Fill(matchtrk_d0->at(it) - tp_d0->at(it));
-	else if (matchtrk_pt->at(it) < 15.0) h_res_d0_M->Fill(matchtrk_d0->at(it) - tp_d0->at(it));
+	if (tp_pt->at(it) < 5.0) h_res_d0_L->Fill(matchtrk_d0->at(it) - tp_d0->at(it));
+	else if (tp_pt->at(it) < 15.0) h_res_d0_M->Fill(matchtrk_d0->at(it) - tp_d0->at(it));
 	else h_res_d0_H->Fill(matchtrk_d0->at(it) - tp_d0->at(it));
       }
       
@@ -612,19 +634,19 @@ void L1TrackNtuplePlot(TString type) {
 	  h_resVsPt_phi[im]  ->Fill(matchtrk_phi->at(it) - tp_phi->at(it));
 	  h_resVsPt_z0[im]   ->Fill(matchtrk_z0->at(it)  - tp_z0->at(it));
 
-	  if (fabs(matchtrk_eta->at(it)) < 0.8) {
+	  if (fabs(tp_eta->at(it)) < 0.8) {
 	    h_resVsPt_pt_C[im]   ->Fill(matchtrk_pt->at(it)  - tp_pt->at(it));
 	    h_resVsPt_ptRel_C[im]->Fill((matchtrk_pt->at(it) - tp_pt->at(it))/tp_pt->at(it));
 	    h_resVsPt_z0_C[im]   ->Fill(matchtrk_z0->at(it)  - tp_z0->at(it));
 	    h_resVsPt_phi_C[im]  ->Fill(matchtrk_phi->at(it) - tp_phi->at(it));
 	  }
-	  else if (fabs(matchtrk_eta->at(it)) < 1.6 && fabs(matchtrk_eta->at(it)) >= 0.8) {
+	  else if (fabs(tp_eta->at(it)) < 1.6 && fabs(tp_eta->at(it)) >= 0.8) {
 	    h_resVsPt_pt_I[im]   ->Fill(matchtrk_pt->at(it)  - tp_pt->at(it));
 	    h_resVsPt_ptRel_I[im]->Fill((matchtrk_pt->at(it) - tp_pt->at(it))/tp_pt->at(it));
 	    h_resVsPt_z0_I[im]   ->Fill(matchtrk_z0->at(it)  - tp_z0->at(it));
 	    h_resVsPt_phi_I[im]  ->Fill(matchtrk_phi->at(it) - tp_phi->at(it));
 	  }
-	  else if (fabs(matchtrk_eta->at(it)) >= 1.6) {
+	  else if (fabs(tp_eta->at(it)) >= 1.6) {
 	    h_resVsPt_pt_F[im]   ->Fill(matchtrk_pt->at(it)  - tp_pt->at(it));
 	    h_resVsPt_ptRel_F[im]->Fill((matchtrk_pt->at(it) - tp_pt->at(it))/tp_pt->at(it));
 	    h_resVsPt_z0_F[im]   ->Fill(matchtrk_z0->at(it)  - tp_z0->at(it));
@@ -644,13 +666,13 @@ void L1TrackNtuplePlot(TString type) {
 	 h_resVsEta_phi[im]  ->Fill(matchtrk_phi->at(it) - tp_phi->at(it));
 	 h_resVsEta_z0[im]   ->Fill(matchtrk_z0->at(it)  - tp_z0->at(it));
 
-	 if (matchtrk_pt->at(it)<5) {
+	 if (tp_pt->at(it)<5) {
 	   h_resVsEta_ptRel_L[im]->Fill((matchtrk_pt->at(it) - tp_pt->at(it))/tp_pt->at(it));
 	   h_resVsEta_eta_L[im]->Fill(matchtrk_eta->at(it) - tp_eta->at(it));
 	   h_resVsEta_z0_L[im]->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
 	   h_resVsEta_phi_L[im]->Fill(matchtrk_phi->at(it) - tp_phi->at(it));
 	 }
-	 else if (matchtrk_pt->at(it)<15 && matchtrk_pt->at(it)>=5) {
+	 else if (tp_pt->at(it)<15 && tp_pt->at(it)>=5) {
 	   h_resVsEta_ptRel_M[im]->Fill((matchtrk_pt->at(it) - tp_pt->at(it))/tp_pt->at(it));
 	   h_resVsEta_eta_M[im]->Fill(matchtrk_eta->at(it) - tp_eta->at(it));
 	   h_resVsEta_z0_M[im]->Fill(matchtrk_z0->at(it) - tp_z0->at(it));
@@ -927,6 +949,8 @@ void L1TrackNtuplePlot(TString type) {
       mySmallText(0.2,0.86,1,text);
       sprintf(text,"Fit: %.4f +/- %.4f",sigma,esigma);
       mySmallText(0.2,0.8,2,text);
+      sprintf(text,"p_{T} < 5 GeV");
+      mySmallText(0.2,0.7,1,text);
       cfit.SaveAs(fitdir+"resVsEta_eta_L_"+etarange[i]+".png");
       delete fit;
       
@@ -943,6 +967,8 @@ void L1TrackNtuplePlot(TString type) {
       mySmallText(0.2,0.86,1,text);
       sprintf(text,"Fit: %.4f +/- %.4f",sigma,esigma);
       mySmallText(0.2,0.8,2,text);
+      sprintf(text,"5 < p_{T} < 15 GeV");
+      mySmallText(0.2,0.7,1,text);
       cfit.SaveAs(fitdir+"resVsEta_eta_M_"+etarange[i]+".png");
       delete fit;
 
@@ -959,6 +985,8 @@ void L1TrackNtuplePlot(TString type) {
       mySmallText(0.2,0.86,1,text);
       sprintf(text,"Fit: %.4f +/- %.4f",sigma,esigma);
       mySmallText(0.2,0.8,2,text);
+      sprintf(text,"p_{T} > 15 GeV");
+      mySmallText(0.2,0.7,1,text);
       cfit.SaveAs(fitdir+"resVsEta_eta_H_"+etarange[i]+".png");
       delete fit;
       
@@ -975,6 +1003,8 @@ void L1TrackNtuplePlot(TString type) {
       mySmallText(0.2,0.86,1,text);
       sprintf(text,"Fit: %.4f +/- %.4f",sigma,esigma);
       mySmallText(0.2,0.8,2,text);
+      sprintf(text,"p_{T} < 5 GeV");
+      mySmallText(0.2,0.7,1,text);
       cfit.SaveAs(fitdir+"resVsEta_z0_L_"+etarange[i]+".png");
       delete fit;
       
@@ -991,6 +1021,8 @@ void L1TrackNtuplePlot(TString type) {
       mySmallText(0.2,0.86,1,text);
       sprintf(text,"Fit: %.4f +/- %.4f",sigma,esigma);
       mySmallText(0.2,0.8,2,text);
+      sprintf(text,"5 < p_{T} < 15 GeV");
+      mySmallText(0.2,0.7,1,text);
       cfit.SaveAs(fitdir+"resVsEta_z0_M_"+etarange[i]+".png");
       delete fit;
       
@@ -1007,6 +1039,8 @@ void L1TrackNtuplePlot(TString type) {
       mySmallText(0.2,0.86,1,text);
       sprintf(text,"Fit: %.4f +/- %.4f",sigma,esigma);
       mySmallText(0.2,0.8,2,text);
+      sprintf(text,"p_{T} > 15 GeV");
+      mySmallText(0.2,0.7,1,text);
       cfit.SaveAs(fitdir+"resVsEta_z0_H_"+etarange[i]+".png");
       delete fit;
       
@@ -1023,6 +1057,8 @@ void L1TrackNtuplePlot(TString type) {
       mySmallText(0.2,0.86,1,text);
       sprintf(text,"Fit: %.4f +/- %.4f",sigma,esigma);
       mySmallText(0.2,0.8,2,text);
+      sprintf(text,"p_{T} < 5 GeV");
+      mySmallText(0.2,0.7,1,text);
       cfit.SaveAs(fitdir+"resVsEta_phi_L_"+etarange[i]+".png");
       delete fit;
       
@@ -1039,6 +1075,8 @@ void L1TrackNtuplePlot(TString type) {
       mySmallText(0.2,0.86,1,text);
       sprintf(text,"Fit: %.4f +/- %.4f",sigma,esigma);
       mySmallText(0.2,0.8,2,text);
+      sprintf(text,"5 < p_{T} < 15 GeV");
+      mySmallText(0.2,0.7,1,text);
       cfit.SaveAs(fitdir+"resVsEta_phi_M_"+etarange[i]+".png");
       delete fit;
       
@@ -1055,6 +1093,8 @@ void L1TrackNtuplePlot(TString type) {
       mySmallText(0.2,0.86,1,text);
       sprintf(text,"Fit: %.4f +/- %.4f",sigma,esigma);
       mySmallText(0.2,0.8,2,text);
+      sprintf(text,"p_{T} > 15 GeV");
+      mySmallText(0.2,0.7,1,text);
       cfit.SaveAs(fitdir+"resVsEta_phi_H_"+etarange[i]+".png");
       delete fit;
       
@@ -1072,6 +1112,8 @@ void L1TrackNtuplePlot(TString type) {
       mySmallText(0.2,0.86,1,text);
       sprintf(text,"Fit: %.4f +/- %.4f",sigma,esigma);
       mySmallText(0.2,0.8,2,text);
+      sprintf(text,"p_{T} < 5 GeV");
+      mySmallText(0.2,0.7,1,text);
       cfit.SaveAs(fitdir+"resVsEta_ptRel_L_"+etarange[i]+".png");
       delete fit;
       
@@ -1088,6 +1130,8 @@ void L1TrackNtuplePlot(TString type) {
       mySmallText(0.2,0.86,1,text);
       sprintf(text,"Fit: %.4f +/- %.4f",sigma,esigma);
       mySmallText(0.2,0.8,2,text);
+      sprintf(text,"5 < p_{T} < 15 GeV");
+      mySmallText(0.2,0.7,1,text);
       cfit.SaveAs(fitdir+"resVsEta_ptRel_M_"+etarange[i]+".png");
       delete fit;
       
@@ -1104,6 +1148,8 @@ void L1TrackNtuplePlot(TString type) {
       mySmallText(0.2,0.86,1,text);
       sprintf(text,"Fit: %.4f +/- %.4f",sigma,esigma);
       mySmallText(0.2,0.8,2,text);
+      sprintf(text,"p_{T} > 15 GeV");
+      mySmallText(0.2,0.7,1,text);
       cfit.SaveAs(fitdir+"resVsEta_ptRel_H_"+etarange[i]+".png");
       delete fit;
 
@@ -1164,7 +1210,13 @@ void L1TrackNtuplePlot(TString type) {
   // -------------------------------------------------------------------------------------------
 
   if (useTight) type = type+"_tight";
-
+ 
+  if (TP_select_pdgid != 0) {
+    char pdgidtxt[500];
+    sprintf(pdgidtxt,"_pdgid%i",TP_select_pdgid);
+    type = type+pdgidtxt;
+  }
+  
   TFile* fout = new TFile("output_"+type+".root","recreate");
 
 
@@ -1422,7 +1474,7 @@ void L1TrackNtuplePlot(TString type) {
   if (doDetailedPlots) {
     h2_resVsEta_z0_L->Draw();
     h2_resVsEta_z0_L->Write();
-    sprintf(ctxt,"Full p_{T} range");
+    sprintf(ctxt,"p_{T} < 5 GeV");
     mySmallText(0.22,0.82,1,ctxt);
     c.SaveAs(DIR+type+"_resVsEta_z0_L.eps");
     c.SaveAs(DIR+type+"_resVsEta_z0_L.png");
@@ -1430,7 +1482,7 @@ void L1TrackNtuplePlot(TString type) {
     
     h2_resVsEta_z0_M->Draw();
     h2_resVsEta_z0_M->Write();
-    sprintf(ctxt,"Full p_{T} range");
+    sprintf(ctxt,"5 < p_{T} < 15 GeV");
     mySmallText(0.22,0.82,1,ctxt);
     c.SaveAs(DIR+type+"_resVsEta_z0_M.eps");
     c.SaveAs(DIR+type+"_resVsEta_z0_M.png");
@@ -1438,7 +1490,7 @@ void L1TrackNtuplePlot(TString type) {
     
     h2_resVsEta_z0_H->Draw();
     h2_resVsEta_z0_H->Write();
-    sprintf(ctxt,"Full p_{T} range");
+    sprintf(ctxt,"p_{T} > 15 GeV");
     mySmallText(0.22,0.82,1,ctxt);
     c.SaveAs(DIR+type+"_resVsEta_z0_H.eps");
     c.SaveAs(DIR+type+"_resVsEta_z0_H.png");
@@ -1473,18 +1525,24 @@ void L1TrackNtuplePlot(TString type) {
 
   h2_resVsEta_ptRel_L->Draw();
   h2_resVsEta_ptRel_L->Write();
+  sprintf(ctxt,"p_{T} < 5 GeV");
+  mySmallText(0.22,0.82,1,ctxt);
   c.SaveAs(DIR+type+"_resVsEta_ptRel_L.eps");
   c.SaveAs(DIR+type+"_resVsEta_ptRel_L.png");
   if (makeCanvas) c.SaveAs(type+"_canvas.pdf");
 
   h2_resVsEta_ptRel_M->Draw();
   h2_resVsEta_ptRel_M->Write();
+  sprintf(ctxt,"5 < p_{T} < 15 GeV");
+  mySmallText(0.22,0.82,1,ctxt);
   c.SaveAs(DIR+type+"_resVsEta_ptRel_M.eps");
   c.SaveAs(DIR+type+"_resVsEta_ptRel_M.png");
   if (makeCanvas) c.SaveAs(type+"_canvas.pdf");
 
   h2_resVsEta_ptRel_H->Draw();
   h2_resVsEta_ptRel_H->Write();
+  sprintf(ctxt,"p_{T} > 15 GeV");
+  mySmallText(0.22,0.82,1,ctxt);
   c.SaveAs(DIR+type+"_resVsEta_ptRel_H.eps");
   c.SaveAs(DIR+type+"_resVsEta_ptRel_H.png");
   if (makeCanvas) c.SaveAs(type+"_canvas.pdf");
@@ -1779,6 +1837,8 @@ void L1TrackNtuplePlot(TString type) {
 
   h_eff_pt_L->Draw();
   h_eff_pt_L->Write();
+  sprintf(ctxt,"p_{T} < 5 GeV");
+  mySmallText(0.22,0.82,1,ctxt);
   c.SaveAs(DIR+type+"_eff_pt_L.eps");
   c.SaveAs(DIR+type+"_eff_pt_L.png");
   if (makeCanvas) c.SaveAs(type+"_canvas.pdf");
@@ -1798,6 +1858,8 @@ void L1TrackNtuplePlot(TString type) {
 
   h_eff_eta_H->Draw();
   h_eff_eta_H->Write();
+  sprintf(ctxt,"p_{T} > 10 GeV");
+  mySmallText(0.22,0.82,1,ctxt);
   c.SaveAs(DIR+type+"_eff_eta_H.eps");
   c.SaveAs(DIR+type+"_eff_eta_H.png");
   if (makeCanvas) c.SaveAs(type+"_canvas.pdf");
