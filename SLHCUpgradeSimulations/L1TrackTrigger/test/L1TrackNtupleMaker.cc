@@ -136,6 +136,7 @@ private:
   std::vector<float>* m_trk_consistency; 
   std::vector<int>*   m_trk_nstub;
   std::vector<int>*   m_trk_genuine;
+  std::vector<int>*   m_trk_loose;
   std::vector<int>*   m_trk_unknown;
   std::vector<int>*   m_trk_combinatoric;
   std::vector<int>*   m_trk_fake; //0 fake, 1 track from primary interaction, 2 secondary track
@@ -172,6 +173,7 @@ private:
   std::vector<float>* m_matchtrk_consistency; 
   std::vector<int>*   m_matchtrk_nstub;
   std::vector<int>*   m_matchtrk_genuine;
+  std::vector<int>*   m_matchtrk_loose;
 
   // ALL stubs
   std::vector<float>* m_allstub_x;
@@ -252,6 +254,7 @@ void L1TrackNtupleMaker::beginJob()
   m_trk_nstub = new std::vector<int>;
   m_trk_consistency  = new std::vector<float>;
   m_trk_genuine      = new std::vector<int>;
+  m_trk_loose        = new std::vector<int>;
   m_trk_unknown      = new std::vector<int>;
   m_trk_combinatoric = new std::vector<int>;
   m_trk_fake = new std::vector<int>;
@@ -286,6 +289,7 @@ void L1TrackNtupleMaker::beginJob()
   m_matchtrk_nstub = new std::vector<int>;
   m_matchtrk_consistency = new std::vector<float>;
   m_matchtrk_genuine     = new std::vector<int>;
+  m_matchtrk_loose       = new std::vector<int>;
 
   m_allstub_x = new std::vector<float>;
   m_allstub_y = new std::vector<float>;
@@ -310,6 +314,7 @@ void L1TrackNtupleMaker::beginJob()
     eventTree->Branch("trk_nstub", &m_trk_nstub);
     eventTree->Branch("trk_consistency",  &m_trk_consistency);
     eventTree->Branch("trk_genuine",      &m_trk_genuine);
+    eventTree->Branch("trk_loose",        &m_trk_loose);
     eventTree->Branch("trk_unknown",      &m_trk_unknown);
     eventTree->Branch("trk_combinatoric", &m_trk_combinatoric);
     eventTree->Branch("trk_fake", &m_trk_fake);
@@ -344,6 +349,7 @@ void L1TrackNtupleMaker::beginJob()
   eventTree->Branch("matchtrk_chi2",    &m_matchtrk_chi2);
   eventTree->Branch("matchtrk_nstub",   &m_matchtrk_nstub);
   eventTree->Branch("matchtrk_genuine", &m_matchtrk_genuine);
+  eventTree->Branch("matchtrk_loose",   &m_matchtrk_loose);
   eventTree->Branch("matchtrk_consistency", &m_matchtrk_consistency);
 
   if (SaveStubs) {
@@ -387,6 +393,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     m_trk_nstub->clear();
     m_trk_consistency->clear();
     m_trk_genuine->clear();
+    m_trk_loose->clear();
     m_trk_unknown->clear();
     m_trk_combinatoric->clear();
     m_trk_fake->clear();
@@ -422,6 +429,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
   m_matchtrk_consistency->clear();
   m_matchtrk_nstub->clear();
   m_matchtrk_genuine->clear();
+  m_matchtrk_loose->clear();
 
   if (SaveStubs) {
     m_allstub_x->clear();
@@ -574,8 +582,10 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       int tmp_trk_nstub  = (int) iterL1Track->getStubRefs().size();
             
       int tmp_trk_genuine = 0;
+      int tmp_trk_loose = 0;
       int tmp_trk_unknown = 0;
       int tmp_trk_combinatoric = 0;
+      if (MCTruthTTTrackHandle->isLooselyGenuine(l1track_ptr)) tmp_trk_loose = 1;
       if (MCTruthTTTrackHandle->isGenuine(l1track_ptr)) tmp_trk_genuine = 1;
       if (MCTruthTTTrackHandle->isUnknown(l1track_ptr)) tmp_trk_unknown = 1;
       if (MCTruthTTTrackHandle->isCombinatoric(l1track_ptr)) tmp_trk_combinatoric = 1;
@@ -598,6 +608,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       m_trk_consistency->push_back(tmp_trk_consistency);
       m_trk_nstub->push_back(tmp_trk_nstub);
       m_trk_genuine->push_back(tmp_trk_genuine);
+      m_trk_loose->push_back(tmp_trk_loose);
       m_trk_unknown->push_back(tmp_trk_unknown);
       m_trk_combinatoric->push_back(tmp_trk_combinatoric);
       
@@ -817,7 +828,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       for (int it=0; it<(int)matchedTracks.size(); it++) {
 
 	bool tmp_trk_genuine = false;
-	if (MCTruthTTTrackHandle->isGenuine(matchedTracks.at(it))) tmp_trk_genuine = true;
+	if (MCTruthTTTrackHandle->isLooselyGenuine(matchedTracks.at(it))) tmp_trk_genuine = true;
 	if (!tmp_trk_genuine) continue;
 
 	if (DebugMode) {
@@ -875,7 +886,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     float tmp_matchtrk_consistency = -999;
     int tmp_matchtrk_nstub  = -999;
     int tmp_matchtrk_genuine = -999;
-    
+    int tmp_matchtrk_loose  = -999;
 
     if (nMatch > 1 && DebugMode) cout << "WARNING *** 2 or more matches to genuine L1 tracks ***" << endl;
 
@@ -894,7 +905,8 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       tmp_matchtrk_chi2 = matchedTracks.at(i_track)->getChi2(L1Tk_nPar);
       tmp_matchtrk_consistency = matchedTracks.at(i_track)->getStubPtConsistency(L1Tk_nPar);
       tmp_matchtrk_nstub  = (int) matchedTracks.at(i_track)->getStubRefs().size();
-      tmp_matchtrk_genuine = 1;
+      tmp_matchtrk_loose  = MCTruthTTTrackHandle->isLooselyGenuine(matchedTracks.at(i_track));
+      tmp_matchtrk_genuine = MCTruthTTTrackHandle->isGenuine(matchedTracks.at(i_track));
 
     }//end (nMatch > 0)
 
@@ -922,7 +934,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     m_matchtrk_consistency->push_back(tmp_matchtrk_consistency);
     m_matchtrk_nstub->push_back(tmp_matchtrk_nstub);
     m_matchtrk_genuine->push_back(tmp_matchtrk_genuine);
-    
+    m_matchtrk_loose->push_back(tmp_matchtrk_loose);
   } //end loop tracking particles
   
 
