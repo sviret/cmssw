@@ -66,6 +66,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   bool makeCanvas = false;      //make PDF file with all the plots
   bool useTight = false;        //use tight quality cut selection (as used for Technical Proposal MET studies)
   bool doGausFit = false;       //do gaussian fit for resolution vs eta/pt plots
+  bool doLooseMatch = false;
 
 
   //some counters for integrated efficiencies
@@ -170,19 +171,32 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   tree->SetBranchAddress("tp_z0",     &tp_z0,     &b_tp_z0);
   tree->SetBranchAddress("tp_d0",     &tp_d0,     &b_tp_d0);
   tree->SetBranchAddress("tp_pdgid",  &tp_pdgid,  &b_tp_pdgid);
-  tree->SetBranchAddress("tp_nmatch", &tp_nmatch, &b_tp_nmatch);
+  if (doLooseMatch) tree->SetBranchAddress("tp_nloosematch", &tp_nmatch, &b_tp_nmatch);
+  else tree->SetBranchAddress("tp_nmatch", &tp_nmatch, &b_tp_nmatch);
   tree->SetBranchAddress("tp_nstub",  &tp_nstub,  &b_tp_nstub);
   tree->SetBranchAddress("tp_nstublayer", &tp_nstublayer, &b_tp_nstublayer);
   tree->SetBranchAddress("tp_eventid",&tp_eventid,&b_tp_eventid);
 
-  tree->SetBranchAddress("matchtrk_pt",    &matchtrk_pt,    &b_matchtrk_pt);
-  tree->SetBranchAddress("matchtrk_eta",   &matchtrk_eta,   &b_matchtrk_eta);
-  tree->SetBranchAddress("matchtrk_phi",   &matchtrk_phi,   &b_matchtrk_phi);
-  tree->SetBranchAddress("matchtrk_d0",    &matchtrk_d0,    &b_matchtrk_d0);
-  tree->SetBranchAddress("matchtrk_z0",    &matchtrk_z0,    &b_matchtrk_z0);
-  tree->SetBranchAddress("matchtrk_chi2",  &matchtrk_chi2,  &b_matchtrk_chi2);
-  tree->SetBranchAddress("matchtrk_consistency", &matchtrk_consistency, &b_matchtrk_consistency);
-  tree->SetBranchAddress("matchtrk_nstub", &matchtrk_nstub, &b_matchtrk_nstub);
+  if (doLooseMatch) {
+    tree->SetBranchAddress("loosematchtrk_pt",    &matchtrk_pt,    &b_matchtrk_pt);
+    tree->SetBranchAddress("loosematchtrk_eta",   &matchtrk_eta,   &b_matchtrk_eta);
+    tree->SetBranchAddress("loosematchtrk_phi",   &matchtrk_phi,   &b_matchtrk_phi);
+    tree->SetBranchAddress("loosematchtrk_d0",    &matchtrk_d0,    &b_matchtrk_d0);
+    tree->SetBranchAddress("loosematchtrk_z0",    &matchtrk_z0,    &b_matchtrk_z0);
+    tree->SetBranchAddress("loosematchtrk_chi2",  &matchtrk_chi2,  &b_matchtrk_chi2);
+    tree->SetBranchAddress("loosematchtrk_consistency", &matchtrk_consistency, &b_matchtrk_consistency);
+    tree->SetBranchAddress("loosematchtrk_nstub", &matchtrk_nstub, &b_matchtrk_nstub);
+  }
+  else {
+    tree->SetBranchAddress("matchtrk_pt",    &matchtrk_pt,    &b_matchtrk_pt);
+    tree->SetBranchAddress("matchtrk_eta",   &matchtrk_eta,   &b_matchtrk_eta);
+    tree->SetBranchAddress("matchtrk_phi",   &matchtrk_phi,   &b_matchtrk_phi);
+    tree->SetBranchAddress("matchtrk_d0",    &matchtrk_d0,    &b_matchtrk_d0);
+    tree->SetBranchAddress("matchtrk_z0",    &matchtrk_z0,    &b_matchtrk_z0);
+    tree->SetBranchAddress("matchtrk_chi2",  &matchtrk_chi2,  &b_matchtrk_chi2);
+    tree->SetBranchAddress("matchtrk_consistency", &matchtrk_consistency, &b_matchtrk_consistency);
+    tree->SetBranchAddress("matchtrk_nstub", &matchtrk_nstub, &b_matchtrk_nstub);
+  }
 
 
   // ----------------------------------------------------------------------------------------------------------------
@@ -475,6 +489,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
       // cut on event ID (eventid=0 means the TP is from the primary interaction, so *not* selecting only eventid=0 means including stuff from pileup)
       if (TP_select_eventid == 0 && tp_eventid->at(it) != 0) continue;
 
+      if (tp_dxy->at(it) > 1) continue;
       if (tp_pt->at(it) < 0.2) continue;
       if (tp_pt->at(it) > TP_maxPt) continue;
       if (fabs(tp_eta->at(it)) > TP_maxEta) continue;
