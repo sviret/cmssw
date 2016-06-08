@@ -24,7 +24,6 @@ process.load('Geometry.TrackerGeometryBuilder.StackedTrackerGeometry_cfi')
 process.load('IOMC.EventVertexGenerators.VtxSmearedGauss_cfi')
 
 from Configuration.AlCa.GlobalTag import GlobalTag
-#process.GlobalTag = GlobalTag(process.GlobalTag, 'PH2_1K_FB_V3::All', '')
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:upgradePLS3', '')
 
 
@@ -76,7 +75,7 @@ process.L1TrackNtuple = cms.EDAnalyzer('L1TrackNtupleMaker',
                                        TP_minNStub = cms.int32(4),       # require TP to have >= X number of stubs associated with it
                                        TP_minNStubLayer = cms.int32(4),  # require TP to have stubs in >= X layers/disks
                                        TP_minPt = cms.double(1.0),       # only save TPs with pt > X GeV
-                                       TP_maxEta = cms.double(2.5),      # only save TPs with |eta| < X
+                                       TP_maxEta = cms.double(2.4),      # only save TPs with |eta| < X
                                        TP_maxZ0 = cms.double(30.0),      # only save TPs with |z0| < X cm
                                        L1TrackInputTag = cms.InputTag("TTTracksFromPixelDigis", "Level1TTTracks"),               # TTTrack input
                                        MCTruthTrackInputTag = cms.InputTag("TTTrackAssociatorFromPixelDigis", "Level1TTTracks"), # MCTruth input 
