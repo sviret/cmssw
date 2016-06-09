@@ -69,7 +69,7 @@ public:
   void write(ofstream& out){
     
     out << "Stub: " 
-	<< layer_+1 << "\t" 
+	<< layer_ << "\t" 
 	<< ladder_ << "\t" 
 	<< module_ << "\t"
 	<< strip_<< "\t"
@@ -104,7 +104,7 @@ public:
   void write(ostream& out){
     
     out << "Stub: " 
-	<< layer_+1 << "\t" 
+	<< layer_ << "\t" 
 	<< ladder_ << "\t" 
 	<< module_ << "\t"
 	<< strip_<< "\t"
