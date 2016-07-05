@@ -506,18 +506,18 @@ int CMSPatternLayer::getSegmentCode(int layerID, int ladderID, int segmentID){
 
 int CMSPatternLayer::getModuleCode(int layerID, int moduleID){
   switch(layerID){
-  case 5 : return (moduleID);
-  case 6 : return (moduleID);
-  case 7 : return (moduleID);
-  case 8 : return moduleID;
-  case 9 : return moduleID;
-  case 10 : return moduleID;
-  default : return moduleID;
+  case 5 : return (moduleID-1);
+  case 6 : return (moduleID-1);
+  case 7 : return (moduleID-1);
+  case 8 : return moduleID-1;
+  case 9 : return moduleID-1;
+  case 10 : return moduleID-1;
+  default : return moduleID-1;
   }
 }
 
 int CMSPatternLayer::getLadderCode(int layerID, int ladderID){
-  return ladderID;
+  return ladderID-1;
 }
 
  int CMSPatternLayer::getNbLadders(int layerID){
@@ -536,11 +536,11 @@ int CMSPatternLayer::getLadderCode(int layerID, int ladderID){
 
 int CMSPatternLayer::getNbModules(int layerID, int ladderID){
   if(layerID==5)
-    return 64;
+    return 63;
   if(layerID==6)
-    return 56;
+    return 55;
   if(layerID==7)
-    return 54;
+    return 53;
   if(layerID>=8 && layerID<=10)
     return 24;
   if(layerID>=11 && layerID<=24){
@@ -569,14 +569,14 @@ int CMSPatternLayer::getNbModules(int layerID, int ladderID){
 map<int, pair<float,float> > CMSPatternLayer::getLayerDefInEta(){
   map<int,pair<float,float> > eta;
   eta[5]=pair<float,float>(-2.2,2.2);
-  eta[6]=pair<float,float>(-1.72,1.72);
-  eta[7]=pair<float,float>(-1.4,1.4);
+  eta[6]=pair<float,float>(-1.84,1.84);
+  eta[7]=pair<float,float>(-1.52,1.52);
   eta[8]=pair<float,float>(-1.2,1.2);
-  eta[9]=pair<float,float>(-1.1,1.1);
+  eta[9]=pair<float,float>(-1.05,1.05);
   eta[10]=pair<float,float>(-0.9,0.9);
-  eta[11]=pair<float,float>(1.08,2.24);
-  eta[12]=pair<float,float>(1.21,2.45);
-  eta[13]=pair<float,float>(1.36,2.5);
+  eta[11]=pair<float,float>(1.08,2.41);
+  eta[12]=pair<float,float>(1.21,2.49);
+  eta[13]=pair<float,float>(1.34,2.5);
   eta[14]=pair<float,float>(1.49,2.5);
   eta[15]=pair<float,float>(1.65,2.5);
   eta[18]=pair<float,float>(-2.24,-1.08);

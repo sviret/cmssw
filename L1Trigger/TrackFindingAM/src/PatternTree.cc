@@ -303,6 +303,20 @@ bool comparePatternsbyPT(PatternTrunk* p1, PatternTrunk* p2){
     return p1->getLDPatternPT()>p2->getLDPatternPT();
 }
 
+struct ScoreComparer {
+  ScoreComparer(float minPT, float pt_span, int minGrade, float grade_span) { this->min_pt = minPT; this->min_grade = minGrade; this->pt_span = pt_span; this->grade_span=grade_span;}
+  bool operator () (PatternTrunk* p1, PatternTrunk* p2) {
+    float p1_score = (((p1->getLDPatternPT()-min_pt)/pt_span)*100+((p1->getLDPatternGrade()-min_grade)/grade_span)*100);
+    float p2_score = (((p2->getLDPatternPT()-min_pt)/pt_span)*100+((p2->getLDPatternGrade()-min_grade)/grade_span)*100);
+    return p1_score>p2_score;;
+  }
+
+  float min_pt;
+  int min_grade;
+  float pt_span;
+  float grade_span;
+};
+
 void PatternTree::truncate(int nbPatterns, vector<unsigned int> defective_addresses){
   switchToVector();
   sort(v_patterns.begin(),v_patterns.end(), comparePatterns);//sort by popularity then PT
@@ -345,6 +359,32 @@ void PatternTree::truncate(int nbPatterns, vector<unsigned int> defective_addres
   }
 
   //sort(v_patterns.begin(),v_patterns.end(), comparePatternsbyPT);//sort by PT then popularity
+  sort(v_patterns.begin(),v_patterns.end(), comparePatterns);//sort by popularity then PT
+  /*
+  // Sort by score
+  float min_pt=200;
+  int min_grade=5000;
+  float max_pt=0;
+  int max_grade=0;
+  float pt_span=0;
+  int grade_span=0;
+  for(unsigned int i=0;i<v_patterns.size();i++){
+    int current_grade = v_patterns[i]->getLDPatternGrade();
+    float current_pt = v_patterns[i]->getLDPatternPT();
+    if(current_pt<min_pt)
+      min_pt=current_pt;
+    if(current_pt>max_pt)
+      max_pt=current_pt;
+    if(current_grade<min_grade)
+      min_grade=current_grade;
+    if(current_grade>max_grade)
+      max_grade=current_grade;
+  }
+  pt_span=max_pt-min_pt;
+  grade_span=max_grade-min_grade;
+  ScoreComparer sp(min_pt, pt_span, min_grade, grade_span);
+  sort(v_patterns.begin(),v_patterns.end(), ScoreComparer(min_pt, pt_span, min_grade, grade_span));//sort by a score computed with PT and Popularity
+  */
   for(unsigned int i=0;i<v_patterns.size();i++){
     v_patterns[i]->setOrderInChip(i);
   }
