@@ -114,18 +114,21 @@ TChain* PatternGenerator::createTChain(string directoryName, string tchainName){
   p_m_stub_strip = &m_stub_strip;
   p_m_stub_ptGEN = &m_stub_ptGEN;  
   p_m_stub_etaGEN = &m_stub_etaGEN;  
+  p_m_stub_pdg = &m_stub_pdg;  
   
   TT->SetBranchAddress("STUB_n",         &m_stub);
   TT->SetBranchAddress("STUB_modid",     &p_m_stub_modid);
   TT->SetBranchAddress("STUB_strip",     &p_m_stub_strip);
   TT->SetBranchAddress("STUB_ptGEN",     &p_m_stub_ptGEN);
   TT->SetBranchAddress("STUB_etaGEN",    &p_m_stub_etaGEN);
+  TT->SetBranchAddress("STUB_pdg",       &p_m_stub_pdg);
   TT->SetBranchStatus("*",0);
   TT->SetBranchStatus("STUB_n",1);
   TT->SetBranchStatus("STUB_modid",1);
   TT->SetBranchStatus("STUB_strip",1); 
   TT->SetBranchStatus("STUB_ptGEN",1); 
   TT->SetBranchStatus("STUB_etaGEN",1);
+  TT->SetBranchStatus("STUB_pdg",1);
 
   int nb_entries = TT->GetEntries();
   cout<<nb_entries<<" events found."<<endl;
@@ -158,132 +161,143 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     (*evtIndex)++;
 
     //cout<<"index "<<*evtIndex<<endl;
+    Sector* sector = NULL;
 
-    //initialize arrays
-    for(unsigned int j=0;j<tracker_layers.size();j++){
-      layers[j]=-1;
-    }
-    for(unsigned int j=0;j<tracker_layers.size();j++){
-      ladder_per_layer[j]=-1;
-    }
-    for(unsigned int j=0;j<tracker_layers.size();j++){
-      module_per_layer[j]=-1;
-    }
-
-    float current_eta = -10;
-
-    //check the layers of the stubs
-    for(int j=0;j<m_stub;j++){
-    
-      if(m_stub_etaGEN[j]<etaMin){// eta of the generating particule is bellow the threshold -> we do not use it for pattern generation
-	continue;
+    for(char sign=-1;sign<2;sign+=2){
+      
+      //initialize arrays
+      for(unsigned int j=0;j<tracker_layers.size();j++){
+	layers[j]=-1;
       }
-      if(m_stub_etaGEN[j]>etaMax){// eta of the generating particule is above the threshold -> we do not use it for pattern generation
-	continue;
+      for(unsigned int j=0;j<tracker_layers.size();j++){
+	ladder_per_layer[j]=-1;
       }
-      if(m_stub_ptGEN[j]<ptMin){// The PT of the generating particule is below the minimum required -> we do not use it for pattern generation
-        continue;
+      for(unsigned int j=0;j<tracker_layers.size();j++){
+	module_per_layer[j]=-1;
       }
-      if(m_stub_ptGEN[j]>ptMax){// The PT of the generating particule is above the maximum accepted -> we do not use it for pattern generation
-        continue;
-      }
-
-      int value = m_stub_modid[j];
-      //cout<<value<<endl;
-      int layer = value/1000000;
-      value = value-layer*1000000;
-      int ladder = value/10000;
-      value = value-ladder*10000;
-      int module = value/100;
-      value = value-module*100;
-      //cout<<"layer : "<<layer<<" ladder : "<<ladder<<" module : "<<module<<" segment : "<<value<<endl;
-
-      vector<int>::iterator iter;
-      iter=find(inactive_layers.begin(),inactive_layers.end(),layer);
-      if(iter!=inactive_layers.end()){
-	continue;
-      }
-
-      int layer_position=-1;
-      for(unsigned int cpt=0;cpt<tracker_layers.size();cpt++){
-	if(layer==tracker_layers[cpt]){
-	  layer_position=(int)cpt;
-	  break;
+      
+      float current_eta = -10;
+      
+      //check the layers of the stubs
+      for(int j=0;j<m_stub;j++){
+	
+	if(m_stub_pdg[j]!=13*sign){
+	  continue;
 	}
+	if(m_stub_etaGEN[j]<etaMin){// eta of the generating particule is bellow the threshold -> we do not use it for pattern generation
+	  continue;
+	}
+	if(m_stub_etaGEN[j]>etaMax){// eta of the generating particule is above the threshold -> we do not use it for pattern generation
+	  continue;
+	}
+	if(m_stub_ptGEN[j]<ptMin){// The PT of the generating particule is below the minimum required -> we do not use it for pattern generation
+	  continue;
+	}
+	if(m_stub_ptGEN[j]>ptMax){// The PT of the generating particule is above the maximum accepted -> we do not use it for pattern generation
+	  continue;
+	}
+	
+	int value = m_stub_modid[j];
+	//cout<<value<<endl;
+	int layer = value/1000000;
+	value = value-layer*1000000;
+	int ladder = value/10000;
+	value = value-ladder*10000;
+	int module = value/100;
+	value = value-module*100;
+	//cout<<"layer : "<<layer<<" ladder : "<<ladder<<" module : "<<module<<" segment : "<<value<<endl;
+	
+	vector<int>::iterator iter;
+	iter=find(inactive_layers.begin(),inactive_layers.end(),layer);
+	if(iter!=inactive_layers.end()){
+	  continue;
+	}
+	
+	int layer_position=-1;
+	for(unsigned int cpt=0;cpt<tracker_layers.size();cpt++){
+	  if(layer==tracker_layers[cpt]){
+	    layer_position=(int)cpt;
+	    break;
+	  }
+	}
+	
+	if(layer_position!=-1){ // is this layer in the layer list?
+	  layers[layer_position]=j;
+	  ladder_per_layer[layer_position]=CMSPatternLayer::getLadderCode(layer, ladder);
+	  module = CMSPatternLayer::getModuleCode(layer, module);
+	  module_per_layer[layer_position]=module;
+	  //cout<<"-> layer : "<<layer<<" ladder : "<<ladder_per_layer[layer_position]<<" module : "<<module<<" segment : "<<value<<endl;
+	}
+	
+	current_eta = m_stub_etaGEN[j];
+	
       }
 
-      if(layer_position!=-1){ // is this layer in the layer list?
-	layers[layer_position]=j;
-	ladder_per_layer[layer_position]=CMSPatternLayer::getLadderCode(layer, ladder);
-	module = CMSPatternLayer::getModuleCode(layer, module);
-	module_per_layer[layer_position]=module;
-      }
 
-      current_eta = m_stub_etaGEN[j];
-
-    }
-
-
-    /**************************************
-    Selection on the stubs/layer
-    We need at least one stub per layer
-    **************************************/
-    bool missing_stub = false;
-    int nbFakeSuperstrip = 0;
-    for(unsigned int j=0;j<tracker_layers.size();j++){
-      if(layers[j]==-1){
-	missing_stub=true;
-	if(sectors->getNbSectors()==1 && current_eta!=-10){ // we can use fake superstrips if we know the sector in which to add the tracks and if we have at least one stub (current_eta!=10)
-	  if(eta_limits.find(tracker_layers[j])!=eta_limits.end()){//we have eta boundaries for this layer
-	    pair<float,float> limits = eta_limits[tracker_layers[j]];
-	    if(current_eta<limits.first || current_eta>limits.second){ // we are outside the eta limits for this layer -> we will add a fake superstrip for this layer
-	      if(nbFakeSuperstrip<nbMaxFakeSuperstrips){//we don't want to have more than nbMaxFakeSuperstrips fake superstrips in the pattern
-		//cout<<"missing hit on layer "<<tracker_layers[j]<<" for track with eta="<<current_eta<<endl;
-		layers[j]=-2;
-		//we put a ladder and a module just to be inside the sector
-		ladder_per_layer[j]=sectors->getAllSectors()[0]->getLadders(j)[0];
-		module_per_layer[j]=sectors->getAllSectors()[0]->getModules(j,ladder_per_layer[j])[0];
-		//cout<<"Add stub for sector : "<<ladder_per_layer[j]<<" / "<<module_per_layer[j]<<endl;
-		//debug=true;
-		missing_stub=false;//we will create a fake superstrip, so the stub is not missing
-		nbFakeSuperstrip++;
+      /**************************************
+      Selection on the stubs/layer
+      We need at least one stub per layer
+      **************************************/
+      bool missing_stub = false;
+      int nbFakeSuperstrip = 0;
+      for(unsigned int j=0;j<tracker_layers.size();j++){
+	if(layers[j]==-1){
+	  missing_stub=true;
+	  if(sectors->getNbSectors()==1 && current_eta!=-10){ // we can use fake superstrips if we know the sector in which to add the tracks and if we have at least one stub (current_eta!=10)
+	    if(eta_limits.find(tracker_layers[j])!=eta_limits.end()){//we have eta boundaries for this layer
+	      pair<float,float> limits = eta_limits[tracker_layers[j]];
+	      if(current_eta<limits.first || current_eta>limits.second){ // we are outside the eta limits for this layer -> we will add a fake superstrip for this layer
+		if(nbFakeSuperstrip<nbMaxFakeSuperstrips){//we don't want to have more than nbMaxFakeSuperstrips fake superstrips in the pattern
+		  //cout<<"missing hit on layer "<<tracker_layers[j]<<" for track with eta="<<current_eta<<endl;
+		  layers[j]=-2;
+		  //we put a ladder and a module just to be inside the sector
+		  ladder_per_layer[j]=sectors->getAllSectors()[0]->getLadders(j)[0];
+		  module_per_layer[j]=sectors->getAllSectors()[0]->getModules(j,ladder_per_layer[j])[0];
+		  //cout<<"Add stub for sector : "<<ladder_per_layer[j]<<" / "<<module_per_layer[j]<<endl;
+		  //debug=true;
+		  missing_stub=false;//we will create a fake superstrip, so the stub is not missing
+		  nbFakeSuperstrip++;
+		}
 	      }
 	    }
 	  }
 	}
+	if(missing_stub)
+	  break;
       }
-      if(missing_stub)
+      
+      if(missing_stub){
+	/*
+	cout<<"stubs manquants ";
+	for(unsigned int j=0;j<tracker_layers.size();j++){
+	  cout<<layers[j]<<",";
+	}
+	cout<<endl;
+	*/
+	continue;//no stub on each layer -> drop the event    
+      }
+      
+      nbInLayer++;
+      
+      //    cout<<"trace ok"<<endl;
+      
+      /****************************************
+      Check that the track is part of a sector
+      ****************************************/
+      
+      sector = sectors->getSector(ladder_per_layer, module_per_layer);
+      
+      if(sector==NULL){
+	//cout<<"No sector found"<<endl;
+	continue;
+      }
+      else{
+	nbInSector++;
 	break;
-    }
-
-    if(missing_stub){
-      /*
-      cout<<"stubs manquants ";
-      for(unsigned int j=0;j<tracker_layers.size();j++){
-	cout<<layers[j]<<",";
       }
-      cout<<endl;
-      */
-      continue;//no stub on each layer -> drop the event    
     }
-
-    nbInLayer++;
-
-    //    cout<<"trace ok"<<endl;
-
-    /****************************************
-    Check that the track is part of a sector
-    ****************************************/
-
-    Sector* sector = sectors->getSector(ladder_per_layer, module_per_layer);
-
-    if(sector==NULL){
-      //cout<<"No sector found"<<endl;
+    if(sector==NULL)
       continue;
-    }
-    else{
-      nbInSector++;
-    }
     /*
     for(unsigned int j=0;j<tracker_layers.size();j++){
       cout<<"stubs "<<ladder_per_layer[j]<<"/"<<module_per_layer[j]<<"-";

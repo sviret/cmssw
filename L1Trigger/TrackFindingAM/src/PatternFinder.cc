@@ -240,6 +240,10 @@ void PatternFinder::find(int start, int& stop){
     cout<<"Last event index too high : reset to "<<stop<<endl;
   }
 
+  //TAMU PCA
+  string dataDir = "./tamu_data/";
+  LinearizedTrackFitter linearizedTrackFitter(dataDir.c_str(), true, true);  
+
   while(num_evt<n_entries_TT && num_evt<=stop){
     TT->GetEntry(num_evt);
 
@@ -305,10 +309,6 @@ void PatternFinder::find(int start, int& stop){
 
     //Traitement des patterns actif : enregistrement, affichage...
     event_id=n_evt;
-
-    //TAMU PCA
-    string dataDir = "./tamu_data/";
-    shared_ptr<LinearizedTrackFitter> linearizedTrackFitter = make_shared<LinearizedTrackFitter>(dataDir.c_str(), true, true);
     
     // loop on sectors
     for(unsigned int i=0;i<pattern_list.size();i++){
@@ -389,15 +389,15 @@ void PatternFinder::find(int start, int& stop){
 	  int prbf2_layer = CMSPatternLayer::cmssw_layer_to_prbf2_layer(hit_layer,isPSModule);
 	  int prbf2_ladder = pattern_list[i]->getLadderCode(hit_layer, hit_ladder);
 	  int prbf2_module = pattern_list[i]->getModuleCode(hit_layer, hit_ladder, hit_module);
-	  shared_ptr<Hit> global_hit;
+	  unique_ptr<Hit> global_hit;
 	  try{
 	    vector<float> coords = converter->toGlobal(prbf2_layer, prbf2_ladder, prbf2_module, current_hit->getSegment(), current_hit->getHDStripNumber());
-	    global_hit = make_shared<Hit>(0,0,0,0,0,0,0,0,0,0,0,coords[0],coords[1],coords[2],0,0,0,0);
+	    global_hit = unique_ptr<Hit>(new Hit(0,0,0,0,0,0,0,0,0,0,0,coords[0],coords[1],coords[2],0,0,0,0));
 	  }
 	  catch(const std::runtime_error& e){
 	    cout<<e.what()<<endl;
 	    cout<<"Using CMSSW cartesian coordinates instead..."<<endl;
-	    global_hit = make_shared<Hit>(0,0,0,0,0,0,0,0,0,0,0,current_hit->getX(),current_hit->getY(),current_hit->getZ(),0,0,0,0);
+	    global_hit = unique_ptr<Hit>(new Hit(0,0,0,0,0,0,0,0,0,0,0,current_hit->getX(),current_hit->getY(),current_hit->getZ(),0,0,0,0));
 	  }
 	  //cout<<"Polar coordinates : PHI="<<global_hit.getPolarPhi()<<", R="<<global_hit.getPolarDistance()<<", Z="<<global_hit.getZ()<<endl;
 	  tc_for_fit.push_back(global_hit->getPolarPhi());
@@ -415,8 +415,8 @@ void PatternFinder::find(int start, int& stop){
 	  bits=bit_values[0]-4;
 	}
 	if(bits!=-1){
-	  double normChi2 = linearizedTrackFitter->fit(tc_for_fit, bits);
-	  const std::vector<double> pars = linearizedTrackFitter->estimatedPars();
+	  double normChi2 = linearizedTrackFitter.fit(tc_for_fit, bits);
+	  const std::vector<double> pars = linearizedTrackFitter.estimatedPars();
 	  float pt=1.0/fabs(pars[0]);
 	  float pz=pt*pars[2];
 	  float phi=pars[1];
@@ -933,7 +933,7 @@ void PatternFinder::findCuda(int start, int& stop, deviceStubs* d_stubs){
 vector<Sector*> PatternFinder::find(vector<Hit*> hits){
   tracker.clear();
   for(unsigned int i=0;i<hits.size();i++){
-    //cout<<*hits[i]<<endl;
+    cout<<*hits[i]<<endl;
     tracker.receiveHit(*hits[i]);
   }
   if(useMissingHits){

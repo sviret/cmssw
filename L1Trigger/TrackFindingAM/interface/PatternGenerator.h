@@ -38,11 +38,13 @@ class PatternGenerator{
   vector<float>                 m_stub_strip;  // Strip du cluster interne du stub
   vector<float>                 m_stub_ptGEN;  // PT de la particule initiale
   vector<float>                 m_stub_etaGEN;  // Eta de la particule initiale
+  vector<int>                   m_stub_pdg;  // PDG ID de la particule initiale
 
   vector<int>                   *p_m_stub_modid;
   vector<float>                 *p_m_stub_strip;
   vector<float>                 *p_m_stub_ptGEN;
   vector<float>                 *p_m_stub_etaGEN;
+  vector<int>                   *p_m_stub_pdg;
 
   TChain* createTChain(string directoryName, string tchainName);
   /**
