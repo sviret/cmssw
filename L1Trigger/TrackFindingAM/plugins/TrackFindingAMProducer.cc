@@ -268,7 +268,8 @@ void TrackFindingAMProducer::produce( edm::Event& iEvent, const edm::EventSetup&
     } /// End of loop over DetSetVector
   }
 
-  std::cout << "End of stub loop, collected " << j << " stubs" << std::endl;
+  if(nDebug==1)
+    std::cout << "End of stub loop, collected " << j << " stubs" << std::endl;
 
   /// STEP 2
   /// PAssing the superstrips into the AM chip
@@ -276,7 +277,8 @@ void TrackFindingAMProducer::produce( edm::Event& iEvent, const edm::EventSetup&
     m_pf->setVerboseMode(true); // display the supertrips of the event
   std::vector< Sector* > patternsSectors = m_pf->find(m_hits); // AM PR is done here....
 
-  std::cout<<"Looking "<<patternsSectors.size()<< " sectors " << endl;
+  if(nDebug==1)
+    std::cout<<"Looking "<<patternsSectors.size()<< " sectors " << endl;
 
   /// STEP 3
   /// Collect the info and store the track seed stuff
@@ -293,7 +295,8 @@ void TrackFindingAMProducer::produce( edm::Event& iEvent, const edm::EventSetup&
     if ( pl.size() == 0 ) continue; // No patterns
 
     int secID = patternsSectors[i]->getOfficialID();
-    std::cout<<"Found "<<pl.size()<<" patterns in sector " << secID<<std::endl;
+    if(nDebug==1)
+      std::cout<<"Found "<<pl.size()<<" patterns in sector " << secID<<std::endl;
     //std::cout<<"containing "<<n_active<<" layers " << secID<<std::endl;
   
     //delete the GradedPattern objects
@@ -303,6 +306,8 @@ void TrackFindingAMProducer::produce( edm::Event& iEvent, const edm::EventSetup&
       hits.clear();
       hits = pl[j]->getHits();
 
+      //      std::cout << pl[j]->getOrderInChip() << std::endl;
+      
       int n_lay = pl[j]->getNbLayers() - pl[j]->getNbFakeSuperstrips(); 
       bool is_there;
 
@@ -336,7 +341,7 @@ void TrackFindingAMProducer::produce( edm::Event& iEvent, const edm::EventSetup&
 
 
       TTTrack<  Ref_Phase2TrackerDigi_ > tempTrack( tempVec );
-      tempTrack.setSector( secID );
+      tempTrack.setSector( 100*pl[j]->getOrderInChip()+secID );
       tempTrack.setWedge( n_lay - layers_touched.size() );
       tempTrack.setPOCA( GlobalPoint(0.,0.,0.),5);		
       TTTracksForOutput->push_back( tempTrack );

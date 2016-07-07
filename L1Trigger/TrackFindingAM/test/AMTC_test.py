@@ -29,13 +29,12 @@ process = cms.Process('AMTC')
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
-process.load('Configuration.Geometry.GeometryExtendedPhase2TkBE5DPixel10DReco_cff')
-process.load('Configuration.Geometry.GeometryExtendedPhase2TkBE5DPixel10D_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
 process.load('L1Trigger.TrackFindingAM.L1AMTrack_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('L1Trigger.TrackTrigger.TrackTrigger_cff')
+process.load('L1Trigger.TrackTrigger.TkOnlyFlatGeom_cff')
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
@@ -78,13 +77,15 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
 # For the moment need to explicitely keep the following containers
 # (not yet in the customizing scripts)
 
+process.RAWSIMoutput.outputCommands.append('keep  *_*_*_*')
 # Keep the PR output
-process.RAWSIMoutput.outputCommands.append('keep  *_*_*_AMPR')
+#process.RAWSIMoutput.outputCommands.append('keep  *_*_*_AMPR')
 
 # Keep the FIT output
-process.RAWSIMoutput.outputCommands.append('keep  *_*_*_AMTC')
+#process.RAWSIMoutput.outputCommands.append('keep  *_*_*_AMTC')
+#process.RAWSIMoutput.outputCommands.append('keep  *_mix_Tracker_*')
 process.RAWSIMoutput.outputCommands.append('drop *_TTTCsFromPattern_*_*')
-process.RAWSIMoutput.outputCommands.append('keep  *_*_MergedTrackTruth_*')
+#process.RAWSIMoutput.outputCommands.append('keep  *_*_MergedTrackTruth_*')
 
 # Path and EndPath definitions
 process.L1AMTC_step          = cms.Path(process.TTTCsFromPatternswStubs)
@@ -92,13 +93,3 @@ process.endjob_step          = cms.EndPath(process.endOfProcess)
 process.RAWSIMoutput_step    = cms.EndPath(process.RAWSIMoutput)
 
 process.schedule = cms.Schedule(process.L1AMTC_step,process.endjob_step,process.RAWSIMoutput_step)
-
-# Automatic addition of the customisation function
-
-from SLHCUpgradeSimulations.Configuration.combinedCustoms import customiseBE5DPixel10D
-from SLHCUpgradeSimulations.Configuration.combinedCustoms import customise_ev_BE5DPixel10D
-
-process=customiseBE5DPixel10D(process)
-process=customise_ev_BE5DPixel10D(process)
-
-# End of customisation functions

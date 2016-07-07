@@ -51,7 +51,8 @@ process.maxEvents = cms.untracked.PSet(
 
 process.source = cms.Source("PoolSource",
                             #fileNames = cms.untracked.vstring('/store/group/upgrade/Tracker/L1Tracking/Synchro/Input/TTbar/CMSSW_6_2_0_SLHC26-PU_DES23_62_V1_LHCCRefPU200-v1/F24BAA21-8818-E511-9030-0025905A6134.root'), 
-                            fileNames = cms.untracked.vstring('file:/data/viret/81X/CMSSW_8_1_0_pre7/src/DataProduction/test/PU_30_sample_TkOnly_FLAT.root'), 
+                            #fileNames = cms.untracked.vstring('file:PGun_example.root'), 
+                            fileNames = cms.untracked.vstring('file:/data/viret/81X/EDM_SLHC_extr_MU_99.root'), 
                             skipEvents=cms.untracked.uint32(0),
 			    duplicateCheckMode = cms.untracked.string( 'noDuplicateCheck' )
 )
@@ -61,9 +62,8 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:upgradePLS3', '')
 
 # Some pattern recognition options
-process.TTPatternsFromStub.inputBankFile = cms.string('/data/banksOverlap3Trunc/620_SLHC7_MUBANK_lowmidhig_sec30_varDC_1000000.pbk')
-#/afs/cern.ch/work/s/sviret/public/PatternBanks/TP2014_extended/620_SLHC7_MUBANK_lowmidhig_sec30_varDC_1000000.pbk')
-process.TTPatternsFromStub.threshold     = cms.int32(0)
+process.TTPatternsFromStub.inputBankFile = cms.string('test.pbk')
+process.TTPatternsFromStub.threshold     = cms.int32(5)
 process.TTPatternsFromStub.nbMissingHits = cms.int32(1)
 process.TTPatternsFromStub.debugMode     = cms.int32(0)
 
@@ -87,28 +87,15 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
 # For the moment need to explicitely keep the following containers
 # (not yet in the customizing scripts)
 
-
 # Keep the PR output
-process.RAWSIMoutput.outputCommands.append('keep  *_*_*_AMPR')
-#process.RAWSIMoutput.outputCommands.append('drop *_TTPatternsFromStub_*_*')
+process.RAWSIMoutput.outputCommands.append('keep  *_*_*_*')
+process.RAWSIMoutput.outputCommands.append('keep  *_mix_Tracker_*')
+process.RAWSIMoutput.outputCommands.append('drop *_TTPatternsFromStub_*_*')
 process.RAWSIMoutput.outputCommands.append('keep  *_*_MergedTrackTruth_*')
 
 # Path and EndPath definitions
-#process.L1AMPR_step          = cms.Path(process.TTPatternsFromStubswStubs)
-process.L1AMPR_step          = cms.Path(process.TTPatternsFromStubs)
+process.L1AMPR_step          = cms.Path(process.TTPatternsFromStubswStubs)
 process.endjob_step          = cms.EndPath(process.endOfProcess)
 process.RAWSIMoutput_step    = cms.EndPath(process.RAWSIMoutput)
 
 process.schedule = cms.Schedule(process.L1AMPR_step,process.endjob_step,process.RAWSIMoutput_step)
-
-
-# Automatic addition of the customisation function
-
-#from SLHCUpgradeSimulations.Configuration.combinedCustoms import customiseBE5DPixel10D
-#from SLHCUpgradeSimulations.Configuration.combinedCustoms import customise_ev_BE5DPixel10D
-
-#process=customiseBE5DPixel10D(process)
-#process=customise_ev_BE5DPixel10D(process)
-
-# End of customisation functions	
-

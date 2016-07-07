@@ -4,7 +4,7 @@ from Configuration.StandardSequences.MagneticField_cff import *
 from L1Trigger.TrackFindingAM.L1AMTrack_cfi import *
 from SimTracker.TrackTriggerAssociation.TTStubAssociation_cfi import * 
 from SimTracker.TrackTriggerAssociation.TTClusterAssociation_cfi import *
-#from SimTracker.TrackTriggerAssociation.TTTrackAssociation_cfi import *
+from SimTracker.TrackTriggerAssociation.TTTrackAssociation_cfi import *
 import FWCore.ParameterSet.Config as cms
 
 
@@ -26,7 +26,7 @@ TTPatternsFromStubs   = cms.Sequence(TTPatternsFromStub)
 # container of filtered stubs/clusters, with corresponding
 # associators containers
 
-#TTPatternsFromStubswStubs   = cms.Sequence(TTPatternsFromStub*MergePROutput*TTStubAssociatorFromPixelDigis)
+TTPatternsFromStubswStubs   = cms.Sequence(TTPatternsFromStub*MergePROutput*TTStubAssociatorFromPixelDigis)
 
 ############################################
 # STEP 2: TC builder 
@@ -38,13 +38,14 @@ TTPatternsFromStubs   = cms.Sequence(TTPatternsFromStub)
 
 
 
-#TTTCsFromPatterns  = cms.Sequence(TTTCsFromPattern)
+TTTCsFromPatterns  = cms.Sequence(TTTCsFromPattern)
 
 
 # The sequence. Note that we call the Merge plugins because the filtered containers are created
 # here. We just merge one branch...
 
-#TTTCsFromPatternswStubs   = cms.Sequence(TTTCsFromPattern*MergeTCOutput*MergeTCOutputb*TTStubAssociatorFromPixelDigis*TTTrackAssociatorFromPixelDigis)
+TTTCsFromPatternswStubs   = cms.Sequence(TTTCsFromPattern*MergeTCOutput*MergeTCOutputb*TTStubAssociatorFromPixelDigis*TTTrackAssociatorFromPixelDigis)
+#TTTCsFromPatternswStubs   = cms.Sequence(TTTCsFromPattern*MergeTCOutput*MergeTCOutputb*TTStubAssociatorFromPixelDigis)
 
 ############################################
 # STEP 3: PCA fit 
@@ -72,9 +73,9 @@ TTPatternsFromStubs   = cms.Sequence(TTPatternsFromStub)
 # This sequence is used mainly the multi-bank merging process, please note that the filtered cluster container is
 # not associated due to the lack of simPixelDigis in official samples
 
-#TTStubAssociatorFromPixelDigis.TTStubs        = cms.VInputTag( cms.InputTag("MergePROutput", "StubInPattern"))
-#TTStubAssociatorFromPixelDigis.TTClusterTruth = cms.VInputTag( cms.InputTag("TTClusterAssociatorFromPixelDigis","ClusterAccepted"))
+TTStubAssociatorFromPixelDigis.TTStubs        = cms.VInputTag( cms.InputTag("MergePROutput", "StubInPattern"))
+TTStubAssociatorFromPixelDigis.TTClusterTruth = cms.VInputTag( cms.InputTag("TTClusterAssociatorFromPixelDigis","ClusterAccepted"))
 
-#MergePROutputs  = cms.Sequence(MergePROutput*TTStubAssociatorFromPixelDigis)
+MergePROutputs  = cms.Sequence(MergePROutput*TTStubAssociatorFromPixelDigis)
 
 

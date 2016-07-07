@@ -933,7 +933,7 @@ void PatternFinder::findCuda(int start, int& stop, deviceStubs* d_stubs){
 vector<Sector*> PatternFinder::find(vector<Hit*> hits){
   tracker.clear();
   for(unsigned int i=0;i<hits.size();i++){
-    cout<<*hits[i]<<endl;
+    //cout<<*hits[i]<<endl;
     tracker.receiveHit(*hits[i]);
   }
   if(useMissingHits){
