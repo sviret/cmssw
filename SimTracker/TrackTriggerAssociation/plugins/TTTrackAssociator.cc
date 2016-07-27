@@ -30,7 +30,7 @@ void TTTrackAssociator< Ref_Phase2TrackerDigi_ >::produce( edm::Event& iEvent, c
   for ( auto iTag =  TTTracksTokens.begin(); iTag!=  TTTracksTokens.end(); iTag++ )
   {
     /// Prepare output
-    std::auto_ptr< TTTrackAssociationMap< Ref_Phase2TrackerDigi_ > > AssociationMapForOutput( new TTTrackAssociationMap< Ref_Phase2TrackerDigi_ > );
+    auto associationMapForOutput = std::make_unique<TTTrackAssociationMap<Ref_Phase2TrackerDigi_>>();
 
     /// Get the Tracks already stored away
     edm::Handle< std::vector< TTTrack< Ref_Phase2TrackerDigi_ > > > TTTrackHandle;
@@ -189,12 +189,12 @@ void TTTrackAssociator< Ref_Phase2TrackerDigi_ >::produce( edm::Event& iEvent, c
     edm::RefProd< TTStubAssociationMap< Ref_Phase2TrackerDigi_ > > theStubAssoMap( TTStubAssociationMapHandle );
 
     /// Put the maps in the association object
-    AssociationMapForOutput->setTTTrackToTrackingParticleMap( trackToTrackingParticleMap ); 
-    AssociationMapForOutput->setTrackingParticleToTTTracksMap( trackingParticleToTrackVectorMap );
-    AssociationMapForOutput->setTTStubAssociationMap( theStubAssoMap );
+    associationMapForOutput->setTTTrackToTrackingParticleMap( trackToTrackingParticleMap ); 
+    associationMapForOutput->setTrackingParticleToTTTracksMap( trackingParticleToTrackVectorMap );
+    associationMapForOutput->setTTStubAssociationMap( theStubAssoMap );
 
     /// Put output in the event
-    iEvent.put( AssociationMapForOutput, TTTracksInputTags.at(ncont1).instance() );
+    iEvent.put( std::move(associationMapForOutput), TTTracksInputTags.at(ncont1).instance() );
 
     ++ncont1;
   } /// End of loop over InputTags

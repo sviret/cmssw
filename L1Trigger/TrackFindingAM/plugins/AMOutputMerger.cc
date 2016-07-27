@@ -127,8 +127,8 @@ void AMOutputMerger::produce( edm::Event& iEvent, const edm::EventSetup& iSetup 
 
   // The container for filtered patterns / stubs 
 
-  std::auto_ptr< std::vector< TTTrack< Ref_Phase2TrackerDigi_ > > > TTTracksForOutput( new std::vector< TTTrack< Ref_Phase2TrackerDigi_ > > );
-  std::auto_ptr< edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > > > TTStubsForOutput( new edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > > );
+  auto ttTracksForOutput = std::make_unique<std::vector<TTTrack<Ref_Phase2TrackerDigi_>>>();
+  auto ttStubsForOutput  = std::make_unique<edmNew::DetSetVector<TTStub<Ref_Phase2TrackerDigi_>>>();
 
   std::vector< edm::Handle< std::vector< TTTrack< Ref_Phase2TrackerDigi_ > > > > TTPatternHandle;
 
@@ -201,14 +201,14 @@ void AMOutputMerger::produce( edm::Event& iEvent, const edm::EventSetup& iSetup 
 	tempTTPatt.setRInv(iterTTTrack->getRInv(5),5);
 	tempTTPatt.setChi2(iterTTTrack->getChi2(5),5);
 
-	TTTracksForOutput->push_back(tempTTPatt);
+	ttTracksForOutput->push_back(tempTTPatt);
       }
     }
   }
 
   // Get the OrphanHandle of the accepted patterns
   
-  edm::OrphanHandle< std::vector< TTTrack< Ref_Phase2TrackerDigi_ > > > TTPatternAcceptedHandle = iEvent.put( TTTracksForOutput, TTPatternOutputTag );
+  edm::OrphanHandle< std::vector< TTTrack< Ref_Phase2TrackerDigi_ > > > TTPatternAcceptedHandle = iEvent.put( std::move(ttTracksForOutput), TTPatternOutputTag );
  
   
   //
@@ -294,7 +294,7 @@ void AMOutputMerger::produce( edm::Event& iEvent, const edm::EventSetup& iSetup 
 
     if ( tempOutput->size() > 0 )
     {
-      typename edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >::FastFiller tempOutputFiller( *TTStubsForOutput, stackDetid );
+      typename edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > >::FastFiller tempOutputFiller( *ttStubsForOutput, stackDetid );
       for ( unsigned int m = 0; m < tempOutput->size(); m++ )
       {
         tempOutputFiller.push_back( tempOutput->at(m) );
@@ -305,7 +305,7 @@ void AMOutputMerger::produce( edm::Event& iEvent, const edm::EventSetup& iSetup 
   }
   
   /// Put in the event content
-  iEvent.put( TTStubsForOutput, TTStubOutputTag);  
+  iEvent.put( std::move(ttStubsForOutput), TTStubOutputTag);  
 }
 
 

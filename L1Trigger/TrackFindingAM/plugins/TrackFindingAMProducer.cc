@@ -161,7 +161,7 @@ void TrackFindingAMProducer::produce( edm::Event& iEvent, const edm::EventSetup&
   /// Prepare output
   /// The temporary collection is used to store tracks
   /// before removal of duplicates
-  std::auto_ptr< std::vector< TTTrack<  Ref_Phase2TrackerDigi_ > > > TTTracksForOutput( new std::vector< TTTrack<  Ref_Phase2TrackerDigi_  > > );
+  auto ttTracksForOutput = std::make_unique<std::vector<TTTrack<Ref_Phase2TrackerDigi_>>>();
 
   /// Get the Stubs/Cluster already stored
   edm::Handle< edmNew::DetSetVector< TTStub<  Ref_Phase2TrackerDigi_ > > > TTStubHandle;
@@ -170,7 +170,7 @@ void TrackFindingAMProducer::produce( edm::Event& iEvent, const edm::EventSetup&
   /// STEP 0
   /// Prepare output
 
-  TTTracksForOutput->clear();
+  ttTracksForOutput->clear();
 
   int layer  = 0;
   int ladder = 0;
@@ -344,7 +344,7 @@ void TrackFindingAMProducer::produce( edm::Event& iEvent, const edm::EventSetup&
       tempTrack.setSector( 100*pl[j]->getOrderInChip()+secID );
       tempTrack.setWedge( n_lay - layers_touched.size() );
       tempTrack.setPOCA( GlobalPoint(0.,0.,0.),5);		
-      TTTracksForOutput->push_back( tempTrack );
+      ttTracksForOutput->push_back( tempTrack );
 
       delete pl[j];
     }
@@ -354,7 +354,7 @@ void TrackFindingAMProducer::produce( edm::Event& iEvent, const edm::EventSetup&
   }
 
   /// Put in the event content
-  iEvent.put( TTTracksForOutput, TTPatternOutputTag);
+  iEvent.put( std::move(ttTracksForOutput), TTPatternOutputTag);
 }
 // DEFINE THIS AS A PLUG-IN
 DEFINE_FWK_MODULE(TrackFindingAMProducer);

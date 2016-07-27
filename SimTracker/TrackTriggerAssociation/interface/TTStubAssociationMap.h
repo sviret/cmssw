@@ -154,7 +154,7 @@ template< typename T >
 bool TTStubAssociationMap< T >::isUnknown( edm::Ref< edmNew::DetSetVector< TTStub< T > >, TTStub< T > > aStub ) const
 {
   /// UNKNOWN means that both clusters are unknown
-  //  std::vector< edm::Ref< edmNew::DetSetVector< TTCluster< T > >, TTCluster< T > > > theseClusters = aStub->getClusterRefs();
+  //std::vector< edm::Ref< edmNew::DetSetVector< TTCluster< T > >, TTCluster< T > > > theseClusters = aStub->getClusterRefs();
 
   /// Sanity check
   if ( theClusterAssociationMap.isNull() )

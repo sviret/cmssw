@@ -74,7 +74,6 @@ process.RandomNumberGeneratorService.g4SimHits.initialSeed      = 3
 process.RandomNumberGeneratorService.mix.initialSeed            = 4
 
 process.TTStubAlgorithm_official_Phase2TrackerDigi_.zMatchingPS = cms.bool(True)
-process.TTStubAlgorithm_official_Phase2TrackerDigi_.isTilted    = cms.bool(True)
 
 # Generate particle gun events
 process.generator = cms.EDFilter("Pythia8PtGun",
@@ -109,7 +108,7 @@ process.RAWSIMoutput.outputCommands.append('keep  *_mix_Tracker_*')
 
 # Path and EndPath definitions
 process.generation_step         = cms.Path(process.pgen)
-process.simulationTkOnly_step   = cms.Path(process.psim)
+process.simulation_step         = cms.Path(process.psim)
 process.genfiltersummary_step   = cms.EndPath(process.genFilterSummary)
 process.digitisationTkOnly_step = cms.Path(process.pdigi_valid)
 process.L1TrackTrigger_step     = cms.Path(process.TrackTriggerClustersStubs)
@@ -118,7 +117,7 @@ process.endjob_step             = cms.EndPath(process.endOfProcess)
 process.RAWSIMoutput_step       = cms.EndPath(process.RAWSIMoutput)
 
 
-process.schedule = cms.Schedule(process.generation_step,process.genfiltersummary_step,process.simulationTkOnly_step,process.digitisationTkOnly_step,process.L1TrackTrigger_step,process.L1TTAssociator_step,process.endjob_step,process.RAWSIMoutput_step)
+process.schedule = cms.Schedule(process.generation_step,process.genfiltersummary_step,process.simulation_step,process.digitisationTkOnly_step,process.L1TrackTrigger_step,process.L1TTAssociator_step,process.endjob_step,process.RAWSIMoutput_step)
 
 # filter all path with the production filter sequence
 for path in process.paths:

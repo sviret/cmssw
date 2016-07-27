@@ -121,8 +121,8 @@ void TrackFitTCProducer::produce( edm::Event& iEvent, const edm::EventSetup& iSe
   /// Prepare output
   /// The temporary collection is used to store tracks
   /// before removal of duplicates
-  std::auto_ptr< std::vector< TTTrack< Ref_Phase2TrackerDigi_ > > > TTTracksForOutput( new std::vector< TTTrack< Ref_Phase2TrackerDigi_ > > );
-  std::auto_ptr< std::vector< TTTrack< Ref_Phase2TrackerDigi_ > > > TTTracksBinForOutput( new std::vector< TTTrack< Ref_Phase2TrackerDigi_ > > );
+  auto ttTracksForOutput    = std::make_unique<std::vector<TTTrack<Ref_Phase2TrackerDigi_>>>();
+  auto ttTracksBinForOutput = std::make_unique<std::vector<TTTrack<Ref_Phase2TrackerDigi_>>>();
 
   /// Get the Stubs already stored away
   edm::Handle< edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > > > TTStubHandle;
@@ -133,8 +133,8 @@ void TrackFitTCProducer::produce( edm::Event& iEvent, const edm::EventSetup& iSe
 
   /// STEP 0
   /// Prepare output
-  TTTracksForOutput->clear();
-  TTTracksBinForOutput->clear();
+  ttTracksForOutput->clear();
+  ttTracksBinForOutput->clear();
 
   int layer  = 0;
   int ladder = 0;
@@ -320,7 +320,7 @@ void TrackFitTCProducer::produce( edm::Event& iEvent, const edm::EventSetup& iSe
 	tempTrack.setMomentum( mom , 5);
 	tempTrack.setPOCA( POCA , 5);
 	//std::cout << tracks[tt]->getZ0() << " / " << POCA.z() << " / " << tempTrack.getPOCA().z() << std::endl;
-	TTTracksForOutput->push_back( tempTrack );
+	ttTracksForOutput->push_back( tempTrack );
 	
 	delete tracks[tt];
       }
@@ -349,7 +349,7 @@ void TrackFitTCProducer::produce( edm::Event& iEvent, const edm::EventSetup& iSe
 	tempTrack.setMomentum( mom , 5);
 	tempTrack.setPOCA( POCA , 5);
 	//std::cout << tracks[tt]->getZ0() << " / " << POCA.z() << " / " << tempTrack.getPOCA().z() << std::endl;
-	TTTracksBinForOutput->push_back( tempTrack );
+	ttTracksBinForOutput->push_back( tempTrack );
 	
 	delete tracksb[tt];
       }
@@ -366,8 +366,8 @@ void TrackFitTCProducer::produce( edm::Event& iEvent, const edm::EventSetup& iSe
   }
 
   /// Put in the event content
-  iEvent.put( TTTracksForOutput, TTTrackOutputTag);
-  iEvent.put( TTTracksBinForOutput, TTTrackBinaryOutputTag);
+  iEvent.put( std::move(ttTracksForOutput), TTTrackOutputTag);
+  iEvent.put( std::move(ttTracksBinForOutput), TTTrackBinaryOutputTag);
 }
 
 // DEFINE THIS AS A PLUG-IN
