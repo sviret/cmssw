@@ -36,6 +36,7 @@
 #include "L1Trigger/TrackFindingAM/interface/PatternFinder.h"
 #include "L1Trigger/TrackFindingAM/interface/SectorTree.h"
 #include "L1Trigger/TrackFindingAM/interface/Hit.h"
+#include "L1Trigger/TrackFindingAM/interface/PCATrackFitter.h"
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -64,14 +65,12 @@ class TrackFitPCAProducer : public edm::EDProducer
   private:
   
   /// Data members
-
   double                       mMagneticField;
-  const StackedTrackerGeometry *theStackedTracker;
   unsigned int                 nSectors;
   unsigned int                 nWedges;
   std::string                  nBKName;
   int                          nThresh;
-
+  const StackedTrackerGeometry *theStackedTracker;
   edm::InputTag                TTStubsInputTag;
   edm::InputTag                TTPatternsInputTag;
   std::string                  TTTrackOutputTag;
@@ -153,6 +152,25 @@ void TrackFitPCAProducer::produce( edm::Event& iEvent, const edm::EventSetup& iS
 
   PCATrackFitter* PCA  = new PCATrackFitter(nbLayers); // Floating point
 
+  /// STEP 0
+  /// Read PCAConst file
+  PCA->read_float_const_filename ("../data/infnpca_const_files/barrel_tow16_pca_const.txt");
+  PCA->read_float_const_filename ("../data/infnpca_const_files/barrel_tow17_pca_const.txt");
+  PCA->read_float_const_filename ("../data/infnpca_const_files/barrel_tow18_pca_const.txt");
+  PCA->read_float_const_filename ("../data/infnpca_const_files/barrel_tow19_pca_const.txt");
+  PCA->read_float_const_filename ("../data/infnpca_const_files/barrel_tow20_pca_const.txt");
+  PCA->read_float_const_filename ("../data/infnpca_const_files/barrel_tow21_pca_const.txt");
+  PCA->read_float_const_filename ("../data/infnpca_const_files/barrel_tow22_pca_const.txt");
+  PCA->read_float_const_filename ("../data/infnpca_const_files/barrel_tow23_pca_const.txt");
+  PCA->read_float_const_filename ("../data/infnpca_const_files/barrel_tow24_pca_const.txt");
+  PCA->read_float_const_filename ("../data/infnpca_const_files/barrel_tow25_pca_const.txt");
+  PCA->read_float_const_filename ("../data/infnpca_const_files/barrel_tow26_pca_const.txt");
+  PCA->read_float_const_filename ("../data/infnpca_const_files/barrel_tow27_pca_const.txt");
+  PCA->read_float_const_filename ("../data/infnpca_const_files/barrel_tow28_pca_const.txt");
+  PCA->read_float_const_filename ("../data/infnpca_const_files/barrel_tow29_pca_const.txt");
+  PCA->read_float_const_filename ("../data/infnpca_const_files/barrel_tow30_pca_const.txt");
+  PCA->read_float_const_filename ("../data/infnpca_const_files/barrel_tow31_pca_const.txt");
+
   /// STEP 1
   /// Loop over track candidates
 
@@ -182,6 +200,8 @@ void TrackFitPCAProducer::produce( edm::Event& iEvent, const edm::EventSetup& iS
 
       j = 0;
 
+
+
       m_hits.clear();
       tracks.clear();
       stubMap.clear();
@@ -190,7 +210,12 @@ void TrackFitPCAProducer::produce( edm::Event& iEvent, const edm::EventSetup& iS
       unsigned int seedSector = tempTrackPtr->getSector();
 
       Track* TC = new Track();
-      TC->setCharge(tempTrackPtr->getWedge());
+      // TODO getWedge is unsigned ???
+      if (tempTrackPtr->getWedge() == 1)
+        TC->setCharge(-1.0);
+      else
+        TC->setCharge(+1.0);
+      //std::cout << "Wedge: " << tempTrackPtr->getWedge() << std::endl;
       TC->setCurve(tempTrackPtr->getMomentum(5).perp());
       TC->setEta0(tempTrackPtr->getMomentum(5).eta());
       TC->setPhi0(tempTrackPtr->getMomentum(5).phi());
@@ -267,44 +292,54 @@ void TrackFitPCAProducer::produce( edm::Event& iEvent, const edm::EventSetup& iS
 
       } /// End of loop over track stubs
 
-      if (tempTrackPtr->getSector()!=18) continue; // For the moment don't need to bother with the rest
+      //if (tempTrackPtr->getSector()!=18) continue; // For the moment don't need to bother with the rest
+      if (tempTrackPtr->getSector() < 16 || tempTrackPtr->getSector() > 31) continue; // For the moment don't need to bother with the rest
 
+      cout<<"Dealing with TC with "<< j << " stubs in tower " << tempTrackPtr->getSector() << endl;
+
+      PCA->cleanChi2();
       PCA->setSectorID(tempTrackPtr->getSector());
       PCA->setTrack(TC);
       PCA->fit(m_hits);
       tracks = PCA->getTracks();
       PCA->clean();
 
-
       delete TC;      
-      // Store the tracks (no duplicate cleaning yet)
-      //      cout<<"Found "<<tracks.size()<<" track"<<endl;
 
-      std::vector< edm::Ref< edmNew::DetSetVector< TTStub< Ref_PixelDigi_ > >, TTStub< Ref_PixelDigi_ > > > tempVec;
+      std::vector<double> chi2v = PCA->get_chi2f();
 
-      for(unsigned int tt=0;tt<tracks.size();tt++)
-      {	
-	tempVec.clear();
-
-	vector<int> stubs = tracks[tt]->getStubs();
-	for(unsigned int sti=0;sti<stubs.size();sti++) tempVec.push_back( stubMap[ stubs[sti] ]);
-
-	double pz = tracks[tt]->getCurve()/(tan(2*atan(exp(-tracks[tt]->getEta0()))));
-	
-	TTTrack< Ref_PixelDigi_ > tempTrack( tempVec );
-	GlobalPoint POCA(0.,0.,tracks[tt]->getZ0());
-	GlobalVector mom(tracks[tt]->getCurve()*cos(tracks[tt]->getPhi0()),
-			 tracks[tt]->getCurve()*sin(tracks[tt]->getPhi0()),
-			 pz);
-	
-	tempTrack.setSector( seedSector );
-	tempTrack.setWedge( tracks[tt]->getCharge() );
-	tempTrack.setMomentum( mom , 5);
-	tempTrack.setPOCA( POCA , 5);
-
-	TTTracksForOutput->push_back( tempTrack );
-	
-	delete tracks[tt];
+      if (chi2v.size() == tracks.size())
+      {
+        // Store the tracks (no duplicate cleaning yet)
+	cout<<"Found "<<tracks.size()<<" track"<<endl;
+        
+        std::vector< edm::Ref< edmNew::DetSetVector< TTStub< Ref_PixelDigi_ > >, TTStub< Ref_PixelDigi_ > > > tempVec;
+        
+        for(unsigned int tt=0;tt<tracks.size();tt++)
+        {	
+          tempVec.clear();
+        
+          vector<int> stubs = tracks[tt]->getStubs();
+          for(unsigned int sti=0;sti<stubs.size();sti++) tempVec.push_back( stubMap[ stubs[sti] ]);
+        
+          double pz = tracks[tt]->getCurve()/(tan(2*atan(exp(-tracks[tt]->getEta0()))));
+          
+          TTTrack< Ref_PixelDigi_ > tempTrack( tempVec );
+          GlobalPoint POCA(0.,0.,tracks[tt]->getZ0());
+          GlobalVector mom(tracks[tt]->getCurve()*cos(tracks[tt]->getPhi0()),
+          		 tracks[tt]->getCurve()*sin(tracks[tt]->getPhi0()),
+          		 pz);
+          
+          tempTrack.setSector( seedSector );
+          tempTrack.setWedge( tracks[tt]->getCharge() );
+          tempTrack.setMomentum( mom , 5);
+          tempTrack.setPOCA( POCA , 5);
+          tempTrack.setChi2(chi2v[tt]);
+        
+          TTTracksForOutput->push_back( tempTrack );
+          
+          delete tracks[tt];
+        }
       }
     } // End of loop over patterns
 
