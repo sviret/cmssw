@@ -27,7 +27,7 @@ process.load('SimGeneral.MixingModule.mix_POISSON_average_cfi')
 process.load('IOMC.EventVertexGenerators.VtxSmearedGauss_cfi')
 process.load('GeneratorInterface.Core.genFilterSummary_cff')
 process.load('L1Trigger.TrackTrigger.TrackTrigger_cff')
-process.load('L1Trigger.TrackTrigger.TkOnlyTiltedGeom_cff') # Special config file for TkOnly geometry
+process.load('L1Trigger.TrackTrigger.TkOnlyTilted4021Geom_cff') # Special config file for TkOnly geometry
 process.load('SimTracker.TrackTriggerAssociation.TrackTriggerAssociator_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
@@ -131,13 +131,13 @@ process.schedule = cms.Schedule(process.generation_step,process.genfiltersummary
 # filter all path with the production filter sequence
 for path in process.paths:
 	getattr(process,path)._seq = process.generator * getattr(process,path)._seq
-
+	
 
 # Automatic addition of the customisation function from SLHCUpgradeSimulations.Configuration.combinedCustoms
 from L1Trigger.TrackTrigger.TkOnlyDigi_cff import TkOnlyDigi
-from SLHCUpgradeSimulations.Configuration.combinedCustoms import cust_2023tilted
+from SLHCUpgradeSimulations.Configuration.combinedCustoms import cust_2023tilted4021
 
-process = cust_2023tilted(process)
+process = cust_2023tilted4021(process)
 process = TkOnlyDigi(process)
 # End of customisation functions
 

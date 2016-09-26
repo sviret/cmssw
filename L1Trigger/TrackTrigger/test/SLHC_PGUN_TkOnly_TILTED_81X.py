@@ -28,7 +28,7 @@ process.load('SimGeneral.MixingModule.mixNoPU_cfi')
 process.load('IOMC.EventVertexGenerators.VtxSmearedGauss_cfi')
 process.load('GeneratorInterface.Core.genFilterSummary_cff')
 process.load('L1Trigger.TrackTrigger.TrackTrigger_cff')
-process.load('L1Trigger.TrackTrigger.TkOnlyTiltedGeom_cff') # Special config file for TkOnly geometry
+process.load('L1Trigger.TrackTrigger.TkOnlyTilted4021Geom_cff') # Special config file for TkOnly geometry
 process.load('SimTracker.TrackTriggerAssociation.TrackTriggerAssociator_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
@@ -50,7 +50,7 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
     splitLevel = cms.untracked.int32(0),
     eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
     outputCommands = process.RAWSIMEventContent.outputCommands,
-    fileName = cms.untracked.string('PGun_example_TkOnly_TILTED.root'),
+    fileName = cms.untracked.string('PGun_example_TkOnly_TILTED4021.root'),
     dataset = cms.untracked.PSet(
         filterName = cms.untracked.string(''),
         dataTier = cms.untracked.string('GEN-SIM-DIGI-RAW-FEVT')
@@ -128,9 +128,9 @@ for path in process.paths:
 # Automatic addition of the customisation function from SLHCUpgradeSimulations.Configuration.combinedCustoms
 
 from L1Trigger.TrackTrigger.TkOnlyDigi_cff import TkOnlyDigi
-from SLHCUpgradeSimulations.Configuration.combinedCustoms import cust_2023tilted
+from SLHCUpgradeSimulations.Configuration.combinedCustoms import cust_2023tilted4021
 
-process = cust_2023tilted(process)
+process = cust_2023tilted4021(process)
 process = TkOnlyDigi(process)
 # End of customisation functions	
 
