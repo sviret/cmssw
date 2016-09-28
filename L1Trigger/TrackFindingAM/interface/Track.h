@@ -21,6 +21,7 @@ class Track{
   double w_rz;
   double chi2;
   vector<int> stub_ids;
+  int pattern_id;//optional pattern_id leading to this track
 
  public:
   /**
@@ -54,7 +55,7 @@ class Track{
      \brief Get the charge of the track estimated from Fit Module
      \return The charge of the track
   **/
-  double getCharge();
+  double getCharge() const;
   /**
      \brief Set the PT of the track
      \param p The PT of the track
@@ -105,7 +106,7 @@ class Track{
      \brief Get the list of the index of stubs used to compute the track
      \return A vector with the list of index
   **/
-  vector<int> getStubs();
+  vector<int> getStubs() const;
 
   /**
      \brief CLear the list of stubs used to create the track
@@ -116,42 +117,54 @@ class Track{
      \brief Get the PT of the track
      \return The PT of the track
   **/
-  double getCurve();
+  double getCurve() const;
   /**
      \brief Get the D0 of the track
      \return The D0 of the track
   **/
-  double getD0();
+  double getD0() const;
   /**
      \brief Get the Phi of the track
      \return The Phi of the track
   **/
-  double getPhi0();
+  double getPhi0() const;
   /**
      \brief Get the Eta of the track
      \return The Eta of the track
   **/
-  double getEta0();
+  double getEta0() const;
   /**
      \brief Get the Z0 of the track
      \return The Z0 of the track
   **/
-  double getZ0();
+  double getZ0() const;
   /**
      \brief Get the weight of the XY-retina maximum
      \return The weight of the XY-retina maximum
   **/
-  double getWxy();
+  double getWxy() const;
   /**
      \brief Get the weight of the RZ-retina maximum
      \return The weight of the RZ-retina maximum
   **/
-  double getWrz();
+  double getWrz() const;
   /**
      \brief Get the Chi2 value
      \return The Chi2 value of the track
   **/
-  double getChi2();
+  double getChi2() const;
+
+  /**
+     \brief Set the ID of the pattern which led to this track.
+     \param id The address of the pattern
+  **/
+  void setOriginPatternID(int id);
+
+  /**
+     \brief Get the ID of the pattern which led to this track.
+     \return The ID of the pattern, -1 if unknown
+  **/
+  int getOriginPatternID() const;
 
 };
 #endif

@@ -66,7 +66,7 @@ void HoughFitter::mergeTracks(){
   }
 }
 
-void HoughFitter::fit(vector<Hit*> hits){
+void HoughFitter::fit(vector<Hit*> hits, int pattern_id){
   if(hits.size()>1024){
     cout<<"ERROR : too many stubs for fitting!"<<endl;
     return;

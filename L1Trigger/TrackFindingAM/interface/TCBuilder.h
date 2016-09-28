@@ -2,6 +2,7 @@
 #define _TCBUILDER_H_
 
 #include "TrackFitter.h"
+#include "LocalToGlobalConverter.h"
 #include <math.h>
 
 #include <iomanip>
@@ -43,6 +44,7 @@ class TCBuilder:public TrackFitter{
 
   bool m_bHardwareSimulation;
   int m_nMissingHits;
+  LocalToGlobalConverter* l2gConverter;
 
   /**
      \brief Updates the Thresholds with respect to the fractionnal part width
@@ -72,6 +74,8 @@ class TCBuilder:public TrackFitter{
   void mergeTracks();
 
   Track* createFittedTrack(vector <Hit*>&);
+
+  void setLocalToGlobalConverter(LocalToGlobalConverter* l);
  
   /**
      \brief Configure the way the computing is done
@@ -80,7 +84,7 @@ class TCBuilder:public TrackFitter{
   void setHardwareEmulation(bool hardwareEmulation);
 
   void fit();
-  void fit(vector<Hit*> hits);
+  void fit(vector<Hit*> hits, int pattern_id=-1);
   TrackFitter* clone();
 };
 #endif

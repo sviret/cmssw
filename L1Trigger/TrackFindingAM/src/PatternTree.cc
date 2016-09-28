@@ -317,13 +317,54 @@ struct ScoreComparer {
   float grade_span;
 };
 
-void PatternTree::truncate(int nbPatterns, vector<unsigned int> defective_addresses){
+void PatternTree::truncate(int nbPatterns, int sorting_algo, vector<unsigned int> defective_addresses){
   switchToVector();
-  sort(v_patterns.begin(),v_patterns.end(), comparePatterns);//sort by popularity then PT
+  switch(sorting_algo){
+  case 0:
+    sort(v_patterns.begin(),v_patterns.end(), comparePatterns);//sort by popularity then PT
+    break;
+  case 1:
+    sort(v_patterns.begin(),v_patterns.end(), comparePatternsbyPT);//sort by PT then popularity
+    break;
+  case 2:
+    // Sort by score
+    float min_pt=200;
+    int min_grade=5000;
+    float max_pt=0;
+    int max_grade=0;
+    float pt_span=0;
+    int grade_span=0;
+    for(unsigned int i=0;i<v_patterns.size();i++){
+      int current_grade = v_patterns[i]->getLDPatternGrade();
+      float current_pt = v_patterns[i]->getLDPatternPT();
+      if(current_pt<min_pt)
+	min_pt=current_pt;
+      if(current_pt>max_pt)
+	max_pt=current_pt;
+      if(current_grade<min_grade)
+	min_grade=current_grade;
+      if(current_grade>max_grade)
+	max_grade=current_grade;
+    }
+    pt_span=max_pt-min_pt;
+    grade_span=max_grade-min_grade;
+    ScoreComparer sp(min_pt, pt_span, min_grade, grade_span);
+    sort(v_patterns.begin(),v_patterns.end(), ScoreComparer(min_pt, pt_span, min_grade, grade_span));//sort by a score computed with PT and Popularity
+    break;
+  }
 
   if(nbPatterns>0){
-    cout<<"Scores ranging from  : "<<v_patterns[0]->getLDPatternGrade()<<" to "<<v_patterns[v_patterns.size()-1]->getLDPatternGrade()<<endl;
-
+    switch(sorting_algo){
+    case 0:
+      cout<<"Popularity ranging from  : "<<v_patterns[0]->getLDPatternGrade()<<" to "<<v_patterns[v_patterns.size()-1]->getLDPatternGrade()<<endl;
+      break;
+    case 1:
+      cout<<"PT ranging from  : "<<v_patterns[0]->getLDPatternPT()<<" to "<<v_patterns[v_patterns.size()-1]->getLDPatternPT()<<endl;
+      break;
+    case 2:
+      cout<<"Popularity/PT ranging from  : "<<v_patterns[0]->getLDPatternGrade()<<"/"<<v_patterns[0]->getLDPatternPT()<<" to "<<v_patterns[v_patterns.size()-1]->getLDPatternGrade()<<"/"<<v_patterns[v_patterns.size()-1]->getLDPatternPT()<<endl;
+      break;
+    }
     if(defective_addresses.size()>2048){
       cout<<"Too many defective addresses in the chip : can not handle more than 2048!"<<endl;
       cout<<"DEFECTIVE ADDRESSES WILL BE IGNORED!"<<endl;
@@ -355,36 +396,20 @@ void PatternTree::truncate(int nbPatterns, vector<unsigned int> defective_addres
     for(int i=0;i<nbToDelete;i++){
       v_patterns.pop_back();
     }
-    cout<<"Keep "<<v_patterns.size()<<" patterns with scores ranging from  : "<<v_patterns[0]->getLDPatternGrade()<<" to "<<v_patterns[v_patterns.size()-1]->getLDPatternGrade()<<endl;
+    cout<<"Keep "<<v_patterns.size()<<" patterns with ";
+    switch(sorting_algo){
+    case 0:
+      cout<<"popularity ranging from  : "<<v_patterns[0]->getLDPatternGrade()<<" to "<<v_patterns[v_patterns.size()-1]->getLDPatternGrade()<<endl;
+      break;
+    case 1:
+      cout<<"PT ranging from  : "<<v_patterns[0]->getLDPatternPT()<<" to "<<v_patterns[v_patterns.size()-1]->getLDPatternPT()<<endl;
+      break;
+    case 2:
+      cout<<"popularity/PT ranging from  : "<<v_patterns[0]->getLDPatternGrade()<<"/"<<v_patterns[0]->getLDPatternPT()<<" to "<<v_patterns[v_patterns.size()-1]->getLDPatternGrade()<<"/"<<v_patterns[v_patterns.size()-1]->getLDPatternPT()<<endl;
+      break;
+    }
   }
 
-  //sort(v_patterns.begin(),v_patterns.end(), comparePatternsbyPT);//sort by PT then popularity
-  sort(v_patterns.begin(),v_patterns.end(), comparePatterns);//sort by popularity then PT
-  /*
-  // Sort by score
-  float min_pt=200;
-  int min_grade=5000;
-  float max_pt=0;
-  int max_grade=0;
-  float pt_span=0;
-  int grade_span=0;
-  for(unsigned int i=0;i<v_patterns.size();i++){
-    int current_grade = v_patterns[i]->getLDPatternGrade();
-    float current_pt = v_patterns[i]->getLDPatternPT();
-    if(current_pt<min_pt)
-      min_pt=current_pt;
-    if(current_pt>max_pt)
-      max_pt=current_pt;
-    if(current_grade<min_grade)
-      min_grade=current_grade;
-    if(current_grade>max_grade)
-      max_grade=current_grade;
-  }
-  pt_span=max_pt-min_pt;
-  grade_span=max_grade-min_grade;
-  ScoreComparer sp(min_pt, pt_span, min_grade, grade_span);
-  sort(v_patterns.begin(),v_patterns.end(), ScoreComparer(min_pt, pt_span, min_grade, grade_span));//sort by a score computed with PT and Popularity
-  */
   for(unsigned int i=0;i<v_patterns.size();i++){
     v_patterns[i]->setOrderInChip(i);
   }

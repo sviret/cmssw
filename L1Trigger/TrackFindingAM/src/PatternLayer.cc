@@ -9,6 +9,20 @@ PatternLayer::PatternLayer(){
   memset(dc_bits,3,DC_BITS*sizeof(char));
 }
 
+short PatternLayer::binaryToGray(short num)
+{
+  return (num >> 1) ^ num;
+}
+
+short PatternLayer::grayToBinary(short gray)
+{
+  gray ^= (gray >> 8);
+  gray ^= (gray >> 4);
+  gray ^= (gray >> 2);
+  gray ^= (gray >> 1);
+  return(gray);
+}
+
 char PatternLayer::getDC(int index){
   if(index<0 || index>=DC_BITS)
     index=0;
@@ -48,6 +62,18 @@ int PatternLayer::getDCBitsNumber(){
     }
   }
   return 3;
+}
+
+int PatternLayer::getUsedDCBitsNumber(){
+  int res = 0;
+  for(int i=0;i<DC_BITS;i++){
+    if(dc_bits[i]==2)
+      res++;
+    else if(dc_bits[i]==3){
+      return res;
+    }
+  }
+  return res;
 }
 
 void PatternLayer::getPositionsFromDC(vector<char> dc, vector<short>& positions){
@@ -115,4 +141,21 @@ int PatternLayer::getSizeFromMask(short mask){
     val++;
   }
   return val;
+}
+
+vector<int> PatternLayer::getHDSuperstrips(){
+  vector<int> array;
+  int nb_dc = getDCBitsNumber();
+  int base_index = getStripCode()<<nb_dc;
+  if(nb_dc>0){
+    vector<short> positions=getPositionsFromDC();
+    for(unsigned int i=0;i<positions.size();i++){
+      int index = base_index | positions[i];
+      array.push_back(grayToBinary(index));
+    }
+  }
+  else{
+    array.push_back(grayToBinary(base_index));
+  }
+  return array;
 }

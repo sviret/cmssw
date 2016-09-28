@@ -157,7 +157,7 @@ void SeedClusteringFitter::LinearLeastSquareRegress (std::vector<std::pair <floa
 
 }
 
-void SeedClusteringFitter::fit(vector<Hit*> hits){
+void SeedClusteringFitter::fit(vector<Hit*> hits, int pattern_id){
 
   //Barrel sector check
   for (unsigned int i = 0; i<hits.size();i++){

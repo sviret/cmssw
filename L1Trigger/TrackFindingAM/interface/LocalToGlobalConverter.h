@@ -29,13 +29,15 @@ class LocalToGlobalConverter{
   vector<float> ***module_pos;
   //TEC+ or TEC-?
   bool tracker_side;
+  const Sector* sector;
+
  public:
   /**
      \brief Constructor
      \param sectorDefinition The sector concerned by the convertion
      \param geometryFile Text file containing the global coordinates of all modules
   **/
-  LocalToGlobalConverter(const Sector& sectorDefinition, string geometryFile);
+  LocalToGlobalConverter(const Sector* sectorDefinition, string geometryFile);
 
   /**
      \brief Destructor
@@ -52,5 +54,12 @@ class LocalToGlobalConverter{
      \return A vector of 3 float containing the X/Y/Z cartesian coordinates
    **/
   vector<float> toGlobal(int layer, int ladder, int module, int segment, float strip) const throw (std::runtime_error);
+
+  /**
+     \brief Convertion of local coordinates contained in a Hit object to cartesian coordinates global to the tracker
+     \param h A Hit object
+     \return A vector of 3 float containing the X/Y/Z cartesian coordinates
+   **/
+  vector<float> toGlobal(const Hit* h) const throw (std::runtime_error);
 };
 #endif

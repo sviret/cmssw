@@ -55,7 +55,7 @@ class PCATrackFitter:public TrackFitter
   ~PCATrackFitter();
 
   void initialize();
-  void fit(vector<Hit*> hits);
+  void fit(vector<Hit*> hits, int pattern_id=-1);
   void fit();
   void setTrack(Track *intc); 
 
