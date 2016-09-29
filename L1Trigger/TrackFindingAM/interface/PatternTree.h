@@ -114,8 +114,9 @@ class PatternTree{
   /**
      \brief Delete the least used patterns to match the given pattern number
      \param nbPatterns The number of patterns to keep
+     \param sorting_algo Algorithm used to sort the patterns (0:by popularity, 1:by PT, 2:by mixed score+PT)
   **/
-  void truncate(int nbPatterns, vector<unsigned int> defective_patterns=vector<unsigned int>());
+  void truncate(int nbPatterns, int sorting_algo=0, vector<unsigned int> defective_patterns=vector<unsigned int>());
 
  private:
   map<string, PatternTrunk*> patterns;

@@ -318,7 +318,7 @@ void PCATrackFitter::setTrack(Track *intc)
 }
 
 
-void PCATrackFitter::fit(vector<Hit*> hits)
+void PCATrackFitter::fit(vector<Hit*> hits, int pattern_id)
 {
   int tow = sector_id; // The tower ID, necessary to get the phi shift
 

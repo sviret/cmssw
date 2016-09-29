@@ -1,6 +1,6 @@
 #include "../interface/LocalToGlobalConverter.h"
 
-LocalToGlobalConverter::LocalToGlobalConverter(const Sector& sectorDefinition, string geometryFile){
+LocalToGlobalConverter::LocalToGlobalConverter(const Sector* sectorDefinition, string geometryFile){
   string line;
   ifstream myfile (geometryFile.c_str());
   int layer = -1;
@@ -12,9 +12,10 @@ LocalToGlobalConverter::LocalToGlobalConverter(const Sector& sectorDefinition, s
   stringstream val;
 
   module_pos = NULL;
+  sector = sectorDefinition;
 
   //Which side of the tracker are we on?
-  if(sectorDefinition.getOfficialID()<24)
+  if(sectorDefinition->getOfficialID()<24)
     tracker_side=true;
   else
     tracker_side=false;
@@ -64,10 +65,10 @@ LocalToGlobalConverter::LocalToGlobalConverter(const Sector& sectorDefinition, s
 	  val.clear();
 	  val.str(items[2]);
 	  val >> module;
-	  local_ladder = sectorDefinition.getLadderCode(layer,ladder);
+	  local_ladder = sectorDefinition->getLadderCode(layer,ladder);
 	  if(local_ladder==-1)//not in the sector
 	    continue;
-	  local_module = sectorDefinition.getModuleCode(layer,ladder,module);
+	  local_module = sectorDefinition->getModuleCode(layer,ladder,module);
 	  if(local_module==-1)//not in the sector
 	    continue;
 	  bool isPSModule = false;
@@ -148,6 +149,21 @@ LocalToGlobalConverter::~LocalToGlobalConverter(){
     }
     delete [] module_pos;
   }
+}
+
+vector<float> LocalToGlobalConverter::toGlobal(const Hit* h) const throw (std::runtime_error){
+  int hit_layer = h->getLayer();
+  int hit_ladder = h->getLadder();
+  int hit_module = h->getModule();	    
+  bool isPSModule = false;
+  if((hit_layer>=5 && hit_layer<=7) || (hit_layer>10 && hit_ladder<=8)){
+    isPSModule=true;
+  }
+  int prbf2_layer = CMSPatternLayer::cmssw_layer_to_prbf2_layer(hit_layer,isPSModule);
+  int prbf2_ladder = sector->getLadderCode(hit_layer, hit_ladder);
+  int prbf2_module = sector->getModuleCode(hit_layer, hit_ladder, hit_module);
+
+  return toGlobal(prbf2_layer,prbf2_ladder, prbf2_module, h->getSegment(), h->getHDStripNumber());
 }
 
 vector<float> LocalToGlobalConverter::toGlobal(int layer, int ladder, int module, int segment, float strip) const throw (std::runtime_error){

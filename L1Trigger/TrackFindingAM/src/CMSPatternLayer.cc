@@ -114,20 +114,6 @@ void CMSPatternLayer::getSuperStripCuda(int l, const vector<int>& ladd, const ma
 }
 #endif
 
-short CMSPatternLayer::binaryToGray(short num)
-{
-  return (num >> 1) ^ num;
-}
-
-short CMSPatternLayer::grayToBinary(short gray)
-{
-  gray ^= (gray >> 8);
-  gray ^= (gray >> 4);
-  gray ^= (gray >> 2);
-  gray ^= (gray >> 1);
-  return(gray);
-}
-
 void CMSPatternLayer::setValues(short m, short phi, short strip, short seg){
   strip=binaryToGray(strip);
   bits |= (m&MOD_MASK)<<MOD_START_BIT |
@@ -506,61 +492,61 @@ int CMSPatternLayer::getSegmentCode(int layerID, int ladderID, int segmentID){
 
 int CMSPatternLayer::getModuleCode(int layerID, int moduleID){
   switch(layerID){
-  case 5 : return (moduleID-1);
-  case 6 : return (moduleID-1);
-  case 7 : return (moduleID-1);
-  case 8 : return moduleID-1;
-  case 9 : return moduleID-1;
-  case 10 : return moduleID-1;
-  default : return moduleID-1;
+  case 5 : return (moduleID);
+  case 6 : return (moduleID);
+  case 7 : return (moduleID);
+  case 8 : return moduleID;
+  case 9 : return moduleID;
+  case 10 : return moduleID;
+  default : return moduleID;
   }
 }
 
 int CMSPatternLayer::getLadderCode(int layerID, int ladderID){
-  return ladderID-1;
+  return ladderID;
 }
 
  int CMSPatternLayer::getNbLadders(int layerID){
    if(layerID<5 || layerID>24)
      return -1;
    switch(layerID){
-   case 5 : return 16;
-   case 6 : return 24;
-   case 7 : return 34;
+   case 5 : return 18;
+   case 6 : return 26;
+   case 7 : return 36;
    case 8 : return 48;
-   case 9 : return 62;
-   case 10 : return 76;
+   case 9 : return 60;
+   case 10 : return 78;
    default : return 15;
    }
  }
 
 int CMSPatternLayer::getNbModules(int layerID, int ladderID){
   if(layerID==5)
-    return 63;
+    return 29;
   if(layerID==6)
-    return 55;
+    return 35;
   if(layerID==7)
-    return 53;
+    return 39;
   if(layerID>=8 && layerID<=10)
     return 24;
   if(layerID>=11 && layerID<=24){
     switch(ladderID){
     case 0:return 20;
     case 1:return 24;
-    case 2:return 28;
+    case 2:return 24;
     case 3:return 28;
     case 4:return 32;
-    case 5:return 36;
+    case 5:return 32;
     case 6:return 36;
     case 7:return 40;
     case 8:return 40;
-    case 9:return 52;
+    case 9:return 48;
     case 10:return 56;
-    case 11:return 64;
-    case 12:return 68;
-    case 13:return 76;
-    case 14:return 80;
-    default:return 80;
+    case 11:return 60;
+    case 12:return 64;
+    case 13:return 72;
+    case 14:return 76;
+    default:return 76;
     }
   }
   return -1;
@@ -568,40 +554,23 @@ int CMSPatternLayer::getNbModules(int layerID, int ladderID){
 
 map<int, pair<float,float> > CMSPatternLayer::getLayerDefInEta(){
   map<int,pair<float,float> > eta;
-  eta[5]=pair<float,float>(-2.2,2.2);
-  eta[6]=pair<float,float>(-1.84,1.84);
-  eta[7]=pair<float,float>(-1.52,1.52);
-  eta[8]=pair<float,float>(-1.2,1.2);
-  eta[9]=pair<float,float>(-1.05,1.05);
+  eta[5]=pair<float,float>(-2.25,2.25);
+  eta[6]=pair<float,float>(-1.85,1.85);
+  eta[7]=pair<float,float>(-1.5,1.5);
+  eta[8]=pair<float,float>(-1.28,1.28);
+  eta[9]=pair<float,float>(-1.07,1.07);
   eta[10]=pair<float,float>(-0.9,0.9);
-  eta[11]=pair<float,float>(1.08,2.41);
-  eta[12]=pair<float,float>(1.21,2.49);
-  eta[13]=pair<float,float>(1.34,2.5);
-  eta[14]=pair<float,float>(1.49,2.5);
-  eta[15]=pair<float,float>(1.65,2.5);
-  eta[18]=pair<float,float>(-2.24,-1.08);
-  eta[19]=pair<float,float>(-2.45,-1.21);
-  eta[20]=pair<float,float>(-2.5,-1.36);
-  eta[21]=pair<float,float>(-2.5,-1.49);
-  eta[22]=pair<float,float>(-2.5,-1.65);
+  eta[11]=pair<float,float>(1.08,2.42);
+  eta[12]=pair<float,float>(1.21,2.47);
+  eta[13]=pair<float,float>(1.36,2.43);
+  eta[14]=pair<float,float>(1.49,2.45);
+  eta[15]=pair<float,float>(1.63,2.45);
+  eta[18]=pair<float,float>(-2.42,-1.08);
+  eta[19]=pair<float,float>(-2.47,-1.21);
+  eta[20]=pair<float,float>(-2.43,-1.36);
+  eta[21]=pair<float,float>(-2.45,-1.49);
+  eta[22]=pair<float,float>(-2.45,-1.63);
   return eta;
-}
-
-vector<int> CMSPatternLayer::getHDSuperstrips(){
-  vector<int> array;
-  int nb_dc = getDCBitsNumber();
-  int base_index = getStripCode()<<nb_dc;
-  if(nb_dc>0){
-    vector<short> positions=getPositionsFromDC();
-    for(unsigned int i=0;i<positions.size();i++){
-      int index = base_index | positions[i];
-      array.push_back(grayToBinary(index));
-    }
-  }
-  else{
-    array.push_back(grayToBinary(base_index));
-  }
-  return array;
 }
 
 int CMSPatternLayer::cmssw_layer_to_prbf2_layer(int cms_layer, bool isPS){
