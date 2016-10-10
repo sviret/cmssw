@@ -2,32 +2,13 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("TRA")
 
-
-#
-# This runs over a file that contains stubs and the clusters
-# that make the stubs. This is the default EventContent of our
-# 620_SLHC samples.
-#
-# It runs the tracklet-based L1Tracking. Note that the tracklet-based 
-# L1Tracks are already present on our samples, but you may want to re-run
-# the L1Tracking, for example to relax the extrapolation windows
-# used in the algorithm, in order to recover a bit of efficiency
-# over electrons that brem. Or simply to benefit from the latest
-# updates of the L1Tracking code - like the possibility of 
-# fitting 5-parameters tracks, not constraining them to come from
-# the beamspot.
-#
-# 
-
-
 process.load("FWCore.MessageService.MessageLogger_cfi")
 
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
-
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 process.source = cms.Source("PoolSource",
      fileNames = cms.untracked.vstring(
-     '/store/group/comm_trigger/L1TrackTrigger/620_SLHC10/Extended2023TTI/Electrons/PU140/m1_SingleElectron_E2023TTI_PU140.root'
+         '/store/group/upgrade/Tracker/L1Tracking/Synchro/Input/TTbar/CMSSW_6_2_0_SLHC26-PU_DES23_62_V1_LHCCRefPU200-v1/E65D928B-8518-E511-B234-0025905A48D6.root'
      )
 )
 
@@ -35,13 +16,10 @@ process.source = cms.Source("PoolSource",
 # ---- Global Tag :
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'PH2_1K_FB_V3::All', '')
-
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:upgradePLS3', '')
 
 
 # ---------------------------------------------------------------------------
-#
-
 # -- Run the L1Tracking :
 
 process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
@@ -60,7 +38,6 @@ process.BeamSpotFromSim =cms.EDProducer("BeamSpotFromSimProducer")
 # 
 
 
-
 # --- But here, we run the L1Track producer starting from the existing stubs :
 
 	# --- note that the sequence FullTrackingSequence defined in 
@@ -70,24 +47,50 @@ process.BeamSpotFromSim =cms.EDProducer("BeamSpotFromSimProducer")
 
 process.load('Configuration.StandardSequences.L1TrackTrigger_cff')
 
-# process.TTTracksFromPixelDigis.geometry = cms.untracked.string('BE5D')   # not needed (that's the default)
-
 	# ----
 	#
 	# 1. the following will re-create a collection of L1Tracks, with
 	#    the same label as the "default" collection :
 	#
 
-# if you want to change the extrapolation window :
+# ----------------------------------------------------------------------------------
+# if you want to change the extrapolation window 
+# ----------------------------------------------------------------------------------
+
 #process.TTTracksFromPixelDigis.phiWindowSF = cms.untracked.double(2.0)   #  default is 1.0
+
+
+# ----------------------------------------------------------------------------------
+# Uncomment line below if you want to write out ASCII file for the standalone
+# tracklet simulation and emulation code
+# ----------------------------------------------------------------------------------
+
+process.TTTracksFromPixelDigis.asciiFileName = cms.untracked.string("evlist.txt")   
+
+
+# ----------------------------------------------------------------------------------
+# run default version of tracking
+# ----------------------------------------------------------------------------------
 
 process.TT_step = cms.Path(process.TrackTriggerTTTracks)
 process.TTAssociator_step = cms.Path(process.TrackTriggerAssociatorTracks)
-	#
-	#   ----
 
 
-	# ----
+# ----------------------------------------------------------------------------------
+# Uncomment lines below if you want to produce the integer-version of tracklet L1 tracks
+# ----------------------------------------------------------------------------------
+#
+#process.TTTracksFromPixelDigisInteger = cms.EDProducer("L1FPGATrackProducer",
+#                                                       fitPatternFile  = cms.FileInPath('SLHCUpgradeSimulations/L1TrackTrigger/test/fitpattern.txt'),
+#                                                       memoryModulesFile  = cms.FileInPath('SLHCUpgradeSimulations/L1TrackTrigger/test/memorymodules_full.dat'),
+#                                                       processingModulesFile  = cms.FileInPath('SLHCUpgradeSimulations/L1TrackTrigger/test/processingmodules_full.dat'),
+#                                                       wiresFile  = cms.FileInPath('SLHCUpgradeSimulations/L1TrackTrigger/test/wires_full.dat')
+#                                                )
+#process.TrackTriggerTTTracksInteger = cms.Sequence(process.BeamSpotFromSim*process.TTTracksFromPixelDigisInteger)
+#process.TT_step_Integer = cms.Path(process.TrackTriggerTTTracksInteger)
+
+
+# ----------------------------------------------------------------------------------
 	#
 	# 2. if you want to create a collection of L1Tracks with a different label, for
 	#    example here, TrackTriggerTTTracksLargerPhi :
@@ -105,22 +108,20 @@ process.TTAssociator_step = cms.Path(process.TrackTriggerAssociatorTracks)
 
 #process.TT_step = cms.Path( process.TrackTriggerTTTracksLargerPhi )
 #process.TTAssociator_step = cms.Path( process.TrackTriggerAssociatorTracksLargerPhi)
-	#
-	# ----
 
 
 
-
-
-#
-# ---------------------------------------------------------------------------
-
+# ----------------------------------------------------------------------------------
+# define output module
+# ----------------------------------------------------------------------------------
 
 process.Out = cms.OutputModule( "PoolOutputModule",
     fileName = cms.untracked.string( "example_L1Tracks.root" ),
     fastCloning = cms.untracked.bool( False ),
     outputCommands = cms.untracked.vstring( 'drop *')
 )
+
+process.Out.outputCommands.append('keep *_*_MergedTrackTruth_*')
 
 process.Out.outputCommands.append( 'keep *_*_*_TRA' )
 process.Out.outputCommands.append('keep *_generator_*_*')
@@ -136,8 +137,6 @@ process.Out.outputCommands.append('keep *_TTStubsFromPixelDigis_StubAccepted_*')
 
 process.Out.outputCommands.append('keep *_TTTracksFromPixelDigis*_Level1TTTracks_*')
 process.Out.outputCommands.append('keep *_TTTrackAssociatorFromPixelDigis*_Level1TTTracks_*')
-
-
 
 process.FEVToutput_step = cms.EndPath(process.Out)
 
