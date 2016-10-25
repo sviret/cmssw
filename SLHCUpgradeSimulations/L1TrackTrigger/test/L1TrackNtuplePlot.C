@@ -61,7 +61,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   int L1Tk_minNstub = 4;  
   float L1Tk_maxChi2 = 100.;  
   float L1Tk_maxChi2dof = 9999.;  
-  
+
   bool doDetailedPlots = false; //turn on to make full set of plots
   bool doGausFit = false;       //do gaussian fit for resolution vs eta/pt plots
   bool doLooseMatch = false;    //looser MC truth matching
@@ -79,6 +79,11 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   int ntrk_pt10 = 0;
   int ntp_pt3 = 0;
   int ntp_pt10 = 0;
+
+  //int ntrk_4stub_pt3 = 0;
+  //int ntrk_4stub_pt10 = 0;
+  //int ntrk_4stubchi2_pt3 = 0;
+  //int ntrk_4stubchi2_pt10 = 0;
 
 
   // ----------------------------------------------------------------------------------------------------------------
@@ -545,14 +550,17 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
     // track loop for total rates
     for (int it=0; it<(int)trk_pt->size(); it++) {
            
-      if (trk_nstub->at(it) < 4) continue;
-
-      if (trk_pt->at(it) > 3.0) {
+      if (trk_pt->at(it) > 3.0 && fabs(trk_eta->at(it))<2.5) {
 	ntrk_pt3++;
 	h_trk_vspt->Fill(trk_pt->at(it));
+	//if (trk_nstub->at(it) > 3) ntrk_4stub_pt3++;
+	//if (trk_nstub->at(it) > 3 && trk_chi2->at(it) < 100.) ntrk_4stubchi2_pt3++;
       }
-      if (trk_pt->at(it) > 10.0) ntrk_pt10++;
-
+      if (trk_pt->at(it) > 10.0 && fabs(trk_eta->at(it))<2.5) {
+	ntrk_pt10++;
+	//if (trk_nstub->at(it) > 3) ntrk_4stub_pt10++;
+	//if (trk_nstub->at(it) > 3 && trk_chi2->at(it) < 100.) ntrk_4stubchi2_pt10++;
+      }
     }
 
 
@@ -560,6 +568,15 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
     // tracking particle loop
     for (int it=0; it<(int)tp_pt->size(); it++) {
       
+      // total track rates
+      if (tp_nstub->at(it) >= 4 && tp_nstublayer->at(it) >= 4 && fabs(tp_dxy->at(it)) < 1 && fabs(tp_eta->at(it)) < TP_maxEta) {
+	if (tp_pt->at(it) > 3.0) {
+	  ntp_pt3++;
+	  h_tp_vspt->Fill(tp_pt->at(it));
+	}
+	if (tp_pt->at(it) > 10.0) ntp_pt10++;
+      }
+
       // cut on PDG ID at plot stage?
       if (TP_select_pdgid != 0) {
 	if (abs(tp_pdgid->at(it)) != abs(TP_select_pdgid)) continue;
@@ -572,15 +589,6 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
       if (tp_pt->at(it) < 0.2) continue;
       if (tp_pt->at(it) > TP_maxPt) continue;
       if (fabs(tp_eta->at(it)) > TP_maxEta) continue;
-
-      
-      // track rates
-      if (tp_pt->at(it) > 3.0) {
-	ntp_pt3++;
-	h_tp_vspt->Fill(tp_pt->at(it));
-      }
-      if (tp_pt->at(it) > 10.0) ntp_pt10++;
-
 
       h_tp_pt->Fill(tp_pt->at(it));
       if (tp_pt->at(it) < 8.0) h_tp_pt_L->Fill(tp_pt->at(it));
@@ -1407,11 +1415,13 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   // resoultion vs pt
   // ----------------------------------------------------------------------------------------------------------
 
+  h2_resVsPt_pt_90->SetMinimum(0);
   h2_resVsPt_pt_90->Draw();
   h2_resVsPt_pt_90->Write();
   c.SaveAs(DIR+type+"_resVsPt_pt_90.eps");
   c.SaveAs(DIR+type+"_resVsPt_pt_90.png");
 
+  h2_resVsPt_ptRel_90->SetMinimum(0);
   h2_resVsPt_ptRel_90->Draw();
   h2_resVsPt_ptRel_90->Write();
   c.SaveAs(DIR+type+"_resVsPt_ptRel_90.eps");
@@ -1473,7 +1483,9 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   // resolution vs eta
   // ----------------------------------------------------------------------------------------------------------
 
-  h2_resVsEta_eta_90->Draw();
+  h2_resVsEta_eta_90->SetMinimum(0);
+  h2_resVsEta_eta_90->SetMarkerStyle(20);
+  h2_resVsEta_eta_90->Draw("p");
   h2_resVsEta_eta_90->Write();
   c.SaveAs(DIR+type+"_resVsEta_eta_90.eps");
   c.SaveAs(DIR+type+"_resVsEta_eta_90.png");
@@ -1492,7 +1504,9 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   c.SaveAs(DIR+type+"_resVsEta_eta_H_90.eps");
   c.SaveAs(DIR+type+"_resVsEta_eta_H_90.png");
 
-  h2_resVsEta_z0_90->Draw();
+  h2_resVsEta_z0_90->SetMinimum(0);
+  h2_resVsEta_z0_90->SetMarkerStyle(20);
+  h2_resVsEta_z0_90->Draw("p");
   h2_resVsEta_z0_90->Write();
   c.SaveAs(DIR+type+"_resVsEta_z0_90.eps");
   c.SaveAs(DIR+type+"_resVsEta_z0_90.png");
@@ -1530,7 +1544,9 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   c.SaveAs(DIR+type+"_resVsEta_d0_H_90.eps");
   c.SaveAs(DIR+type+"_resVsEta_d0_H_90.png");
 
-  h2_resVsEta_phi_90->Draw();
+  h2_resVsEta_phi_90->SetMinimum(0);
+  h2_resVsEta_phi_90->SetMarkerStyle(20);
+  h2_resVsEta_phi_90->Draw("p");
   h2_resVsEta_phi_90->Write();
   c.SaveAs(DIR+type+"_resVsEta_phi_90.eps");
   c.SaveAs(DIR+type+"_resVsEta_phi_90.png");
@@ -1550,7 +1566,9 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   c.SaveAs(DIR+type+"_resVsEta_phi_H_90.png");
 
 
-  h2_resVsEta_ptRel_90->Draw();
+  h2_resVsEta_ptRel_90->SetMinimum(0);
+  h2_resVsEta_ptRel_90->SetMarkerStyle(20);
+  h2_resVsEta_ptRel_90->Draw("p");
   h2_resVsEta_ptRel_90->Write();
   c.SaveAs(DIR+type+"_resVsEta_ptRel_90.eps");
   c.SaveAs(DIR+type+"_resVsEta_ptRel_90.png");
@@ -2149,6 +2167,10 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   cout << "# tracks/event (pt > 3.0) = " << (float)ntrk_pt3/nevt << endl;
   cout << "# tracks/event (pt > 10.0) = " << (float)ntrk_pt10/nevt << endl;
 
+  //cout << "# tracks/event (pt > 3.0), 4stubs = " << (float)ntrk_4stub_pt3/nevt << endl;
+  //cout << "# tracks/event (pt > 10.0), 4stubs = " << (float)ntrk_4stub_pt10/nevt << endl;
+  //cout << "# tracks/event (pt > 3.0), 4stubs+chi2 = " << (float)ntrk_4stubchi2_pt3/nevt << endl;
+  //cout << "# tracks/event (pt > 10.0), 4stubs+chi2 = " << (float)ntrk_4stubchi2_pt10/nevt << endl;
 
 
 }
