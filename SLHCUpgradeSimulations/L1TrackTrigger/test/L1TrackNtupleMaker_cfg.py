@@ -14,7 +14,6 @@ process = cms.Process("L1TrackNtuple")
 process.load('Configuration.StandardSequences.Services_cff')
 process.load('FWCore.MessageService.MessageLogger_cfi')
 process.load('Configuration.EventContent.EventContent_cff')
-#process.load('Configuration.Geometry.GeometryExtended2023TTIReco_cff')
 process.load('Configuration.Geometry.GeometryExtendedPhase2TkBE5DPixel10DReco_cff')
 process.load('Configuration.Geometry.GeometryExtendedPhase2TkBE5DPixel10D_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
@@ -31,16 +30,28 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:upgradePLS3', '')
 # input and output
 ############################################################
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 Source_Files = cms.untracked.vstring(
     ## ttbar PU=140
-    '/store/group/upgrade/Tracker/L1Tracking/Synchro/Input/TTbar/CMSSW_6_2_0_SLHC26-DES23_62_V1_LHCCRefPU140-v1/FC5CDAC1-4E2F-E511-8085-0026189438D9.root'
-    ## single muons PU=140
-    #'/store/group/upgrade/Tracker/L1Tracking/Synchro/Input/Muon/RelValSingleMuPt10_CMSSW_6_2_0_SLHC26-DES23_62_V1_LHCCRefPU140-v1/067B7C51-3B2F-E511-B41F-0025905A607E.root'
+    #'/store/group/upgrade/Tracker/L1Tracking/Synchro/Input/TTbar/CMSSW_6_2_0_SLHC26-DES23_62_V1_LHCCRefPU140-v1/FC5CDAC1-4E2F-E511-8085-0026189438D9.root'
+    # single muons PU=140, pt=100
+    #'/store/group/upgrade/Tracker/L1Tracking/Synchro/Input/Muon/RelValSingleMuPt100_CMSSW_6_2_0_SLHC26-DES23_62_V1_LHCCRefPU140-v1/D8D712F1-3A2F-E511-9716-0025905A605E.root',
+    #'/store/group/upgrade/Tracker/L1Tracking/Synchro/Input/Muon/RelValSingleMuPt100_CMSSW_6_2_0_SLHC26-DES23_62_V1_LHCCRefPU140-v1/BA72AD12-392F-E511-8E29-0025905A60B0.root',
+    #'/store/group/upgrade/Tracker/L1Tracking/Synchro/Input/Muon/RelValSingleMuPt100_CMSSW_6_2_0_SLHC26-DES23_62_V1_LHCCRefPU140-v1/BE12E362-3C2F-E511-BEBD-0025905A6136.root',
+    #'/store/group/upgrade/Tracker/L1Tracking/Synchro/Input/Muon/RelValSingleMuPt100_CMSSW_6_2_0_SLHC26-DES23_62_V1_LHCCRefPU140-v1/BEAF343E-3B2F-E511-BADF-002618943800.root',
+    #'/store/group/upgrade/Tracker/L1Tracking/Synchro/Input/Muon/RelValSingleMuPt100_CMSSW_6_2_0_SLHC26-DES23_62_V1_LHCCRefPU140-v1/C2D56BE8-392F-E511-814C-0025905B8598.root',
+    
+    ## new ttbar sample
+    'file:TTbar_new_1.root',
+    'file:TTbar_new_2.root',
+    'file:TTbar_new_3.root',
+    'file:TTbar_new_4.root',
+    'file:TTbar_new_5.root',
+    'file:TTbar_new_6.root',
 	)
 process.source = cms.Source("PoolSource", fileNames = Source_Files)
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string('TTbar_PU140.root'), closeFileFast = cms.untracked.bool(True))
+process.TFileService = cms.Service("TFileService", fileName = cms.string('ntuple_TTbar_PU0.root'), closeFileFast = cms.untracked.bool(True))
 
 
 ############################################################
@@ -49,9 +60,21 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string('TTbar_
 
 #run the tracking (example for tracklet method)
 BeamSpotFromSim = cms.EDProducer("BeamSpotFromSimProducer")
-#process.TTTracksFromPixelDigis.phiWindowSF = cms.untracked.double(2.0)  ## uncomment this to run with wider projection windows (for electrons)
+#process.TTTracksFromPixelDigis.phiWindowSF = cms.untracked.double(2.0)  ## uncomment this to run with wider projection windows
 process.TT_step = cms.Path(process.TrackTriggerTTTracks)
 process.TTAssociator_step = cms.Path(process.TrackTriggerAssociatorTracks)
+
+
+############################################################
+# primary vertex producer 
+############################################################
+
+process.load("SLHCUpgradeSimulations.L1TrackTrigger.L1TkPrimaryVertexProducer_cfi")
+process.pL1TkPrimaryVertex = cms.Path( process.L1TkPrimaryVertex )
+
+process.L1TkPrimaryVertexMC = process.L1TkPrimaryVertex.clone()
+process.L1TkPrimaryVertexMC.MonteCarloVertex = cms.bool( True )
+process.pL1TkPrimaryVertexMC = cms.Path( process.L1TkPrimaryVertexMC )
 
 
 ############################################################
@@ -79,11 +102,34 @@ process.L1TrackNtuple = cms.EDAnalyzer('L1TrackNtupleMaker',
                                        TP_maxZ0 = cms.double(30.0),      # only save TPs with |z0| < X cm
                                        L1TrackInputTag = cms.InputTag("TTTracksFromPixelDigis", "Level1TTTracks"),               # TTTrack input
                                        MCTruthTrackInputTag = cms.InputTag("TTTrackAssociatorFromPixelDigis", "Level1TTTracks"), # MCTruth input 
+                                       ## isolation stuff 
+                                       TrackIsolation = cms.bool(True),
+                                       # cuts on the central object (the truth muon & track matched to it)
+                                       PTmin = cms.double(20.0),           # central object pt > X GeV, ptmin < 0 means no cut applied
+                                       ETAmax = cms.double(2.4),           # central object |eta| < X
+                                       TrackPTmin = cms.double(20.0),      # for track matched to central object
+                                       TrackETAmax = cms.double(2.4),
+                                       TrackChi2max = cms.double(100.0),
+                                       TrackNStubmin = cms.int32(4),
+                                       # cuts on the tracks (used to determine isolation variable)
+                                       IsoTrackZmax = cms.double(25.),     # in cm
+                                       IsoTrackChi2max = cms.double(1e10),
+                                       IsoTrackNStubmin = cms.int32(4),    
+                                       IsoTrackPTmin = cms.double(3.0),    # in GeV
+                                       IsoDRmin = cms.double(0.0),
+                                       IsoDRmax = cms.double(0.3),
+                                       IsoDZmax = cms.double(1e10),        # in cm
+                                       ## tracking in jets stuff (--> requires AK4 genjet collection present!)
+                                       TrackingInJets = cms.bool(True),
+                                       JetPTmin = cms.double(30),
+                                       ## save primary vertex information? (--> requires that you ran that above)
+                                       PrimaryVertex = cms.bool(True),
                                        )
 process.ana = cms.Path(process.L1TrackNtuple)
 
+
 ############################################################
-# output module (can use this to store edm-file instead of root-ntuple)
+# output module
 ############################################################
 
 #process.out = cms.OutputModule( "PoolOutputModule",
@@ -93,7 +139,10 @@ process.ana = cms.Path(process.L1TrackNtuple)
 #                                                                       'keep *_*_Level1TTTracks_*',
 #                                                                       'keep *_*_StubAccepted_*',
 #                                                                       'keep *_*_ClusterAccepted_*',
-#                                                                       'keep *_*_MergedTrackTruth_*')
+#                                                                       'keep *_*_MergedTrackTruth_*',
+#                                                                       'keep *_L1TkPrimaryVertex_*_*',
+#                                                                       'keep *_L1TkPrimaryVertexMC_*_*',
+#                                                                       'keep *_genParticles_*_*'
 #)
 #process.FEVToutput_step = cms.EndPath(process.out)
 
@@ -102,18 +151,14 @@ process.ana = cms.Path(process.L1TrackNtuple)
 # Automatic addition of the customisation function from SLHCUpgradeSimulations.Configuration.combinedCustoms
 ############################################################
 
-# OLD, FOR TTI SAMPLES
-#from SLHCUpgradeSimulations.Configuration.combinedCustoms import cust_2023TTI
-#process = cust_2023TTI(process)
-
-# NEW, FOR SCOPE DOCUMENT REL VAL SAMPLES
 from SLHCUpgradeSimulations.Configuration.combinedCustoms import customiseBE5DPixel10D
 from SLHCUpgradeSimulations.Configuration.combinedCustoms import customise_ev_BE5DPixel10D
 process=customiseBE5DPixel10D(process)
 process=customise_ev_BE5DPixel10D(process)
 
+
 ############################################################
 # process schedule
 ############################################################
 
-process.schedule = cms.Schedule(process.TT_step,process.TTAssociator_step,process.ana)
+process.schedule = cms.Schedule(process.TT_step,process.TTAssociator_step,process.pL1TkPrimaryVertex,process.pL1TkPrimaryVertexMC,process.ana)

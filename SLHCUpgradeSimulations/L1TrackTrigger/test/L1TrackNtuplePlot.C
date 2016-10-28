@@ -40,7 +40,7 @@ void makeResidualIntervalPlot( TString type, TString dir, TString variable, TH1F
 // ----------------------------------------------------------------------------------------------------------------
 
 
-void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventid=0, float TP_minPt=3.0, float TP_maxPt=100.0, float TP_maxEta=2.4) {
+void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=0, int TP_select_eventid=0, float TP_minPt=3.0, float TP_maxPt=100.0, float TP_maxEta=2.4) {
 
   // type:              this is the input file you want to process (minus ".root" extension)
   // TP_select_pdgid:   if non-zero, only select TPs with a given PDG ID
@@ -48,7 +48,10 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   // TP_minPt:          only look at TPs with pt > X GeV
   // TP_maxPt:          only look at TPs with pt < X GeV
   // TP_maxEta:         only look at TPs with |eta| < X
+
+  // TP_select_injet: only look at TPs that are within a jet (==1) or within a ttbar jet (==2) or all TPs (==0)
  
+
   gROOT->SetBatch();
   gErrorIgnoreLevel = kWarning;
   
@@ -89,8 +92,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   // ----------------------------------------------------------------------------------------------------------------
   // read ntuples
   TChain* tree = new TChain("L1TrackNtuple/eventTree");
-  //tree->Add(type+".root");
-  tree->Add("RootFiles/"+type+".root");
+  tree->Add(type+".root");
   
   if (tree->GetEntries() == 0) {
     cout << "File doesn't exist or is empty, returning..." << endl;
@@ -109,10 +111,13 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   vector<float>* tp_z0;
   vector<float>* tp_d0;
   vector<int>*   tp_pdgid;
+  vector<int>*   tp_momid;
   vector<int>*   tp_nmatch;
   vector<int>*   tp_nstub;
   vector<int>*   tp_nstublayer;
   vector<int>*   tp_eventid;
+  vector<int>*   tp_injet;
+  vector<int>*   tp_inttjet;
   
   // *L1 track* properties, for tracking particles matched to a L1 track
   vector<float>* matchtrk_pt;
@@ -123,6 +128,8 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   vector<float>* matchtrk_chi2;
   vector<float>* matchtrk_consistency; 
   vector<int>*   matchtrk_nstub;
+  vector<int>*   matchtrk_injet;
+  vector<int>*   matchtrk_inttjet;
 
   // all L1 tracks
   vector<float>* trk_pt;
@@ -130,6 +137,8 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   vector<float>* trk_phi;
   vector<float>* trk_chi2;
   vector<int>*   trk_nstub;
+  vector<int>*   trk_injet;
+  vector<int>*   trk_inttjet;
 
   TBranch* b_tp_pt;
   TBranch* b_tp_eta;
@@ -138,10 +147,13 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   TBranch* b_tp_z0;
   TBranch* b_tp_d0;
   TBranch* b_tp_pdgid;
+  TBranch* b_tp_momid;
   TBranch* b_tp_nmatch;
   TBranch* b_tp_nstub;
   TBranch* b_tp_nstublayer;
   TBranch* b_tp_eventid;
+  TBranch* b_tp_injet;
+  TBranch* b_tp_inttjet;
 
   TBranch* b_matchtrk_pt;
   TBranch* b_matchtrk_eta;
@@ -151,12 +163,16 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   TBranch* b_matchtrk_chi2; 
   TBranch* b_matchtrk_consistency; 
   TBranch* b_matchtrk_nstub;
+  TBranch* b_matchtrk_injet;
+  TBranch* b_matchtrk_inttjet;
 
   TBranch* b_trk_pt; 
   TBranch* b_trk_eta; 
   TBranch* b_trk_phi; 
   TBranch* b_trk_chi2; 
   TBranch* b_trk_nstub; 
+  TBranch* b_trk_injet;
+  TBranch* b_trk_inttjet;
 
 
   tp_pt  = 0;
@@ -166,10 +182,13 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   tp_z0  = 0;
   tp_d0  = 0;
   tp_pdgid = 0;
+  tp_momid = 0;
   tp_nmatch = 0;
   tp_nstub = 0;
   tp_nstublayer = 0;
   tp_eventid = 0;
+  tp_injet = 0;
+  tp_inttjet = 0;
 
   matchtrk_pt  = 0;
   matchtrk_eta = 0;
@@ -179,12 +198,16 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   matchtrk_chi2  = 0; 
   matchtrk_consistency  = 0; 
   matchtrk_nstub = 0;
+  matchtrk_injet = 0;
+  matchtrk_inttjet = 0;
 
   trk_pt = 0; 
   trk_eta = 0; 
   trk_phi = 0; 
   trk_chi2 = 0; 
   trk_nstub = 0; 
+  trk_injet = 0;
+  trk_inttjet = 0;
 
 
   tree->SetBranchAddress("tp_pt",     &tp_pt,     &b_tp_pt);
@@ -196,9 +219,11 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   tree->SetBranchAddress("tp_pdgid",  &tp_pdgid,  &b_tp_pdgid);
   if (doLooseMatch) tree->SetBranchAddress("tp_nloosematch", &tp_nmatch, &b_tp_nmatch);
   else tree->SetBranchAddress("tp_nmatch", &tp_nmatch, &b_tp_nmatch);
-  tree->SetBranchAddress("tp_nstub",  &tp_nstub,  &b_tp_nstub);
+  tree->SetBranchAddress("tp_nstub",      &tp_nstub,      &b_tp_nstub);
   tree->SetBranchAddress("tp_nstublayer", &tp_nstublayer, &b_tp_nstublayer);
-  tree->SetBranchAddress("tp_eventid",&tp_eventid,&b_tp_eventid);
+  tree->SetBranchAddress("tp_eventid",    &tp_eventid,    &b_tp_eventid);
+  tree->SetBranchAddress("tp_injet",   &tp_injet,   &b_tp_injet);
+  tree->SetBranchAddress("tp_inttjet", &tp_inttjet, &b_tp_inttjet);
 
   if (doLooseMatch) {
     tree->SetBranchAddress("loosematchtrk_pt",    &matchtrk_pt,    &b_matchtrk_pt);
@@ -209,6 +234,8 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
     tree->SetBranchAddress("loosematchtrk_chi2",  &matchtrk_chi2,  &b_matchtrk_chi2);
     tree->SetBranchAddress("loosematchtrk_consistency", &matchtrk_consistency, &b_matchtrk_consistency);
     tree->SetBranchAddress("loosematchtrk_nstub", &matchtrk_nstub, &b_matchtrk_nstub);
+    tree->SetBranchAddress("loosematchtrk_injet",   &matchtrk_injet,   &b_matchtrk_injet);
+    tree->SetBranchAddress("loosematchtrk_inttjet", &matchtrk_inttjet, &b_matchtrk_inttjet);
   }
   else {
     tree->SetBranchAddress("matchtrk_pt",    &matchtrk_pt,    &b_matchtrk_pt);
@@ -219,6 +246,8 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
     tree->SetBranchAddress("matchtrk_chi2",  &matchtrk_chi2,  &b_matchtrk_chi2);
     tree->SetBranchAddress("matchtrk_consistency", &matchtrk_consistency, &b_matchtrk_consistency);
     tree->SetBranchAddress("matchtrk_nstub", &matchtrk_nstub, &b_matchtrk_nstub);
+    tree->SetBranchAddress("matchtrk_injet",   &matchtrk_injet,   &b_matchtrk_injet);
+    tree->SetBranchAddress("matchtrk_inttjet", &matchtrk_inttjet, &b_matchtrk_inttjet);
   }
 
   tree->SetBranchAddress("trk_pt",   &trk_pt,   &b_trk_pt);
@@ -226,6 +255,8 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   tree->SetBranchAddress("trk_phi",  &trk_phi,  &b_trk_phi);
   tree->SetBranchAddress("trk_chi2", &trk_chi2, &b_trk_chi2);
   tree->SetBranchAddress("trk_nstub", &trk_nstub, &b_trk_nstub);
+  tree->SetBranchAddress("trk_injet",   &trk_injet,   &b_trk_injet);
+  tree->SetBranchAddress("trk_inttjet", &trk_inttjet, &b_trk_inttjet);
 
 
   // ----------------------------------------------------------------------------------------------------------------
@@ -550,6 +581,10 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
     // track loop for total rates
     for (int it=0; it<(int)trk_pt->size(); it++) {
            
+      // only look at tracks in (ttbar) jets
+      if (TP_select_injet == 1 && trk_injet->at(it) == 0) continue;       
+      if (TP_select_injet == 2 && trk_inttjet->at(it) == 0) continue;       
+
       if (trk_pt->at(it) > 3.0 && fabs(trk_eta->at(it))<2.5) {
 	ntrk_pt3++;
 	h_trk_vspt->Fill(trk_pt->at(it));
@@ -567,6 +602,11 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
     // ----------------------------------------------------------------------------------------------------------------
     // tracking particle loop
     for (int it=0; it<(int)tp_pt->size(); it++) {
+
+      // only look at TPs in (ttbar) jets
+      if (TP_select_injet == 1 && tp_injet->at(it) == 0) continue;       
+      if (TP_select_injet == 2 && tp_inttjet->at(it) == 0) continue;       
+
       
       // total track rates
       if (tp_nstub->at(it) >= 4 && tp_nstublayer->at(it) >= 4 && fabs(tp_dxy->at(it)) < 1 && fabs(tp_eta->at(it)) < TP_maxEta) {
@@ -584,7 +624,8 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
       
       // cut on event ID (eventid=0 means the TP is from the primary interaction, so *not* selecting only eventid=0 means including stuff from pileup)
       if (TP_select_eventid == 0 && tp_eventid->at(it) != 0) continue;
-      
+
+
       if (tp_dxy->at(it) > 1) continue;
       if (tp_pt->at(it) < 0.2) continue;
       if (tp_pt->at(it) > TP_maxPt) continue;
@@ -1381,6 +1422,10 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
     sprintf(pdgidtxt,"_pdgid%i",TP_select_pdgid);
     type = type+pdgidtxt;
   }
+
+  if (TP_select_injet == 1) type = type+"_injet";
+  if (TP_select_injet == 2) type = type+"_inttjet";
+
   
   TFile* fout = new TFile("output_"+type+".root","recreate");
   
@@ -1416,33 +1461,43 @@ void L1TrackNtuplePlot(TString type, int TP_select_pdgid=0, int TP_select_eventi
   // ----------------------------------------------------------------------------------------------------------
 
   h2_resVsPt_pt_90->SetMinimum(0);
-  h2_resVsPt_pt_90->Draw();
+  h2_resVsPt_pt_90->SetMarkerStyle(20);
+  h2_resVsPt_pt_90->Draw("p");
   h2_resVsPt_pt_90->Write();
   c.SaveAs(DIR+type+"_resVsPt_pt_90.eps");
   c.SaveAs(DIR+type+"_resVsPt_pt_90.png");
 
   h2_resVsPt_ptRel_90->SetMinimum(0);
-  h2_resVsPt_ptRel_90->Draw();
+  h2_resVsPt_ptRel_90->SetMarkerStyle(20);
+  h2_resVsPt_ptRel_90->Draw("p");
   h2_resVsPt_ptRel_90->Write();
   c.SaveAs(DIR+type+"_resVsPt_ptRel_90.eps");
   c.SaveAs(DIR+type+"_resVsPt_ptRel_90.png");
 
-  h2_resVsPt_z0_90->Draw();
+  h2_resVsPt_z0_90->SetMinimum(0);
+  h2_resVsPt_z0_90->SetMarkerStyle(20);
+  h2_resVsPt_z0_90->Draw("p");
   h2_resVsPt_z0_90->Write();
   c.SaveAs(DIR+type+"_resVsPt_z0_90.eps");
   c.SaveAs(DIR+type+"_resVsPt_z0_90.png");
 
-  h2_resVsPt_phi_90->Draw();
+  h2_resVsPt_phi_90->SetMinimum(0);
+  h2_resVsPt_phi_90->SetMarkerStyle(20);
+  h2_resVsPt_phi_90->Draw("p");
   h2_resVsPt_phi_90->Write();
   c.SaveAs(DIR+type+"_resVsPt_phi_90.eps");
   c.SaveAs(DIR+type+"_resVsPt_phi_90.png");
 
-  h2_resVsPt_eta_90->Draw();
+  h2_resVsPt_eta_90->SetMinimum(0);
+  h2_resVsPt_eta_90->SetMarkerStyle(20);
+  h2_resVsPt_eta_90->Draw("p");
   h2_resVsPt_eta_90->Write();
   c.SaveAs(DIR+type+"_resVsPt_eta_90.eps");
   c.SaveAs(DIR+type+"_resVsPt_eta_90.png");
 
-  h2_resVsPt_d0_90->Draw();
+  h2_resVsPt_phi_90->SetMinimum(0);
+  h2_resVsPt_d0_90->SetMarkerStyle(20);
+  h2_resVsPt_d0_90->Draw("p");
   h2_resVsPt_d0_90->Write();
   c.SaveAs(DIR+type+"_resVsPt_d0_90.eps");
   c.SaveAs(DIR+type+"_resVsPt_d0_90.png");
