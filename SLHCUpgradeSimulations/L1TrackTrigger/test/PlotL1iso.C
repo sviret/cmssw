@@ -317,10 +317,10 @@ void PlotL1iso(TString name) {
     h_effiso_pt_prompt[ih]->GetYaxis()->SetTitle("Efficiency");
     h_effiso_pt_prompt[ih]->Divide(h_isotrk_pt_prompt[ih], h_matchtrk_pt_prompt, 1.0, 1.0, "B");
 
-    h_effiso_eta_prompt[ih] = (TH1F*) h_isotrk_eta_nonprompt[ih]->Clone();
-    h_effiso_eta_prompt[ih]->SetName("eff_iso"+nisocut[ih]+"_eta_nonprompt");
+    h_effiso_eta_prompt[ih] = (TH1F*) h_isotrk_eta_prompt[ih]->Clone();
+    h_effiso_eta_prompt[ih]->SetName("eff_iso"+nisocut[ih]+"_eta_prompt");
     h_effiso_eta_prompt[ih]->GetYaxis()->SetTitle("Efficiency");
-    h_effiso_eta_prompt[ih]->Divide(h_isotrk_eta_nonprompt[ih], h_matchtrk_eta_nonprompt, 1.0, 1.0, "B");
+    h_effiso_eta_prompt[ih]->Divide(h_isotrk_eta_prompt[ih], h_matchtrk_eta_prompt, 1.0, 1.0, "B");
 
     h_effiso_pt_nonprompt[ih] = (TH1F*) h_isotrk_pt_nonprompt[ih]->Clone();
     h_effiso_pt_nonprompt[ih]->SetName("eff_iso"+nisocut[ih]+"_pt_nonprompt");
