@@ -59,7 +59,7 @@ RetinaTrackFitter::~RetinaTrackFitter(){
 }
 
 
-void RetinaTrackFitter::fit(vector<Hit*> hits_){
+void RetinaTrackFitter::fit(vector<Hit*> hits_, int pattern_id){
   if ( hits_.size()>1024 ){
     cout << "*** ERROR in RetinaTrackFitter::fit() at event/road = " << event_counter << "/" 
 	 << road_id << ": too many stubs for fitting, fit aborted!" << endl;

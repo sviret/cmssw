@@ -155,7 +155,10 @@ void TrackFitTCProducer::produce( edm::Event& iEvent, const edm::EventSetup& iSe
 
   TCBuilder* TCB  = new TCBuilder(nbLayers); // Floating point
   TCBuilder* TCBb = new TCBuilder(nbLayers); // Bit-wise
+  TCB->setHardwareEmulation(false);
+  TCB->setLocalToGlobalConverter(NULL);
   TCBb->setHardwareEmulation(true);
+  TCBb->setLocalToGlobalConverter(NULL);
 
   /// STEP 1
   /// Loop over patterns

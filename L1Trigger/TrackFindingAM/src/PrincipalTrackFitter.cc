@@ -27,7 +27,7 @@ void PrincipalTrackFitter::mergeTracks(){
   //cout<<"Merging of Tracks not implemented"<<endl;
 }
 
-void PrincipalTrackFitter::fit(vector<Hit*> hits){
+void PrincipalTrackFitter::fit(vector<Hit*> hits, int pattern_id){
   //cout<<"fit(vector<Hit*>) not implemented"<<endl;
 }
 

@@ -1,6 +1,6 @@
 #include "../interface/LocalToGlobalConverter.h"
 
-LocalToGlobalConverter::LocalToGlobalConverter(const Sector& sectorDefinition, string geometryFile){
+LocalToGlobalConverter::LocalToGlobalConverter(const Sector* sectorDefinition, string geometryFile){
   string line;
   ifstream myfile (geometryFile.c_str());
   int layer = -1;
@@ -12,9 +12,10 @@ LocalToGlobalConverter::LocalToGlobalConverter(const Sector& sectorDefinition, s
   stringstream val;
 
   module_pos = NULL;
+  sector = sectorDefinition;
 
   //Which side of the tracker are we on?
-  if(sectorDefinition.getOfficialID()<24)
+  if(sectorDefinition->getOfficialID()<24)
     tracker_side=true;
   else
     tracker_side=false;
@@ -64,10 +65,10 @@ LocalToGlobalConverter::LocalToGlobalConverter(const Sector& sectorDefinition, s
 	  val.clear();
 	  val.str(items[2]);
 	  val >> module;
-	  local_ladder = sectorDefinition.getLadderCode(layer,ladder);
+	  local_ladder = sectorDefinition->getLadderCode(layer,ladder);
 	  if(local_ladder==-1)//not in the sector
 	    continue;
-	  local_module = sectorDefinition.getModuleCode(layer,ladder,module);
+	  local_module = sectorDefinition->getModuleCode(layer,ladder,module);
 	  if(local_module==-1)//not in the sector
 	    continue;
 	  bool isPSModule = false;
@@ -88,6 +89,19 @@ LocalToGlobalConverter::LocalToGlobalConverter(const Sector& sectorDefinition, s
 	  val.str(items[10]);
 	  val >> coef_value;
 	  module_pos[prbf2_layer][local_ladder][local_module][2]=coef_value;
+
+	  //Process the starting phi of the tower
+	  double sec_phi = (sectorDefinition->getOfficialID()%8) * M_PI / 4.0 - 0.4;
+	  
+	  //cos and sin values for a rotation of an angle -sec_phi
+	  double ci = cos(-sec_phi);
+	  double si = sin(-sec_phi);
+
+	  //Rotates the module center to the first sector
+	  double rotatedX = module_pos[prbf2_layer][local_ladder][local_module][0] * ci - module_pos[prbf2_layer][local_ladder][local_module][1] * si;
+	  double rotatedY = module_pos[prbf2_layer][local_ladder][local_module][0] * si + module_pos[prbf2_layer][local_ladder][local_module][1] * ci;
+	  module_pos[prbf2_layer][local_ladder][local_module][0] = rotatedX;
+	  module_pos[prbf2_layer][local_ladder][local_module][1] = rotatedY;
 
 	  //Computes the angle between X axis and the module center
 	  float PhiMod = atan2(module_pos[prbf2_layer][local_ladder][local_module][1],module_pos[prbf2_layer][local_ladder][local_module][0]);//atan2(y,x)
@@ -112,19 +126,31 @@ LocalToGlobalConverter::LocalToGlobalConverter(const Sector& sectorDefinition, s
 	  if(layer<11){
 	    module_pos[prbf2_layer][local_ladder][local_module][3]=fStripPitch * sin(PhiMod);
 	    module_pos[prbf2_layer][local_ladder][local_module][4]=-fStripPitch * cos(PhiMod);
-	    module_pos[prbf2_layer][local_ladder][local_module][5]=0;
-	    module_pos[prbf2_layer][local_ladder][local_module][6]=0;
-	    module_pos[prbf2_layer][local_ladder][local_module][7]=0;
+	    module_pos[prbf2_layer][local_ladder][local_module][5]=0.0;
+	    module_pos[prbf2_layer][local_ladder][local_module][6]=0.0;
+	    module_pos[prbf2_layer][local_ladder][local_module][7]=0.0;
 	    module_pos[prbf2_layer][local_ladder][local_module][8]=-fSegmentPitch;
 	  }
 	  else{
 	    module_pos[prbf2_layer][local_ladder][local_module][3]=fStripPitch * sin(PhiMod);
 	    module_pos[prbf2_layer][local_ladder][local_module][4]=-fStripPitch * cos(PhiMod);
-	    module_pos[prbf2_layer][local_ladder][local_module][5]=0;
+	    module_pos[prbf2_layer][local_ladder][local_module][5]=0.0;
 	    module_pos[prbf2_layer][local_ladder][local_module][6]=-fSegmentPitch * cos(PhiMod);
 	    module_pos[prbf2_layer][local_ladder][local_module][7]=-fSegmentPitch * sin(PhiMod);
-	    module_pos[prbf2_layer][local_ladder][local_module][8]=0;
+	    module_pos[prbf2_layer][local_ladder][local_module][8]=0.0;
 	  }
+
+	  //Apply the HW binning to the coefficients 
+	  module_pos[prbf2_layer][local_ladder][local_module][0] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][0], 6, 18, SIGNED);
+	  module_pos[prbf2_layer][local_ladder][local_module][1] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][1], 6, 18, SIGNED);
+	  module_pos[prbf2_layer][local_ladder][local_module][2] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][2], 8, 18, SIGNED);
+	  module_pos[prbf2_layer][local_ladder][local_module][3] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][3], -7, 18, SIGNED);
+	  module_pos[prbf2_layer][local_ladder][local_module][4] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][4], -7, 18, SIGNED);
+	  module_pos[prbf2_layer][local_ladder][local_module][5] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][5], -7, 18, SIGNED);
+	  module_pos[prbf2_layer][local_ladder][local_module][6] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][6], 2, 18, SIGNED);
+	  module_pos[prbf2_layer][local_ladder][local_module][7] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][7], 2, 18, SIGNED);
+	  module_pos[prbf2_layer][local_ladder][local_module][8] = CommonTools::binning(module_pos[prbf2_layer][local_ladder][local_module][8], 2, 18, SIGNED);
+	  
 	}
       }
     }
@@ -150,17 +176,38 @@ LocalToGlobalConverter::~LocalToGlobalConverter(){
   }
 }
 
+vector<float> LocalToGlobalConverter::toGlobal(const Hit* h) const throw (std::runtime_error){
+  int hit_layer = h->getLayer();
+  int hit_ladder = h->getLadder();
+  int hit_module = h->getModule();	    
+  bool isPSModule = false;
+  if((hit_layer>=5 && hit_layer<=7) || (hit_layer>10 && hit_ladder<=8)){
+    isPSModule=true;
+  }
+  int prbf2_layer = CMSPatternLayer::cmssw_layer_to_prbf2_layer(hit_layer,isPSModule);
+  int prbf2_ladder = sector->getLadderCode(hit_layer, hit_ladder);
+  int prbf2_module = sector->getModuleCode(hit_layer, hit_ladder, hit_module);
+
+  return toGlobal(prbf2_layer,prbf2_ladder, prbf2_module, h->getSegment(), h->getHDStripNumber());
+}
+
 vector<float> LocalToGlobalConverter::toGlobal(int layer, int ladder, int module, int segment, float strip) const throw (std::runtime_error){
 
   if(module_pos==NULL){
     throw std::runtime_error("Modules position lookup table not found");
   }
 
+  //Correction of a strip number bug (when strip decimal is not zero, it has to be 0.5)
+  if (strip != floor(strip)){
+    strip = floor(strip)+0.5;
+  }
+
   bool isPS = (layer<8);
-  float relatStrip=0;
-  float relatSeg=0;
+  float relatStrip=0.0;
+  float relatSeg=0.0;
   float X;
   float Y;
+  float Z;
   
   bool isBarrel = ((layer&0x7)<3);
 
@@ -176,17 +223,28 @@ vector<float> LocalToGlobalConverter::toGlobal(int layer, int ladder, int module
   vector<float> res;
   vector<float> positions = module_pos[layer][ladder][module];
 
+
+  X = positions[0];
+  Y = positions[1];
+  Z = positions[2];
+
   if(!tracker_side && !isBarrel){
-    X = positions[0] - relatStrip*positions[3] + relatSeg*positions[6];
-    Y = positions[1] - relatStrip*positions[4] + relatSeg*positions[7];
+    X -= CommonTools::binning(relatStrip*positions[3], 6, 18, SIGNED);
+    Y -= CommonTools::binning(relatStrip*positions[4], 6, 18, SIGNED);
   }
-  else{
-    X = positions[0] + relatStrip*positions[3] + relatSeg*positions[6];
-    Y = positions[1] + relatStrip*positions[4] + relatSeg*positions[7];
+  else {
+    X += CommonTools::binning(relatStrip*positions[3], 6, 18, SIGNED);
+    Y += CommonTools::binning(relatStrip*positions[4], 6, 18, SIGNED);
   }
-  res.push_back(X);//X
-  res.push_back(Y);//Y
-  res.push_back(positions[2] + relatStrip*positions[5] + relatSeg*positions[8]);//Z
+  Z += CommonTools::binning(relatStrip*positions[5], 8, 18, SIGNED);
+
+  X += CommonTools::binning(relatSeg*positions[6], 6, 18, SIGNED);
+  Y += CommonTools::binning(relatSeg*positions[7], 6, 18, SIGNED);
+  Z += CommonTools::binning(relatSeg*positions[8], 8, 18, SIGNED);
+
+  res.push_back(CommonTools::binning(X, 6, 18, SIGNED));
+  res.push_back(CommonTools::binning(Y, 6, 18, SIGNED));
+  res.push_back(CommonTools::binning(Z, 8, 18, SIGNED));
 
   return res;
 }

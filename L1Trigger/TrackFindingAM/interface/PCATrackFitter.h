@@ -12,7 +12,7 @@
 #include <boost/serialization/export.hpp>
 
 
-#include "../interface/pcaconst.h"
+#include "pcaconst.h"
 
 /**
    \brief PCA fitter hfile : Loriano Storchi 2016
@@ -67,7 +67,7 @@ class PCATrackFitter:public TrackFitter
 
   void fit();
   void initialize();
-  void fit(vector<Hit*> hits);
+  void fit(vector<Hit*> hits, int pattern_id=0);
 
   void setTrack(Track* intc); 
 

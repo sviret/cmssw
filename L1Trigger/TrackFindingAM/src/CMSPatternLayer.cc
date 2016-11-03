@@ -114,20 +114,6 @@ void CMSPatternLayer::getSuperStripCuda(int l, const vector<int>& ladd, const ma
 }
 #endif
 
-short CMSPatternLayer::binaryToGray(short num)
-{
-  return (num >> 1) ^ num;
-}
-
-short CMSPatternLayer::grayToBinary(short gray)
-{
-  gray ^= (gray >> 8);
-  gray ^= (gray >> 4);
-  gray ^= (gray >> 2);
-  gray ^= (gray >> 1);
-  return(gray);
-}
-
 void CMSPatternLayer::setValues(short m, short phi, short strip, short seg){
   strip=binaryToGray(strip);
   bits |= (m&MOD_MASK)<<MOD_START_BIT |
@@ -585,23 +571,6 @@ map<int, pair<float,float> > CMSPatternLayer::getLayerDefInEta(){
   eta[21]=pair<float,float>(-2.5,-1.49);
   eta[22]=pair<float,float>(-2.5,-1.65);
   return eta;
-}
-
-vector<int> CMSPatternLayer::getHDSuperstrips(){
-  vector<int> array;
-  int nb_dc = getDCBitsNumber();
-  int base_index = getStripCode()<<nb_dc;
-  if(nb_dc>0){
-    vector<short> positions=getPositionsFromDC();
-    for(unsigned int i=0;i<positions.size();i++){
-      int index = base_index | positions[i];
-      array.push_back(grayToBinary(index));
-    }
-  }
-  else{
-    array.push_back(grayToBinary(base_index));
-  }
-  return array;
 }
 
 int CMSPatternLayer::cmssw_layer_to_prbf2_layer(int cms_layer, bool isPS){
