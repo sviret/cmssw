@@ -36,6 +36,7 @@
 #include "L1Trigger/TrackFindingAM/interface/PatternFinder.h"
 #include "L1Trigger/TrackFindingAM/interface/SectorTree.h"
 #include "L1Trigger/TrackFindingAM/interface/Hit.h"
+#include "L1Trigger/TrackFindingAM/interface/CMSSWLocalToGlobalConverter.h"
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -152,9 +153,11 @@ void TrackFitTCProducer::produce( edm::Event& iEvent, const edm::EventSetup& iSe
 
   std::map< unsigned int , edm::Ref< edmNew::DetSetVector< TTStub< Ref_PixelDigi_ > >, TTStub< Ref_PixelDigi_ > > > stubMap;
   
+  std::map<int, LocalToGlobalConverter* > l2gConverters;
 
   TCBuilder* TCB  = new TCBuilder(nbLayers); // Floating point
   TCBuilder* TCBb = new TCBuilder(nbLayers); // Bit-wise
+  TCB->setHardwareEmulation(false);
   TCBb->setHardwareEmulation(true);
 
   /// STEP 1
@@ -277,9 +280,26 @@ void TrackFitTCProducer::produce( edm::Event& iEvent, const edm::EventSetup& iSe
 
       } /// End of loop over track stubs
 
+      /****** Creates the local to local converters  *****/
+      int ref_sector = -1;
+      if(tempTrackPtr->getSector()>=24)
+	ref_sector = (tempTrackPtr->getSector()%8)+24;
+      else
+	ref_sector = (tempTrackPtr->getSector()%8);
+      map<int, LocalToGlobalConverter* >::iterator l2g_it = l2gConverters.find(ref_sector);
+      if(l2g_it==l2gConverters.end()){
+	//Creation of the LocalToGlobalConverter for this sector
+	LocalToGlobalConverter *l2g = new CMSSWLocalToGlobalConverter(tempTrackPtr->getSector(),"./data/modules_position.txt");
+	l2gConverters[ref_sector] = l2g;
+	l2g_it = l2gConverters.find(ref_sector);
+      }
+      /*************************************************/
+
       TCB->setSectorID(tempTrackPtr->getSector());
+      TCB->setLocalToGlobalConverter(NULL);
       TCB->fit(m_hits);
       TCBb->setSectorID(tempTrackPtr->getSector());
+      TCBb->setLocalToGlobalConverter(l2g_it->second);
       TCBb->fit(m_hits);
 
       tracks = TCB->getTracks();
@@ -360,6 +380,10 @@ void TrackFitTCProducer::produce( edm::Event& iEvent, const edm::EventSetup& iSe
     } // End of loop over patterns
       
     //    std::cout << "PT8" << std::endl;
+
+    for(map<int, LocalToGlobalConverter* >::iterator l2g_it = l2gConverters.begin(); l2g_it!=l2gConverters.end();l2g_it++){
+      delete l2g_it->second;
+    }
 
     delete(TCB);    
     delete(TCBb);  

@@ -2,6 +2,7 @@
 #define _TCBUILDER_H_
 
 #include "TrackFitter.h"
+#include "LocalToGlobalConverter.h"
 #include <math.h>
 
 #include <iomanip>
@@ -10,7 +11,6 @@
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
 
-enum HW_SIGN_TYPE {UNSIGNED, SIGNED};
 
 enum SEC_TYPE {SEC_BARREL, SEC_HYBRID, SEC_ENDCAP};
 
@@ -41,8 +41,8 @@ class TCBuilder:public TrackFitter{
   double m_tabHybridThresholds[2][3][14][2];  //Hybrid LayMaxSeed1 = 1, LayMaxSeed2 = 2, LayMaxTestStub = 13
   double m_tabEndcapThresholds[4][5][16][2];  //Endcap LayMaxSeed1 = 3, LayMaxSeed2 = 4, LayMaxTestStub = 15
 
-  bool m_bHardwareSimulation;
   int m_nMissingHits;
+  LocalToGlobalConverter* l2gConverter;
 
   /**
      \brief Updates the Thresholds with respect to the fractionnal part width
@@ -51,7 +51,6 @@ class TCBuilder:public TrackFitter{
   void addThresholds(int, int, int, SEC_TYPE, double, double);
   void getThresholds(int, int, int, SEC_TYPE, double[]);
   char transcodeLayer(Hit *);
-  double binning(double, int, int, HW_SIGN_TYPE);
   void alignScore(Hit& , Hit& , Hit& , double []);
 
  public:
@@ -72,6 +71,8 @@ class TCBuilder:public TrackFitter{
   void mergeTracks();
 
   Track* createFittedTrack(vector <Hit*>&);
+
+  void setLocalToGlobalConverter(LocalToGlobalConverter* l);
  
   /**
      \brief Configure the way the computing is done
@@ -80,7 +81,7 @@ class TCBuilder:public TrackFitter{
   void setHardwareEmulation(bool hardwareEmulation);
 
   void fit();
-  void fit(vector<Hit*> hits);
+  void fit(vector<Hit*> hits, int pattern_id=-1);
   TrackFitter* clone();
 };
 #endif

@@ -1,4 +1,5 @@
 #include "../interface/Pattern.h"
+#include "../interface/Detector.h"
 
 Pattern::Pattern(int nb){
   nb_layer = nb;
@@ -181,13 +182,23 @@ void Pattern::linkCuda(patternBank* p, deviceDetector* d, int pattern_index, con
 }
 #endif
 
+bool compareHits(Hit* h1, Hit* h2){
+  return h1->getID()<h2->getID();
+}
+
 vector<Hit*> Pattern::getHits(){
   vector<Hit*> hits;
   for(int i=0;i<nb_layer;i++){
+    vector<Hit*> local_hits;
     for(int j=0;j<(int)nb_strips[i];j++){
       vector<Hit*> l_hits = strips[i][j]->getHits();
-      hits.insert(hits.end(), l_hits.begin(), l_hits.end());
+      local_hits.insert(local_hits.end(), l_hits.begin(), l_hits.end());
     }
+    sort(local_hits.begin(),local_hits.end(),compareHits);
+    int nb_hits=(int)local_hits.size();
+    if(Detector::hw_limit_stub_per_layer>0 && nb_hits>Detector::hw_limit_stub_per_layer)
+      nb_hits=Detector::hw_limit_stub_per_layer;
+    hits.insert(hits.end(),local_hits.begin(),local_hits.begin()+nb_hits);
   }
   return hits;
 }
@@ -199,6 +210,10 @@ vector<Hit*> Pattern::getHits(int layerPosition){
       vector<Hit*> l_hits = strips[layerPosition][j]->getHits();
       hits.insert(hits.end(), l_hits.begin(), l_hits.end());
     }
+  }
+  sort(hits.begin(),hits.end(),compareHits);
+  if(Detector::hw_limit_stub_per_layer>0 && (int)hits.size()>Detector::hw_limit_stub_per_layer){ 
+    hits.erase (hits.begin()+Detector::hw_limit_stub_per_layer,hits.end());
   }
   return hits;
 }

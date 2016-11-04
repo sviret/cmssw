@@ -37,9 +37,6 @@ using namespace std;
 class CMSPatternLayer : public PatternLayer{
  private:
 
-  short binaryToGray(short num);
-  short grayToBinary(short gray);
-
   friend class boost::serialization::access;
   
   template<class Archive> void save(Archive & ar, const unsigned int version) const
@@ -224,8 +221,6 @@ class CMSPatternLayer : public PatternLayer{
      \return True if the PatternLayer is a placeholder
   **/  
   bool isFake();
-
-  vector<int> getHDSuperstrips();  
 
 /**
      \brief Returns a map containing the valid ETA range for each layer

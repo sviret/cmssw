@@ -66,7 +66,7 @@ class RetinaTrackFitter:public TrackFitter{
   void mergePatterns();
   void mergeTracks();
   void fit();
-  void fit(std::vector<Hit*> hits);
+  void fit(std::vector<Hit*> hits, int pattern_id=-1);
   TrackFitter* clone();
 
   void setEventCounter(unsigned int event_counter_){

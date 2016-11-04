@@ -126,6 +126,8 @@ TrackFindingAMProducer::TrackFindingAMProducer( const edm::ParameterSet& iConfig
   {
     m_pf->useMissingHitThreshold(nMissingHits);
   }
+  //Use hardware limitations (max number of stubs per patterns, ...)
+  m_pf->setHardwareLimitations(false);
 
   produces< std::vector< TTTrack< Ref_PixelDigi_ > > >( TTPatternOutputTag );
 }

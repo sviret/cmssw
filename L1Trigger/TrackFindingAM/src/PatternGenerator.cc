@@ -309,6 +309,12 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
       short strip = -1;
       short seg = -1;
       bool isPSModule = false;
+
+      if(j==6 && (tracker_layers[j]==15 || tracker_layers[j]==22) && nbFakeSuperstrip==0){
+       stub_number=-2;
+       nbFakeSuperstrip++;
+      }
+
       if(stub_number==-2){//creation of a fake superstrip
 	module=0;
 	strip=0;
