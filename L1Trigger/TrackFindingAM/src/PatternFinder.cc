@@ -34,7 +34,7 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
 
   tracker.setSectorMaps(sector_list[0]->getLadderCodeMap(),sector_list[0]->getModuleCodeMap());
 
-  converter = new LocalToGlobalConverter(sector_list[0],"./modules_position.txt");
+  converter = new PRBF2LocalToGlobalConverter(sector_list[0],"./modules_position.txt");
 
   //Link the patterns with the tracker representation
   cout<<"linking..."<<endl;

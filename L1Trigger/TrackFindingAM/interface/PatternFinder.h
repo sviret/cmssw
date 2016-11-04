@@ -8,7 +8,7 @@
 #include <TROOT.h>
 #include <memory>
 #include "SectorTree.h"
-#include "LocalToGlobalConverter.h"
+#include "PRBF2LocalToGlobalConverter.h"
 #include "LinearizedTrackFitter.h"
 
 #ifdef IPNL_USE_CUDA
