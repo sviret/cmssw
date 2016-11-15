@@ -30,7 +30,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:upgradePLS3', '')
 # input and output
 ############################################################
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
 Source_Files = cms.untracked.vstring(
     ## ttbar PU=140
     #'/store/group/upgrade/Tracker/L1Tracking/Synchro/Input/TTbar/CMSSW_6_2_0_SLHC26-DES23_62_V1_LHCCRefPU140-v1/FC5CDAC1-4E2F-E511-8085-0026189438D9.root'
@@ -70,6 +70,7 @@ process.TTAssociator_step = cms.Path(process.TrackTriggerAssociatorTracks)
 ############################################################
 
 process.load("SLHCUpgradeSimulations.L1TrackTrigger.L1TkPrimaryVertexProducer_cfi")
+process.L1TkPrimaryVertex.L1TrackInputTag = cms.InputTag("TTTracksFromPixelDigis","Level1TTTracks")
 process.pL1TkPrimaryVertex = cms.Path( process.L1TkPrimaryVertex )
 
 process.L1TkPrimaryVertexMC = process.L1TkPrimaryVertex.clone()
@@ -121,7 +122,6 @@ process.L1TrackNtuple = cms.EDAnalyzer('L1TrackNtupleMaker',
                                        IsoDZmax = cms.double(1e10),        # in cm
                                        ## tracking in jets stuff (--> requires AK4 genjet collection present!)
                                        TrackingInJets = cms.bool(True),
-                                       JetPTmin = cms.double(30),
                                        ## save primary vertex information? (--> requires that you ran that above)
                                        PrimaryVertex = cms.bool(True),
                                        )
