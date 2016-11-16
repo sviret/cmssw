@@ -723,7 +723,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 	
 	reco::GenJet myJet = reco::GenJet(*iterGenJet);
 	
-	if (myJet.pt() < 20.0) continue;
+	if (myJet.pt() < 30.0) continue;
 	if (fabs(myJet.eta()) > 2.5) continue;
 	
 	if (DebugMode) cout << "genjet pt = " << myJet.pt() << ", eta = " << myJet.eta() << endl;
