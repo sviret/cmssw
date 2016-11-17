@@ -47,7 +47,6 @@ void PlotL1PV(TString name) {
 
   // ----------------------------------------------------------------------------------------------------------------
   // leafs & branches
-  int evtType = 0;
 
   vector<float>*  vtx_MC;
   vector<float>*  vtx_L1;
@@ -104,8 +103,6 @@ void PlotL1PV(TString name) {
 
     float zmc = vtx_MC->at(0);
     float zpv = vtx_L1->at(0);
-
-    //cout << zmc << " " << zpv << endl;
 
     // vertex resolution
     h_zres->Fill(zpv - zmc);
