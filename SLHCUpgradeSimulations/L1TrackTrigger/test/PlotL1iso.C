@@ -128,11 +128,6 @@ void PlotL1iso(TString name) {
   // histograms
   // ----------------------------------------------------------------------------------------------------------------
 
-  TH1F* h_tp_pt_prompt     = new TH1F("tp_pt_prompt",    ";Tracking particle p_{T} [GeV]; Tracking particles / 1.0 GeV", 100,  0,   100.0);
-  TH1F* h_tp_pt_nonprompt  = new TH1F("tp_pt_nonprompt", ";Tracking particle p_{T} [GeV]; Tracking particles / 1.0 GeV", 100,  0,   100.0);
-  TH1F* h_tp_eta_prompt    = new TH1F("tp_eta_prompt",   ";Tracking particle #eta; Tracking particles / 0.1",             10, -2.5,   2.5);
-  TH1F* h_tp_eta_nonprompt = new TH1F("tp_eta_nonprompt",";Tracking particle #eta; Tracking particles / 0.1",             10, -2.5,   2.5);
-
   TH1F* h_matchtrk_pt_prompt     = new TH1F("matchtrk_pt_prompt",    ";Tracking particle p_{T} [GeV]; Tracking particles / 1.0 GeV", 100,  0,   100.0);
   TH1F* h_matchtrk_pt_nonprompt  = new TH1F("matchtrk_pt_nonprompt", ";Tracking particle p_{T} [GeV]; Tracking particles / 1.0 GeV", 100,  0,   100.0);
   TH1F* h_matchtrk_eta_prompt    = new TH1F("matchtrk_eta_prompt",   ";Tracking particle #eta; Tracking particles / 0.1",             10, -2.5,   2.5);
@@ -185,19 +180,12 @@ void PlotL1iso(TString name) {
       if (abs(tp_pdgid->at(it)) == 13 && abs(tp_momid->at(it)) == 13) prompt = true;
       else if (abs(tp_pdgid->at(it)) != 13) continue; 
       
-      //cout << "pt = " << tp_pt->at(it) << " pdgid = " << tp_pdgid->at(it) << " momid = " << tp_momid->at(it) << endl;
-
-      if (prompt) {
-	h_tp_pt_prompt->Fill(tp_pt->at(it));
-	h_tp_eta_prompt->Fill(tp_eta->at(it));
-      }
-      else {
-	h_tp_pt_nonprompt->Fill(tp_pt->at(it));
-	h_tp_eta_nonprompt->Fill(tp_eta->at(it));
-      }
-      
       // was the tracking particle matched to a L1 track?
       if (tp_nmatch->at(it) < 1) continue;
+
+      // was the isolation variable calculated for this track?
+      if (reliso->at(it) < -990) continue;
+
       
       // fill matched track histograms
       if (prompt) {
@@ -208,8 +196,6 @@ void PlotL1iso(TString name) {
 	h_matchtrk_pt_nonprompt->Fill(tp_pt->at(it));
 	h_matchtrk_eta_nonprompt->Fill(tp_eta->at(it));
       }
-
-      if (reliso->at(it) < -990) continue;
 
       for (int ih=0; ih<3; ih++) {
 	if (reliso->at(it) < isocut[ih]) {
@@ -290,12 +276,8 @@ void PlotL1iso(TString name) {
   // efficiency plots  
   // ----------------------------------------------------------------------------------------------------------------
 
-  h_tp_pt_prompt->Sumw2();
-  h_tp_pt_nonprompt->Sumw2();
   h_matchtrk_pt_prompt->Sumw2();
   h_matchtrk_pt_nonprompt->Sumw2();
-  h_tp_eta_prompt->Sumw2();
-  h_tp_eta_nonprompt->Sumw2();
   h_matchtrk_eta_prompt->Sumw2();
   h_matchtrk_eta_nonprompt->Sumw2();
 
