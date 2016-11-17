@@ -91,6 +91,7 @@ process.pL1TkPrimaryVertexMC = cms.Path( process.L1TkPrimaryVertexMC )
 
 process.L1TrackNtuple = cms.EDAnalyzer('L1TrackNtupleMaker',
                                        MyProcess = cms.int32(1),
+                                       Slim = cms.bool(False),            # only keep the branches we really need
                                        DebugMode = cms.bool(False),      # printout lots of debug statements
                                        SaveAllTracks = cms.bool(True),   # save *all* L1 tracks, not just truth matched to primary particle
                                        SaveStubs = cms.bool(False),      # save some info for *all* stubs
@@ -98,7 +99,7 @@ process.L1TrackNtuple = cms.EDAnalyzer('L1TrackNtupleMaker',
                                        L1Tk_minNStub = cms.int32(4),     # L1 tracks with >= 4 stubs
                                        TP_minNStub = cms.int32(4),       # require TP to have >= X number of stubs associated with it
                                        TP_minNStubLayer = cms.int32(4),  # require TP to have stubs in >= X layers/disks
-                                       TP_minPt = cms.double(1.0),       # only save TPs with pt > X GeV
+                                       TP_minPt = cms.double(2.0),       # only save TPs with pt > X GeV
                                        TP_maxEta = cms.double(2.4),      # only save TPs with |eta| < X
                                        TP_maxZ0 = cms.double(30.0),      # only save TPs with |z0| < X cm
                                        L1TrackInputTag = cms.InputTag("TTTracksFromPixelDigis", "Level1TTTracks"),               # TTTrack input
@@ -110,7 +111,7 @@ process.L1TrackNtuple = cms.EDAnalyzer('L1TrackNtupleMaker',
                                        ETAmax = cms.double(2.4),           # central object |eta| < X
                                        TrackPTmin = cms.double(20.0),      # for track matched to central object
                                        TrackETAmax = cms.double(2.4),
-                                       TrackChi2max = cms.double(100.0),
+                                       TrackChi2max = cms.double(1e10),
                                        TrackNStubmin = cms.int32(4),
                                        # cuts on the tracks (used to determine isolation variable)
                                        IsoTrackZmax = cms.double(25.),     # in cm
@@ -119,7 +120,7 @@ process.L1TrackNtuple = cms.EDAnalyzer('L1TrackNtupleMaker',
                                        IsoTrackPTmin = cms.double(3.0),    # in GeV
                                        IsoDRmin = cms.double(0.0),
                                        IsoDRmax = cms.double(0.3),
-                                       IsoDZmax = cms.double(1e10),        # in cm
+                                       IsoDZmax = cms.double(0.5),         # in cm
                                        ## tracking in jets stuff (--> requires AK4 genjet collection present!)
                                        TrackingInJets = cms.bool(True),
                                        ## save primary vertex information? (--> requires that you ran that above)

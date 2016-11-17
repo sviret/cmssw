@@ -49,7 +49,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   // TP_maxPt:          only look at TPs with pt < X GeV
   // TP_maxEta:         only look at TPs with |eta| < X
 
-  // TP_select_injet: only look at TPs that are within a jet with pt > 20 GeV (==1) or within a jet with pt > 100 GeV (==2) or all TPs (==0)
+  // TP_select_injet: only look at TPs that are within a jet with pt > 30 GeV (==1) or within a jet with pt > 100 GeV (==2) or all TPs (==0)
  
 
   gROOT->SetBatch();
@@ -111,14 +111,12 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   vector<float>* tp_z0;
   vector<float>* tp_d0;
   vector<int>*   tp_pdgid;
-  vector<int>*   tp_momid;
   vector<int>*   tp_nmatch;
   vector<int>*   tp_nstub;
   vector<int>*   tp_nstublayer;
   vector<int>*   tp_eventid;
   vector<int>*   tp_injet;
   vector<int>*   tp_injet_highpt;
-  //vector<int>*   tp_inttjet;
   
   // *L1 track* properties, for tracking particles matched to a L1 track
   vector<float>* matchtrk_pt;
@@ -127,11 +125,9 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   vector<float>* matchtrk_d0;
   vector<float>* matchtrk_z0;
   vector<float>* matchtrk_chi2;
-  vector<float>* matchtrk_consistency; 
   vector<int>*   matchtrk_nstub;
   vector<int>*   matchtrk_injet;
   vector<int>*   matchtrk_injet_highpt;
-  //vector<int>*   matchtrk_inttjet;
 
   // all L1 tracks
   vector<float>* trk_pt;
@@ -141,7 +137,6 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   vector<int>*   trk_nstub;
   vector<int>*   trk_injet;
   vector<int>*   trk_injet_highpt;
-  //vector<int>*   trk_inttjet;
 
   TBranch* b_tp_pt;
   TBranch* b_tp_eta;
@@ -150,14 +145,12 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   TBranch* b_tp_z0;
   TBranch* b_tp_d0;
   TBranch* b_tp_pdgid;
-  TBranch* b_tp_momid;
   TBranch* b_tp_nmatch;
   TBranch* b_tp_nstub;
   TBranch* b_tp_nstublayer;
   TBranch* b_tp_eventid;
   TBranch* b_tp_injet;
   TBranch* b_tp_injet_highpt;
-  //TBranch* b_tp_inttjet;
 
   TBranch* b_matchtrk_pt;
   TBranch* b_matchtrk_eta;
@@ -165,11 +158,9 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   TBranch* b_matchtrk_d0;
   TBranch* b_matchtrk_z0;
   TBranch* b_matchtrk_chi2; 
-  TBranch* b_matchtrk_consistency; 
   TBranch* b_matchtrk_nstub;
   TBranch* b_matchtrk_injet;
   TBranch* b_matchtrk_injet_highpt;
-  //TBranch* b_matchtrk_inttjet;
 
   TBranch* b_trk_pt; 
   TBranch* b_trk_eta; 
@@ -178,7 +169,6 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   TBranch* b_trk_nstub; 
   TBranch* b_trk_injet;
   TBranch* b_trk_injet_highpt;
-  //TBranch* b_trk_inttjet;
 
 
   tp_pt  = 0;
@@ -188,14 +178,12 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   tp_z0  = 0;
   tp_d0  = 0;
   tp_pdgid = 0;
-  tp_momid = 0;
   tp_nmatch = 0;
   tp_nstub = 0;
   tp_nstublayer = 0;
   tp_eventid = 0;
   tp_injet = 0;
   tp_injet_highpt = 0;
-  //tp_inttjet = 0;
 
   matchtrk_pt  = 0;
   matchtrk_eta = 0;
@@ -203,11 +191,9 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   matchtrk_d0  = 0;
   matchtrk_z0  = 0;
   matchtrk_chi2  = 0; 
-  matchtrk_consistency  = 0; 
   matchtrk_nstub = 0;
   matchtrk_injet = 0;
   matchtrk_injet_highpt = 0;
-  //matchtrk_inttjet = 0;
 
   trk_pt = 0; 
   trk_eta = 0; 
@@ -216,7 +202,6 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   trk_nstub = 0; 
   trk_injet = 0;
   trk_injet_highpt = 0;
-  //trk_inttjet = 0;
 
 
   tree->SetBranchAddress("tp_pt",     &tp_pt,     &b_tp_pt);
@@ -233,7 +218,6 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   tree->SetBranchAddress("tp_eventid",    &tp_eventid,    &b_tp_eventid);
   tree->SetBranchAddress("tp_injet",   &tp_injet,   &b_tp_injet);
   tree->SetBranchAddress("tp_injet_highpt",   &tp_injet_highpt,   &b_tp_injet_highpt);
-  //tree->SetBranchAddress("tp_inttjet", &tp_inttjet, &b_tp_inttjet);
 
   if (doLooseMatch) {
     tree->SetBranchAddress("loosematchtrk_pt",    &matchtrk_pt,    &b_matchtrk_pt);
@@ -242,11 +226,9 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     tree->SetBranchAddress("loosematchtrk_d0",    &matchtrk_d0,    &b_matchtrk_d0);
     tree->SetBranchAddress("loosematchtrk_z0",    &matchtrk_z0,    &b_matchtrk_z0);
     tree->SetBranchAddress("loosematchtrk_chi2",  &matchtrk_chi2,  &b_matchtrk_chi2);
-    tree->SetBranchAddress("loosematchtrk_consistency", &matchtrk_consistency, &b_matchtrk_consistency);
     tree->SetBranchAddress("loosematchtrk_nstub", &matchtrk_nstub, &b_matchtrk_nstub);
     tree->SetBranchAddress("loosematchtrk_injet",   &matchtrk_injet,   &b_matchtrk_injet);
     tree->SetBranchAddress("loosematchtrk_injet_highpt",   &matchtrk_injet_highpt,   &b_matchtrk_injet_highpt);
-    //tree->SetBranchAddress("loosematchtrk_inttjet", &matchtrk_inttjet, &b_matchtrk_inttjet);
   }
   else {
     tree->SetBranchAddress("matchtrk_pt",    &matchtrk_pt,    &b_matchtrk_pt);
@@ -255,11 +237,9 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     tree->SetBranchAddress("matchtrk_d0",    &matchtrk_d0,    &b_matchtrk_d0);
     tree->SetBranchAddress("matchtrk_z0",    &matchtrk_z0,    &b_matchtrk_z0);
     tree->SetBranchAddress("matchtrk_chi2",  &matchtrk_chi2,  &b_matchtrk_chi2);
-    tree->SetBranchAddress("matchtrk_consistency", &matchtrk_consistency, &b_matchtrk_consistency);
     tree->SetBranchAddress("matchtrk_nstub", &matchtrk_nstub, &b_matchtrk_nstub);
     tree->SetBranchAddress("matchtrk_injet",   &matchtrk_injet,   &b_matchtrk_injet);
     tree->SetBranchAddress("matchtrk_injet_highpt",   &matchtrk_injet_highpt,   &b_matchtrk_injet_highpt);
-    //tree->SetBranchAddress("matchtrk_inttjet", &matchtrk_inttjet, &b_matchtrk_inttjet);
   }
 
   tree->SetBranchAddress("trk_pt",   &trk_pt,   &b_trk_pt);
@@ -269,7 +249,6 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   tree->SetBranchAddress("trk_nstub", &trk_nstub, &b_trk_nstub);
   tree->SetBranchAddress("trk_injet",   &trk_injet,   &b_trk_injet);
   tree->SetBranchAddress("trk_injet_highpt",   &trk_injet_highpt,   &b_trk_injet_highpt);
-  //tree->SetBranchAddress("trk_inttjet", &trk_inttjet, &b_trk_inttjet);
 
 
   // ----------------------------------------------------------------------------------------------------------------
