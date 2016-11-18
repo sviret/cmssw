@@ -138,6 +138,11 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   vector<int>*   trk_injet;
   vector<int>*   trk_injet_highpt;
 
+  vector<float>* jet_tp_sumpt;
+  vector<float>* jet_matchtrk_sumpt;
+  vector<float>* jet_trk_sumpt;
+
+
   TBranch* b_tp_pt;
   TBranch* b_tp_eta;
   TBranch* b_tp_phi;
@@ -170,6 +175,9 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   TBranch* b_trk_injet;
   TBranch* b_trk_injet_highpt;
 
+  TBranch* b_jet_tp_sumpt;
+  TBranch* b_jet_matchtrk_sumpt;
+  TBranch* b_jet_trk_sumpt;
 
   tp_pt  = 0;
   tp_eta = 0;
@@ -202,6 +210,10 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   trk_nstub = 0; 
   trk_injet = 0;
   trk_injet_highpt = 0;
+
+  jet_tp_sumpt = 0;
+  jet_matchtrk_sumpt = 0;
+  jet_trk_sumpt = 0;
 
 
   tree->SetBranchAddress("tp_pt",     &tp_pt,     &b_tp_pt);
@@ -250,6 +262,15 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   tree->SetBranchAddress("trk_injet",   &trk_injet,   &b_trk_injet);
   tree->SetBranchAddress("trk_injet_highpt",   &trk_injet_highpt,   &b_trk_injet_highpt);
 
+  tree->SetBranchAddress("jet_tp_sumpt",   &jet_tp_sumpt,   &b_jet_tp_sumpt);
+  tree->SetBranchAddress("jet_trk_sumpt",  &jet_trk_sumpt, &b_jet_trk_sumpt);
+  if (doLooseMatch) {
+    tree->SetBranchAddress("jet_loosematchtrk_sumpt",  &jet_matchtrk_sumpt, &b_jet_matchtrk_sumpt);
+  }
+  else {
+    tree->SetBranchAddress("jet_matchtrk_sumpt",  &jet_matchtrk_sumpt, &b_jet_matchtrk_sumpt);
+  }
+  
 
   // ----------------------------------------------------------------------------------------------------------------
   // histograms
@@ -553,6 +574,13 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
 
 
 
+  // ----------------------------------------------------------------------------------------------------------------
+  // additional ones for sum pt in jets
+
+  TH1F* h_jet_tp_sumpt       = new TH1F("jet_tp_sumpt",       ";sum(TP p_{T}) [GeV]; Gen jets / 5.0 GeV", 20, 0, 200.0);
+  TH1F* h_jet_matchtrk_sumpt = new TH1F("jet_matchtrk_sumpt", ";sum(track-matched TP p_{T}) [GeV]; Gen jets / 5.0 GeV", 20, 0, 200.0);
+  TH1F* h_jet_trk_sumpt      = new TH1F("jet_trk_sumpt",      ";sum(track p_{T}) [GeV]; Gen jets / 5.0 GeV", 20, 0, 200.0);
+
   
   // ----------------------------------------------------------------------------------------------------------------
   //        * * * * *     S T A R T   O F   A C T U A L   R U N N I N G   O N   E V E N T S     * * * * *
@@ -568,6 +596,15 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
 
     tree->GetEntry(i,0);
   
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // sumpt in jets
+    for (int ij=0; ij<(int)jet_tp_sumpt->size(); ij++) {
+      h_jet_tp_sumpt->Fill(jet_tp_sumpt->at(ij));
+      h_jet_matchtrk_sumpt->Fill(jet_matchtrk_sumpt->at(ij));
+      h_jet_trk_sumpt->Fill(jet_trk_sumpt->at(ij));
+    }
+
 
     // ----------------------------------------------------------------------------------------------------------------
     // track loop for total rates
@@ -2190,6 +2227,29 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
 
   c.SaveAs(DIR+type+"_trackrate_vspt.png");
   c.SaveAs(DIR+type+"_trackrate_vspt.eps");
+
+
+  // ---------------------------------------------------------------------------------------------------------
+  // sum track/ TP pt in jets
+
+  h_jet_tp_sumpt->Sumw2();
+  h_jet_matchtrk_sumpt->Sumw2();
+  h_jet_trk_sumpt->Sumw2();
+
+  TH1F* h_frac_trk_sumpt = (TH1F*) h_jet_trk_sumpt->Clone();
+  h_frac_trk_sumpt->SetName("frac_trk_sumpt");
+  h_frac_trk_sumpt->GetYaxis()->SetTitle("Reco sum(p_{T}) / TP sum(p_{T})");
+  h_frac_trk_sumpt->Divide(h_jet_trk_sumpt, h_jet_tp_sumpt, 1.0, 1.0, "B");
+
+  TH1F* h_frac_matchtrk_sumpt = (TH1F*) h_jet_matchtrk_sumpt->Clone();
+  h_frac_matchtrk_sumpt->SetName("frac_matchtrk_sumpt");
+  h_frac_matchtrk_sumpt->GetYaxis()->SetTitle("Reco sum(p_{T}) / TP sum(p_{T})");
+  h_frac_matchtrk_sumpt->Divide(h_jet_matchtrk_sumpt, h_jet_tp_sumpt, 1.0, 1.0, "B");
+
+  h_frac_trk_sumpt->Draw();
+  c.SaveAs(DIR+type+"_trk_sumpt.png"); 
+  h_frac_matchtrk_sumpt->Draw();
+  c.SaveAs(DIR+type+"_matchtrk_sumpt.png"); 
 
     
   fout->Close();

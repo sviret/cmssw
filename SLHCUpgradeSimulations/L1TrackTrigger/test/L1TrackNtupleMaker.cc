@@ -243,6 +243,14 @@ private:
   std::vector<float>* m_pv_L1;
   std::vector<float>* m_pv_MC;
 
+  // "track jet variables" (for each gen jet, store the sum of pt of TPs / tracks inside jet cone)
+  std::vector<float>* m_jet_pt;
+  std::vector<float>* m_jet_tp_sumpt;
+  std::vector<float>* m_jet_matchtrk_sumpt;
+  std::vector<float>* m_jet_loosematchtrk_sumpt;
+  std::vector<float>* m_jet_trk_sumpt;
+  
+
 };
 
 
@@ -404,6 +412,13 @@ void L1TrackNtupleMaker::beginJob()
   m_pv_L1 = new std::vector<float>;
   m_pv_MC = new std::vector<float>;
 
+  m_jet_pt = new std::vector<float>;
+  m_jet_tp_sumpt = new std::vector<float>;
+  m_jet_matchtrk_sumpt = new std::vector<float>;
+  m_jet_loosematchtrk_sumpt = new std::vector<float>;
+  m_jet_trk_sumpt = new std::vector<float>;
+
+
 
   // ntuple
   eventTree = fs->make<TTree>("eventTree", "Event tree");
@@ -508,6 +523,13 @@ void L1TrackNtupleMaker::beginJob()
     eventTree->Branch("pv_MC", &m_pv_MC);
   }
 
+  if (TrackingInJets) {
+    if (!Slim) eventTree->Branch("jet_pt", &m_jet_pt);
+    eventTree->Branch("jet_tp_sumpt", &m_jet_tp_sumpt);
+    eventTree->Branch("jet_matchtrk_sumpt", &m_jet_matchtrk_sumpt);
+    if (!Slim) eventTree->Branch("jet_loosematchtrk_sumpt", &m_jet_loosematchtrk_sumpt);
+    eventTree->Branch("jet_trk_sumpt", &m_jet_trk_sumpt);
+  }
 
 }
 
@@ -609,6 +631,12 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
   m_pv_L1->clear();
   m_pv_MC->clear();
   
+  m_jet_pt->clear();
+  m_jet_tp_sumpt->clear();
+  m_jet_matchtrk_sumpt->clear();
+  m_jet_loosematchtrk_sumpt->clear();
+  m_jet_trk_sumpt->clear();
+
 
   //-----------------------------------------------------------------------------------------------
   // retrieve various containers
@@ -743,7 +771,12 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     }// end isValid
 
   }// end TrackingInJets
-  
+
+  const int NJETS = 10;
+  float jets_tp_sumpt[NJETS] = {0};       //sum pt of TPs with dR<0.4 of jet
+  float jets_matchtrk_sumpt[NJETS] = {0}; //sum pt of tracks matched to TP with dR<0.4 of jet
+  float jets_loosematchtrk_sumpt[NJETS] = {0}; //sum pt of tracks matched to TP with dR<0.4 of jet
+  float jets_trk_sumpt[NJETS] = {0};      //sum pt of all tracks with dR<0.4 of jet
 
 
   // ----------------------------------------------------------------------------------------------
@@ -960,6 +993,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 	    InJet = 1;
 	    //if (v_jets_tt.at(ij) == 1) InJetTT = 1;
 	    if (v_jets_highpt.at(ij) == 1) InJetHighpt = 1;
+	    if (ij<NJETS) jets_trk_sumpt[ij] += tmp_trk_pt;
 	  }
 	}
 
@@ -1359,6 +1393,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 	  tp_InJet = 1;
 	  //if (v_jets_tt.at(ij) == 1) tp_InJetTT = 1;
 	  if (v_jets_highpt.at(ij) == 1) tp_InJetHighpt = 1;
+	  if (ij<NJETS) jets_tp_sumpt[ij] += tmp_tp_pt;
 	}
 
 	if (nMatch > 0) {
@@ -1370,6 +1405,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 	    matchtrk_InJet = 1;
 	    //if (v_jets_tt.at(ij) == 1) matchtrk_InJetTT = 1;
 	    if (v_jets_highpt.at(ij) == 1) matchtrk_InJetHighpt = 1;
+	    if (ij<NJETS) jets_matchtrk_sumpt[ij] += tmp_matchtrk_pt;
 	  }
 	}
 
@@ -1382,6 +1418,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 	    loosematchtrk_InJet = 1;
 	    //if (v_jets_tt.at(ij) == 1) loosematchtrk_InJetTT = 1;
 	    if (v_jets_highpt.at(ij) == 1) loosematchtrk_InJetHighpt = 1;
+	    if (ij<NJETS) jets_loosematchtrk_sumpt[ij] += tmp_loosematchtrk_pt;
 	  }
 	}
       }
@@ -1483,6 +1520,19 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     
   } //end loop tracking particles
     
+  
+  if (TrackingInJets) {
+    for (int ij=0; ij<(int)v_jets.size(); ij++) {
+      if (ij<NJETS) {
+	m_jet_pt->push_back((v_jets.at(ij)).pt());
+	m_jet_tp_sumpt->push_back(jets_tp_sumpt[ij]);
+	m_jet_matchtrk_sumpt->push_back(jets_matchtrk_sumpt[ij]);
+	m_jet_loosematchtrk_sumpt->push_back(jets_loosematchtrk_sumpt[ij]);
+	m_jet_trk_sumpt->push_back(jets_trk_sumpt[ij]);
+      }
+    }
+  }
+
 
   eventTree->Fill();
 
