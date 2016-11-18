@@ -244,6 +244,7 @@ private:
   std::vector<float>* m_pv_MC;
 
   // "track jet variables" (for each gen jet, store the sum of pt of TPs / tracks inside jet cone)
+  std::vector<float>* m_jet_eta;
   std::vector<float>* m_jet_pt;
   std::vector<float>* m_jet_tp_sumpt;
   std::vector<float>* m_jet_matchtrk_sumpt;
@@ -412,6 +413,7 @@ void L1TrackNtupleMaker::beginJob()
   m_pv_L1 = new std::vector<float>;
   m_pv_MC = new std::vector<float>;
 
+  m_jet_eta = new std::vector<float>;
   m_jet_pt = new std::vector<float>;
   m_jet_tp_sumpt = new std::vector<float>;
   m_jet_matchtrk_sumpt = new std::vector<float>;
@@ -524,7 +526,8 @@ void L1TrackNtupleMaker::beginJob()
   }
 
   if (TrackingInJets) {
-    if (!Slim) eventTree->Branch("jet_pt", &m_jet_pt);
+    eventTree->Branch("jet_eta", &m_jet_eta);
+    eventTree->Branch("jet_pt", &m_jet_pt);
     eventTree->Branch("jet_tp_sumpt", &m_jet_tp_sumpt);
     eventTree->Branch("jet_matchtrk_sumpt", &m_jet_matchtrk_sumpt);
     if (!Slim) eventTree->Branch("jet_loosematchtrk_sumpt", &m_jet_loosematchtrk_sumpt);
@@ -631,6 +634,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
   m_pv_L1->clear();
   m_pv_MC->clear();
   
+  m_jet_eta->clear();
   m_jet_pt->clear();
   m_jet_tp_sumpt->clear();
   m_jet_matchtrk_sumpt->clear();
@@ -1524,6 +1528,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
   if (TrackingInJets) {
     for (int ij=0; ij<(int)v_jets.size(); ij++) {
       if (ij<NJETS) {
+	m_jet_eta->push_back((v_jets.at(ij)).eta());
 	m_jet_pt->push_back((v_jets.at(ij)).pt());
 	m_jet_tp_sumpt->push_back(jets_tp_sumpt[ij]);
 	m_jet_matchtrk_sumpt->push_back(jets_matchtrk_sumpt[ij]);

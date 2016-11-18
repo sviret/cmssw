@@ -138,6 +138,8 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   vector<int>*   trk_injet;
   vector<int>*   trk_injet_highpt;
 
+  vector<float>* jet_eta;
+  vector<float>* jet_pt;
   vector<float>* jet_tp_sumpt;
   vector<float>* jet_matchtrk_sumpt;
   vector<float>* jet_trk_sumpt;
@@ -175,6 +177,8 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   TBranch* b_trk_injet;
   TBranch* b_trk_injet_highpt;
 
+  TBranch* b_jet_eta;
+  TBranch* b_jet_pt;
   TBranch* b_jet_tp_sumpt;
   TBranch* b_jet_matchtrk_sumpt;
   TBranch* b_jet_trk_sumpt;
@@ -211,6 +215,8 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   trk_injet = 0;
   trk_injet_highpt = 0;
 
+  jet_eta = 0;
+  jet_pt = 0;
   jet_tp_sumpt = 0;
   jet_matchtrk_sumpt = 0;
   jet_trk_sumpt = 0;
@@ -262,14 +268,12 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   tree->SetBranchAddress("trk_injet",   &trk_injet,   &b_trk_injet);
   tree->SetBranchAddress("trk_injet_highpt",   &trk_injet_highpt,   &b_trk_injet_highpt);
 
+  tree->SetBranchAddress("jet_eta", &jet_eta, &b_jet_eta);
+  tree->SetBranchAddress("jet_pt",  &jet_pt,  &b_jet_pt);
   tree->SetBranchAddress("jet_tp_sumpt",   &jet_tp_sumpt,   &b_jet_tp_sumpt);
   tree->SetBranchAddress("jet_trk_sumpt",  &jet_trk_sumpt, &b_jet_trk_sumpt);
-  if (doLooseMatch) {
-    tree->SetBranchAddress("jet_loosematchtrk_sumpt",  &jet_matchtrk_sumpt, &b_jet_matchtrk_sumpt);
-  }
-  else {
-    tree->SetBranchAddress("jet_matchtrk_sumpt",  &jet_matchtrk_sumpt, &b_jet_matchtrk_sumpt);
-  }
+  if (doLooseMatch) tree->SetBranchAddress("jet_loosematchtrk_sumpt",  &jet_matchtrk_sumpt, &b_jet_matchtrk_sumpt);
+  else tree->SetBranchAddress("jet_matchtrk_sumpt",  &jet_matchtrk_sumpt, &b_jet_matchtrk_sumpt);
   
 
   // ----------------------------------------------------------------------------------------------------------------
@@ -577,11 +581,22 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   // ----------------------------------------------------------------------------------------------------------------
   // additional ones for sum pt in jets
 
-  TH1F* h_jet_tp_sumpt       = new TH1F("jet_tp_sumpt",       ";sum(TP p_{T}) [GeV]; Gen jets / 5.0 GeV", 20, 0, 200.0);
-  TH1F* h_jet_matchtrk_sumpt = new TH1F("jet_matchtrk_sumpt", ";sum(track-matched TP p_{T}) [GeV]; Gen jets / 5.0 GeV", 20, 0, 200.0);
-  TH1F* h_jet_trk_sumpt      = new TH1F("jet_trk_sumpt",      ";sum(track p_{T}) [GeV]; Gen jets / 5.0 GeV", 20, 0, 200.0);
+  TH1F* h_jet_tp_sumpt_vspt  = new TH1F("jet_tp_sumpt_vspt",  ";sum(TP p_{T}) [GeV]; Gen jets / 5.0 GeV", 20, 0, 200.0);
+  TH1F* h_jet_trk_sumpt_vspt = new TH1F("jet_trk_sumpt_vspt", ";sum(TP p_{T}) [GeV]; Gen jets / 5.0 GeV", 20, 0, 200.0);
+  TH1F* h_jet_matchtrk_sumpt_vspt = new TH1F("jet_matchtrk_sumpt_vspt", ";sum(TP p_{T}) [GeV]; Gen jets / 5.0 GeV", 20, 0, 200.0);
 
-  
+  TH1F* h_jet_tp_sumpt_vseta  = new TH1F("jet_tp_sumpt_vseta",  ";Gen jet #eta; Gen jets / 0.2", 24, -2.4, 2.4);
+  TH1F* h_jet_trk_sumpt_vseta = new TH1F("jet_trk_sumpt_vseta", ";Gen jet #eta; Gen jets / 0.2", 24, -2.4, 2.4);
+  TH1F* h_jet_matchtrk_sumpt_vseta = new TH1F("jet_matchtrk_sumpt_vseta", ";Gen jet #eta; Gen jets / 0.2", 24, -2.4, 2.4);
+
+  h_jet_tp_sumpt_vseta->Sumw2();
+  h_jet_tp_sumpt_vspt->Sumw2();
+  h_jet_trk_sumpt_vseta->Sumw2();
+  h_jet_trk_sumpt_vspt->Sumw2();
+  h_jet_matchtrk_sumpt_vseta->Sumw2();
+  h_jet_matchtrk_sumpt_vspt->Sumw2();
+
+
   // ----------------------------------------------------------------------------------------------------------------
   //        * * * * *     S T A R T   O F   A C T U A L   R U N N I N G   O N   E V E N T S     * * * * *
   // ----------------------------------------------------------------------------------------------------------------
@@ -600,9 +615,21 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     // ----------------------------------------------------------------------------------------------------------------
     // sumpt in jets
     for (int ij=0; ij<(int)jet_tp_sumpt->size(); ij++) {
-      h_jet_tp_sumpt->Fill(jet_tp_sumpt->at(ij));
-      h_jet_matchtrk_sumpt->Fill(jet_matchtrk_sumpt->at(ij));
-      h_jet_trk_sumpt->Fill(jet_trk_sumpt->at(ij));
+
+      float fraction = 0;
+      float fractionMatch = 0;
+      if (jet_tp_sumpt->at(ij) > 0) {
+	fraction = jet_trk_sumpt->at(ij)/jet_tp_sumpt->at(ij);
+	fractionMatch = jet_matchtrk_sumpt->at(ij)/jet_tp_sumpt->at(ij);
+      }
+
+      h_jet_tp_sumpt_vspt->Fill(jet_tp_sumpt->at(ij),1.0);
+      h_jet_trk_sumpt_vspt->Fill(jet_tp_sumpt->at(ij),fraction);
+      h_jet_matchtrk_sumpt_vspt->Fill(jet_tp_sumpt->at(ij),fractionMatch);
+
+      h_jet_tp_sumpt_vseta->Fill(jet_eta->at(ij),1.0);
+      h_jet_trk_sumpt_vseta->Fill(jet_eta->at(ij),fraction);
+      h_jet_matchtrk_sumpt_vseta->Fill(jet_eta->at(ij),fractionMatch);
     }
 
 
@@ -2232,24 +2259,43 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   // ---------------------------------------------------------------------------------------------------------
   // sum track/ TP pt in jets
 
-  h_jet_tp_sumpt->Sumw2();
-  h_jet_matchtrk_sumpt->Sumw2();
-  h_jet_trk_sumpt->Sumw2();
+  TH1F* h_frac_sumpt_vspt = (TH1F*) h_jet_trk_sumpt_vspt->Clone();
+  h_frac_sumpt_vspt->SetName("frac_sumpt_vspt");
+  h_frac_sumpt_vspt->GetYaxis()->SetTitle("L1 sum(p_{T}) / TP sum(p_{T})");
+  h_frac_sumpt_vspt->Divide(h_jet_trk_sumpt_vspt, h_jet_tp_sumpt_vspt, 1.0, 1.0, "B");
 
-  TH1F* h_frac_trk_sumpt = (TH1F*) h_jet_trk_sumpt->Clone();
-  h_frac_trk_sumpt->SetName("frac_trk_sumpt");
-  h_frac_trk_sumpt->GetYaxis()->SetTitle("Reco sum(p_{T}) / TP sum(p_{T})");
-  h_frac_trk_sumpt->Divide(h_jet_trk_sumpt, h_jet_tp_sumpt, 1.0, 1.0, "B");
+  TH1F* h_frac_sumpt_vseta = (TH1F*) h_jet_trk_sumpt_vseta->Clone();
+  h_frac_sumpt_vseta->SetName("frac_sumpt_vseta");
+  h_frac_sumpt_vseta->GetYaxis()->SetTitle("L1 sum(p_{T}) / TP sum(p_{T})");
+  h_frac_sumpt_vseta->Divide(h_jet_trk_sumpt_vseta, h_jet_tp_sumpt_vseta, 1.0, 1.0, "B");
 
-  TH1F* h_frac_matchtrk_sumpt = (TH1F*) h_jet_matchtrk_sumpt->Clone();
-  h_frac_matchtrk_sumpt->SetName("frac_matchtrk_sumpt");
-  h_frac_matchtrk_sumpt->GetYaxis()->SetTitle("Reco sum(p_{T}) / TP sum(p_{T})");
-  h_frac_matchtrk_sumpt->Divide(h_jet_matchtrk_sumpt, h_jet_tp_sumpt, 1.0, 1.0, "B");
 
-  h_frac_trk_sumpt->Draw();
-  c.SaveAs(DIR+type+"_trk_sumpt.png"); 
-  h_frac_matchtrk_sumpt->Draw();
-  c.SaveAs(DIR+type+"_matchtrk_sumpt.png"); 
+  TH1F* h_matchfrac_sumpt_vspt = (TH1F*) h_jet_matchtrk_sumpt_vspt->Clone();
+  h_matchfrac_sumpt_vspt->SetName("matchfrac_sumpt_vspt");
+  h_matchfrac_sumpt_vspt->GetYaxis()->SetTitle("Matched L1 sum(p_{T}) / TP sum(p_{T})");
+  h_matchfrac_sumpt_vspt->Divide(h_jet_matchtrk_sumpt_vspt, h_jet_tp_sumpt_vspt, 1.0, 1.0, "B");
+
+  TH1F* h_matchfrac_sumpt_vseta = (TH1F*) h_jet_matchtrk_sumpt_vseta->Clone();
+  h_matchfrac_sumpt_vseta->SetName("matchfrac_sumpt_vseta");
+  h_matchfrac_sumpt_vseta->GetYaxis()->SetTitle("Matched L1 sum(p_{T}) / TP sum(p_{T})");
+  h_matchfrac_sumpt_vseta->Divide(h_jet_matchtrk_sumpt_vseta, h_jet_tp_sumpt_vseta, 1.0, 1.0, "B");
+
+
+  h_frac_sumpt_vspt->Draw();
+  c.SaveAs(DIR+type+"_sumpt_vspt.png"); 
+  c.SaveAs(DIR+type+"_sumpt_vspt.eps"); 
+
+  h_frac_sumpt_vseta->Draw();
+  c.SaveAs(DIR+type+"_sumpt_vseta.png"); 
+  c.SaveAs(DIR+type+"_sumpt_vseta.eps"); 
+
+  h_matchfrac_sumpt_vspt->Draw();
+  c.SaveAs(DIR+type+"_sumpt_match_vspt.png"); 
+  c.SaveAs(DIR+type+"_sumpt_match_vspt.eps"); 
+
+  h_matchfrac_sumpt_vseta->Draw();
+  c.SaveAs(DIR+type+"_sumpt_match_vseta.png"); 
+  c.SaveAs(DIR+type+"_sumpt_match_vseta.eps"); 
 
     
   fout->Close();
