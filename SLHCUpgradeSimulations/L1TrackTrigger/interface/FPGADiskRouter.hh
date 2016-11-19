@@ -39,6 +39,7 @@ public:
   }
 
   void execute(){
+    unsigned int count=0;
     for(unsigned int i=0;i<inputlink_->nStubs();i++){
       //cout << "i nStubs : "<<i<<" "<<inputlink_->nStubs()<<endl;
       std::pair<FPGAStub*,L1TStub*> stub=inputlink_->getStub(i);
@@ -46,12 +47,19 @@ public:
       //cout << "disk = "<<disk<<endl;
       assert(fabs(disk)>=1);
       assert(fabs(disk)<=5);
+      count++;
+      if (count>MAXDISKROUTER) continue;
       if (fabs(disk)==1) D1_->addStub(stub);
       if (fabs(disk)==2) D2_->addStub(stub);
       if (fabs(disk)==3) D3_->addStub(stub);
       if (fabs(disk)==4) D4_->addStub(stub);
       if (fabs(disk)==5) D5_->addStub(stub);
     }
+    if (writeDiskRouter) {
+      static ofstream out("diskrouter.txt");
+      out << getName()<<" "<<count<<endl;
+    }
+
   }
 
 private:

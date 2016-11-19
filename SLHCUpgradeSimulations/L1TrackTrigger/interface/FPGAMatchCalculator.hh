@@ -43,6 +43,7 @@ public:
       cout << "name subname "<<name<<" "<<subname<<endl;
       assert(0);
     }
+    assert(disk_!=0||layer_!=0);
   }
 
   void addOutput(FPGAMemoryBase* memory,string output){
@@ -119,15 +120,21 @@ public:
 
     //again here we will cheat a little and use the information in matches
 
+    //cout << "FPGAMatchCalculator : "<<getName() 
+    //	 << " " << layer_ << " " << disk_ <<endl;
+
     assert(fullmatches_.size()!=0);
     assert(fullmatchesToPlus_!=0);
     assert(fullmatchesToMinus_!=0);
 
     unsigned int countall=0;
+    unsigned int countsel=0;
 
     for(unsigned int j=0;j<matches_.size();j++){
       for(unsigned int i=0;i<matches_[j]->nMatches();i++){
 
+	//cout << "Matches : "<<matches_[j]->getName()<<endl;
+	if (countall>=MAXMC) break;
 	countall++;
 	
 	L1TStub* stub=matches_[j]->getStub(i).second;
@@ -137,7 +144,15 @@ public:
 	if (layer_!=0) {
 
 	  double pttracklet=0.3*3.8/(tracklet->rinv()*100);
-	  bool keep=fabs(1.0/pttracklet-1.0/stub->pt())<ptstubconsistencymatching;
+	  bool keep=fabs(1.0/pttracklet-1.0/stub->pt())<ptstubconsistencymatching; // NOT IMPLEMENTED IN HARDWARE
+                                                                                                                                   
+        if(enstubbend){                                                                                                       
+           double stubptinv = -99;                                                                                             
+           float  KL1 =1./6.;                                                                                                  
+           stubptinv = (fpgastub->stubpt().value())*KL1 -0.66666;                                                              
+           keep =fabs(1.0/pttracklet-stubptinv)<ptstubconsistencymatching;                                                     
+        }             
+            
             
 	  if (!keep) continue;
       
@@ -146,7 +161,9 @@ public:
 	  double phi=stub->phi();
 	  if (phi<0) phi+=two_pi;
 	  phi-=phioffset_;
-	  
+
+	  //cout << "stub r proj "<<stub->r()<<" "<<tracklet->rproj(layer_)<<endl;
+
 	  double dr=stub->r()-tracklet->rproj(layer_);
 	  assert(fabs(dr)<drmax);
 
@@ -234,19 +251,19 @@ public:
 
 	  if (layer_<4){
 	    if (seedlayer==1) {
-	      imatch=(fabs(ideltaphi)<0.1/(kphi1*stub->r()))&&(fabs(ideltaz)<0.5/kz);
+	      imatch=(fabs(ideltaphi)<0.1/(kphi1*rmean[layer_-1]))&&(fabs(ideltaz)<0.5/kz);
 	    }
 	    else {
-	      imatch=(fabs(ideltaphi)<0.095/(kphi1*stub->r()))&&(fabs(ideltaz)<14.0/kz);
+	      imatch=(fabs(ideltaphi)<0.095/(kphi1*rmean[layer_-1]))&&(fabs(ideltaz)<14.0/kz);
 	    }
 
 	  }else{
 	    int fact=(1<<(nbitszprojL123-nbitszprojL456));
 	    if (seedlayer==1) {
-	      imatch=(fabs(ideltaphi)<0.28/(kphi1*stub->r()))&&(fabs(fact*ideltaz)<3.0/kz);
+	      imatch=(fabs(ideltaphi)<0.28/(kphi1*rmean[layer_-1]))&&(fabs(fact*ideltaz)<3.0/kz);
 	    }
 	    else {
-	      imatch=(fabs(ideltaphi)<0.2/(kphi1*stub->r()))&&(fabs(fact*ideltaz)<14.0/kz);
+	      imatch=(fabs(ideltaphi)<0.2/(kphi1*rmean[layer_-1]))&&(fabs(fact*ideltaz)<14.0/kz);
 	    }
 	  }
 	  
@@ -255,19 +272,33 @@ public:
 	    //cout << "1: ideltaphi = "<<ideltaphi<<" "<<ideltaphi*kphi1*stub->r()<<endl;
 	    std::pair<FPGAStub*,L1TStub*> tmp(fpgastub,stub);
 
+	    countsel++;
+	    
 	    tracklet->addMatch(layer_,ideltaphi,ideltaz,
 			       dphi,dz,dphiapprox,dzapprox,
 			       fpgastub->stubindex().value()+(1<<6)*(fpgastub->fedregion()-1),
 			       stub->r(),tmp);
 	    
-	   
+
+	    //cout << "Accepted full match in layer " <<getName()
+	    //		 << " "<<tracklet
+	    //	 << " "<<iSector_<<endl;	   
 
 	    if (tracklet->plusNeighbor(layer_)){
+	      //cout << "Adding match to: "<<fullmatchesToMinus_->getName()<<endl;
+	      //cout << "Accepted full match to minus in layer " <<getName()<<" "<<tracklet
+	      //	   <<" "<<fullmatchesToMinus_->getName()<<endl;
 	      fullmatchesToMinus_->addMatch(tracklet,tmp);
 	    } else if (tracklet->minusNeighbor(layer_)) {
+	      //cout << "Adding match to: "<<fullmatchesToPlus_->getName()<<endl;
 	      fullmatchesToPlus_->addMatch(tracklet,tmp);
+	      //cout << "Accepted full match to plus in layer " <<getName()<<" "<<tracklet
+	      //	   <<" "<<fullmatchesToPlus_->getName()<<endl;
 	    } else {
 	      for (unsigned int l=0;l<fullmatches_.size();l++){
+		//cout << "Adding match to: "<<fullmatches_[l]->getName()<<endl;
+		//cout << "Accepted full match  in layer " <<getName()<<" "<<tracklet
+		//     <<" "<<fullmatches_[l]->getName()<<endl;
 		fullmatches_[l]->addMatch(tracklet,tmp);
 	      }
 	    }
@@ -281,6 +312,15 @@ public:
 	  
 	  double pttracklet=0.3*3.8/(tracklet->rinv()*100);
 	  bool keep=fabs(1.0/pttracklet-1.0/stub->pt())<ptstubconsistencydiskmatching;
+
+                                                                                                                      
+        if(enstubbend){                                                                                                       
+           double stubptinv = -99;                                                                                             
+           float  KL1 =1./6.;                                                                                                  
+           stubptinv = (fpgastub->stubpt().value())*KL1 -0.66666;                                                              
+           keep =fabs(1.0/pttracklet-stubptinv)<ptstubconsistencydiskmatching;                                                 
+        }        
+
 
 	  if (!keep) continue;
 
@@ -302,7 +342,7 @@ public:
 	  int iphicorr=(iz*tracklet->fpgaphiprojderdisk(disk_).value())>>shifttmp;
 
 	  iphi+=iphicorr;
-	  
+
 	  double phicorr=dz*tracklet->phiprojderdisk(disk_);
 
 	  assert(fabs(tracklet->phiprojderdisk(disk_))<0.1);
@@ -324,19 +364,27 @@ public:
 
 	  double rproj=tracklet->rprojdisk(disk_)+rcorr;
 
-	  int ideltaphi=fpgastub->phi().value()*kphi/kphiproj123-iphi; 
+	  int ideltaphi=fpgastub->phi().value()-iphi; 
 
 	  double deltar=stub->r()-rproj;
+	  
+	  int irstub = fpgastub->r().value();
+	  if(stub->r()>60){
+	    double rstub = rDSS[irstub];
+	    assert (rstub>60 && rstub < rmaxdisk);
+            irstub = (1<<nrbitsdisk)*(rstub-rmindisk)/(rmaxdisk-rmindisk);	    
+	  }
+	  //int ideltar=(irstub*krdisk+rmindisk)/krprojshiftdisk-ir;
 
-	  int ideltar=(fpgastub->r().value()*krdisk+rmindisk)/krprojshiftdisk-ir;
-
+	  //int ideltar2=(irstub*krdisk)/krprojshiftdisk-ir+1e-10;
+	  //cout <<"ideltar irstub ir : "<<ideltar<<" "<<irstub<<" "<<ir<<endl;
+	  int ideltar = irstub - ir;
 
 	  double dr=stub->r()-(tracklet->rprojdisk(disk_)+
 			      dz*tracklet->rprojderdisk(disk_));
 
 	  double dphi=phi-(tracklet->phiprojdisk(disk_)+
 			   dz*tracklet->phiprojderdisk(disk_));
-
 
 	  double dphiapprox=phi-(tracklet->phiprojapproxdisk(disk_)+
 				 dz*tracklet->phiprojderapproxdisk(disk_));
@@ -350,7 +398,8 @@ public:
 	    alpha=stub->alpha(); 	
 	    dphi+=dr*alpha;
 	    dphiapprox+=drapprox*alpha;
-	    ideltaphi+=ideltar*fpgastub->alpha().value()*krprojshiftdisk*kalpha/kphiproj123;  
+	    int iacorr =fpgastub->alpha().value()*krprojshiftdisk*kalpha/kphiproj123*(1<<10); 
+	    ideltaphi+=(ideltar*iacorr)>>10; 
 	  }	
 
 
@@ -362,9 +411,12 @@ public:
 	    drphicut=0.3;
 	  }
 
-	  bool match=(fabs(dphi)<drphicut/stub->r())&&(fabs(deltar)<drcut);
+	  //bool match=(fabs(dphi)<drphicut/stub->r())&&(fabs(deltar)<drcut);
+	  //bool imatch2=(fabs(ideltaphi)<drphicut/(kphiproj123*stub->r()))&&(fabs(ideltar)<drcut/krprojshiftdisk);
+	  bool imatch=(fabs(ideltaphi*(irstub + rmindisk/kr))<drphicut/(kphiproj123*kr))&&(fabs(ideltar)<drcut/krprojshiftdisk);
 
-	  bool imatch=(fabs(ideltaphi)<drphicut/(kphiproj123*stub->r()))&&(fabs(ideltar)<drcut/krprojshiftdisk);
+	  //cout << "ideltaphi ideltar stub->r() deltar : "<<ideltaphi<<" "
+	  //     <<ideltar<<" "<<stub->r()<<" "<<deltar<<" "<<imatch<<endl;
 
 
 	  if (writeDiskMatch1) {
@@ -385,12 +437,12 @@ public:
 	  }
 	  
 	  if (dumpmatch) {
-
-	    cout << "DUMPMATCHDISK1 : "<<disk_<<" "
-		 <<tracklet->phiprojdisk(disk_)<<" "
-		 <<dz<<" "
+	    /*
+	    cout << "DUMPMATCHDISK1 : disk:"<<disk_<<" projphidisk: "
+		 <<tracklet->phiprojdisk(disk_)<<" dz: "
+		 <<dz<<" phicor: "
 	      //<<tracklet->phiprojderdisk(disk_)<<" "
-		 <<phicorr<<" "
+		 <<phicorr<<" phiproj"
 		 <<phiproj<<" | "
 		 <<tracklet->rprojdisk(disk_)<<" "
 		 <<tracklet->rprojderdisk(disk_)<<" "
@@ -413,6 +465,21 @@ public:
 		 <<ideltaphi*kphiproj123<<" "
 		 <<ideltar*krprojshiftdisk<<" "
 		 <<imatch
+	    	 <<endl;
+	    */
+	    cout << "DUMPMATCHDISK INTEGER VALUES : "<<disk_<<" phiproj: "
+		 <<tracklet->fpgaphiprojdisk(disk_).value()<<"iz : "
+		 <<iz<<" IPHICOR : "
+	      //<<tracklet->fpgaphiprojderdisk(disk_).value()*kphiprojderdiskshift<<" "
+		 <<iphicorr<<" ("<<iphicorr<<") "
+		 <<iphi<<" | "
+		 <<tracklet->fpgarprojdisk(disk_).value()<<" ircorr : "
+		 <<ircorr<<" ir : "
+		 <<ir<<" <idelta phi> "
+		 <<ideltaphi<<" ideltar "
+		 <<ideltar<<" "
+		 <<stub->alphatruncated()<<" "
+		 <<imatch
 		 <<endl;
 	  }
 	  
@@ -423,29 +490,42 @@ public:
 
 	    std::pair<FPGAStub*,L1TStub*> tmp(fpgastub,stub);
 
+	    countsel++;
+
 	    tracklet->addMatchDisk(disk_,ideltaphi,ideltar,
 				   dphi,dr,dphiapprox,drapprox,
 				   stub->alphatruncated(),
 				   fpgastub->stubindex().value()+((fpgastub->fedregion()-1)<<6),
 				   stub->z(),tmp);
 
-	    //cout << "Accepted full match in disk " <<getName()<<" "<<tracklet<<endl;
 	    
 	    if (tracklet->plusNeighborDisk(disk_)){
 	      fullmatchesToMinus_->addMatch(tracklet,tmp);
+	      //cout << "Accepted full match to minus in disk " <<getName()<<" "<<tracklet
+	      //   <<" "<<fullmatchesToMinus_->getName()<<endl;
 	    } else if (tracklet->minusNeighborDisk(disk_)) {
 	      fullmatchesToPlus_->addMatch(tracklet,tmp);
+	      //cout << "Accepted full match to plus in disk " <<getName()<<" "<<tracklet
+	      //   <<" "<<fullmatchesToPlus_->getName()<<endl;
 	    } else {
 	      for (unsigned int l=0;l<fullmatches_.size();l++){
+		//cout << "Accepted full match in disk " <<getName()<<" "<<tracklet
+		//   <<" "<<fullmatches_[l]->getName()<<endl;
 		fullmatches_[l]->addMatch(tracklet,tmp);
 	      }
 	    }
 	  }
 	}
- 	if (countall>=NMAXMC) break;
+ 	if (countall>=MAXMC) break;
       }
-      if (countall>=NMAXMC) break;
+      if (countall>=MAXMC) break;
     }
+
+    if (writeMatchCalculator) {
+      static ofstream out("matchcalculator.txt");
+      out << getName()<<" "<<countall<<" "<<countsel<<endl;
+    }
+
 
   }
     

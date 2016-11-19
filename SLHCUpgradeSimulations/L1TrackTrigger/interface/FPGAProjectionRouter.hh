@@ -13,6 +13,8 @@ public:
   FPGAProjectionRouter(string name, unsigned int iSector):
     FPGAProcessBase(name,iSector){
     string subname=name.substr(0,5);
+    string subname1=name.substr(0,6);
+    string subname2=name.substr(0,3);
     //cout << "subname : "<<subname<<endl;
     layer_=0;
     disk_=0;
@@ -25,23 +27,29 @@ public:
     vmprojPHI4R1_=0;
     vmprojPHI4R2_=0;
 
+    dct_=name[6]-'0';
+    if (subname2=="PRD") {
+      dct_=name[7]-'0';
+    }
+
     if (subname=="PR_L1") layer_=1;
     if (subname=="PR_L2") layer_=2;
     if (subname=="PR_L3") layer_=3;
     if (subname=="PR_L4") layer_=4;
     if (subname=="PR_L5") layer_=5;
     if (subname=="PR_L6") layer_=6;
-    if (subname=="PR_F1") disk_=1;
-    if (subname=="PR_F2") disk_=2;
-    if (subname=="PR_F3") disk_=3;
-    if (subname=="PR_F4") disk_=4;
-    if (subname=="PR_F5") disk_=5;
-    if (subname=="PR_B1") disk_=-1;
-    if (subname=="PR_B2") disk_=-2;
-    if (subname=="PR_B3") disk_=-3;
-    if (subname=="PR_B4") disk_=-4;
-    if (subname=="PR_B5") disk_=-5;
+    if (subname1=="PRD_F1") disk_=1;
+    if (subname1=="PRD_F2") disk_=2;
+    if (subname1=="PRD_F3") disk_=3;
+    if (subname1=="PRD_F4") disk_=4;
+    if (subname1=="PRD_F5") disk_=5;
+    if (subname1=="PRD_B1") disk_=-1;
+    if (subname1=="PRD_B2") disk_=-2;
+    if (subname1=="PRD_B3") disk_=-3;
+    if (subname1=="PRD_B4") disk_=-4;
+    if (subname1=="PRD_B5") disk_=-5;
     allproj_=0;
+    assert(disk_!=0||layer_!=0);
   }
 
   void addOutput(FPGAMemoryBase* memory,string output){
@@ -55,102 +63,95 @@ public:
       allproj_=tmp;
       return;
     }
-    if (output=="vmprojoutPHI1Z1"){
+    if (output=="vmprojoutPHI1X1"){
       FPGAVMProjections* tmp=dynamic_cast<FPGAVMProjections*>(memory);
       assert(tmp!=0);
-      vmprojPHI1Z1_=tmp;
+      if (layer_!=0) {
+	vmprojPHI1Z1_=tmp;
+      }
+      if (disk_!=0) {
+	vmprojPHI1R1_=tmp;
+      }
       return;
     }
-    if (output=="vmprojoutPHI1Z2"){
+    if (output=="vmprojoutPHI1X2"){
       FPGAVMProjections* tmp=dynamic_cast<FPGAVMProjections*>(memory);
       assert(tmp!=0);
-      vmprojPHI1Z2_=tmp;
+      if (layer_!=0) {
+	vmprojPHI1Z2_=tmp;
+      }
+      if (disk_!=0) {
+	vmprojPHI1R2_=tmp;
+      }
       return;
     }
-    if (output=="vmprojoutPHI2Z1"){
+    if (output=="vmprojoutPHI2X1"){
       FPGAVMProjections* tmp=dynamic_cast<FPGAVMProjections*>(memory);
       assert(tmp!=0);
-      vmprojPHI2Z1_=tmp;
+      if (layer_!=0) {
+	vmprojPHI2Z1_=tmp;
+      }
+      if (disk_!=0) {
+	vmprojPHI2R1_=tmp;
+      }
       return;
     }
-    if (output=="vmprojoutPHI2Z2"){
+    if (output=="vmprojoutPHI2X2"){
       FPGAVMProjections* tmp=dynamic_cast<FPGAVMProjections*>(memory);
       assert(tmp!=0);
-      vmprojPHI2Z2_=tmp;
+      if (layer_!=0) {
+	vmprojPHI2Z2_=tmp;
+      }
+      if (disk_!=0) {
+	vmprojPHI2R2_=tmp;
+      }
       return;
     }
-    if (output=="vmprojoutPHI3Z1"){
+    if (output=="vmprojoutPHI3X1"){
       FPGAVMProjections* tmp=dynamic_cast<FPGAVMProjections*>(memory);
       assert(tmp!=0);
-      vmprojPHI3Z1_=tmp;
+      if (layer_!=0) {
+	vmprojPHI3Z1_=tmp;
+      }
+      if (disk_!=0) {
+	vmprojPHI3R1_=tmp;
+      }
       return;
     }
-    if (output=="vmprojoutPHI3Z2"){
+    if (output=="vmprojoutPHI3X2"){
       FPGAVMProjections* tmp=dynamic_cast<FPGAVMProjections*>(memory);
       assert(tmp!=0);
-      vmprojPHI3Z2_=tmp;
+      if (layer_!=0) {
+	vmprojPHI3Z2_=tmp;
+      }
+      if (disk_!=0) {
+	vmprojPHI3R2_=tmp;
+      }
       return;
     }
-    if (output=="vmprojoutPHI4Z1"){
+    if (output=="vmprojoutPHI4X1"){
       FPGAVMProjections* tmp=dynamic_cast<FPGAVMProjections*>(memory);
       assert(tmp!=0);
-      vmprojPHI4Z1_=tmp;
+      if (layer_!=0) {
+	vmprojPHI4Z1_=tmp;
+      }
+      if (disk_!=0) {
+	vmprojPHI4R1_=tmp;
+      }
       return;
     }
-    if (output=="vmprojoutPHI4Z2"){
+    if (output=="vmprojoutPHI4X2"){
       FPGAVMProjections* tmp=dynamic_cast<FPGAVMProjections*>(memory);
       assert(tmp!=0);
-      vmprojPHI4Z2_=tmp;
+      if (layer_!=0) {
+	vmprojPHI4Z2_=tmp;
+      }
+      if (disk_!=0) {
+	vmprojPHI4R2_=tmp;
+      }
       return;
     }
-    if (output=="vmprojoutPHI1R1"){
-      FPGAVMProjections* tmp=dynamic_cast<FPGAVMProjections*>(memory);
-      assert(tmp!=0);
-      vmprojPHI1R1_=tmp;
-      return;
-    }
-    if (output=="vmprojoutPHI1R2"){
-      FPGAVMProjections* tmp=dynamic_cast<FPGAVMProjections*>(memory);
-      assert(tmp!=0);
-      vmprojPHI1R2_=tmp;
-      return;
-    }
-    if (output=="vmprojoutPHI2R1"){
-      FPGAVMProjections* tmp=dynamic_cast<FPGAVMProjections*>(memory);
-      assert(tmp!=0);
-      vmprojPHI2R1_=tmp;
-      return;
-    }
-    if (output=="vmprojoutPHI2R2"){
-      FPGAVMProjections* tmp=dynamic_cast<FPGAVMProjections*>(memory);
-      assert(tmp!=0);
-      vmprojPHI2R2_=tmp;
-      return;
-    }
-    if (output=="vmprojoutPHI3R1"){
-      FPGAVMProjections* tmp=dynamic_cast<FPGAVMProjections*>(memory);
-      assert(tmp!=0);
-      vmprojPHI3R1_=tmp;
-      return;
-    }
-    if (output=="vmprojoutPHI3R2"){
-      FPGAVMProjections* tmp=dynamic_cast<FPGAVMProjections*>(memory);
-      assert(tmp!=0);
-      vmprojPHI3R2_=tmp;
-      return;
-    }
-    if (output=="vmprojoutPHI4R1"){
-      FPGAVMProjections* tmp=dynamic_cast<FPGAVMProjections*>(memory);
-      assert(tmp!=0);
-      vmprojPHI4R1_=tmp;
-      return;
-    }
-    if (output=="vmprojoutPHI4R2"){
-      FPGAVMProjections* tmp=dynamic_cast<FPGAVMProjections*>(memory);
-      assert(tmp!=0);
-      vmprojPHI4R2_=tmp;
-      return;
-    }
+
     cout << "Did not find output : "<<output<<endl;
     assert(0);
   }
@@ -164,7 +165,9 @@ public:
 	input=="proj3in"||input=="proj4in"||
 	input=="proj5in"||input=="proj6in"||
 	input=="proj7in"||input=="proj8in"||
-	input=="proj9in"||input=="proj10in"){
+	input=="proj9in"||input=="proj10in"||
+	input=="proj11in"||input=="proj12in"||
+	input=="proj13in"||input=="proj14in"){
       FPGATrackletProjections* tmp=dynamic_cast<FPGATrackletProjections*>(memory);
       assert(tmp!=0);
       inputproj_.push_back(tmp);
@@ -188,11 +191,17 @@ public:
 
   void execute() {
 
+    //cout << "FPGAProjectionRouter : "<<getName()<<endl;
+
+    unsigned int count=0;
+
     if (layer_!=0) {
       for (unsigned int j=0;j<inputproj_.size();j++){
 	//cout << "Inputproj : "<<inputproj_[j]->getName()<<" "
-	//     <<inputproj_[j]->nTracklets()<<endl;
+        //    <<inputproj_[j]->nTracklets()<<endl;
 	for (unsigned int i=0;i<inputproj_[j]->nTracklets();i++){
+	  count++;
+	  if (count>MAXPROJROUTER) continue;
 	  //cout << "Doing projection"<<endl;
 	  
 	  FPGAWord fpgaphi=inputproj_[j]->getFPGATracklet(i)->fpgaphiproj(layer_);
@@ -205,15 +214,25 @@ public:
 	  //skip if projection is out of range!
 	  if (fpgaz.atExtreme()) continue;
 	  if (fpgaphi.atExtreme()) continue;
+
+
+	  //	  cout<<" string: "<<inputproj_[j]->getFPGATracklet(i)->trackletprojstr(i)<<endl; 
+
 	
 	  int iz=4+(fpgaz.value()>>(fpgaz.nbits()-3));
 	  int iphitmp=fpgaphi.value();
 	  if ((layer_%2)==1) iphitmp-=(1<<(fpgaphi.nbits()-3));  
 	  int iphi=iphitmp>>(fpgaphi.nbits()-2);
+
+	  int iztmp=iz/2+1;
 	  
-	  //cout << "iphi iz : "<<iphi<<" "<<iz<<endl;
+	  //cout << "FPGAProjectionRouter : "<<getName()
+	  //     <<" iz = "<<iz<<" iztmp = "<<iztmp
+	  //     <<" dct = "<<dct_<<endl;
 	  
 	  iz=iz%2;
+
+	  if (dct_!=iztmp) iz=1-iz;  //test hack
 	  
 	  //if (layer_==3) {
 	  //  cout << "Will add to allproj_ in "<<getName()
@@ -224,50 +243,65 @@ public:
 
 	  assert(allproj_!=0);
 
+	  unsigned int index=allproj_->nTracklets();
+
 	  allproj_->addTracklet(inputproj_[j]->getFPGATracklet(i));
 	  
 	  if (iphi==0&&iz==0) {
-	    vmprojPHI1Z1_->addTracklet(inputproj_[j]->getFPGATracklet(i));
+	    vmprojPHI1Z1_->addTracklet(inputproj_[j]->getFPGATracklet(i),index);
 	  }
 	  if (iphi==0&&iz==1) {
-	    vmprojPHI1Z2_->addTracklet(inputproj_[j]->getFPGATracklet(i));
+	    vmprojPHI1Z2_->addTracklet(inputproj_[j]->getFPGATracklet(i),index);
 	  }
 	  
 	  if (iphi==1&&iz==0) {
-	    vmprojPHI2Z1_->addTracklet(inputproj_[j]->getFPGATracklet(i));
+	    vmprojPHI2Z1_->addTracklet(inputproj_[j]->getFPGATracklet(i),index);
 	  }
 	  if (iphi==1&&iz==1) {
-	    vmprojPHI2Z2_->addTracklet(inputproj_[j]->getFPGATracklet(i));
+	    vmprojPHI2Z2_->addTracklet(inputproj_[j]->getFPGATracklet(i),index);
 	  }
 	  
 	  if (iphi==2&&iz==0) {
-	    vmprojPHI3Z1_->addTracklet(inputproj_[j]->getFPGATracklet(i));
+	    vmprojPHI3Z1_->addTracklet(inputproj_[j]->getFPGATracklet(i),index);
 	  }
 	  if (iphi==2&&iz==1) {
-	    vmprojPHI3Z2_->addTracklet(inputproj_[j]->getFPGATracklet(i));
+	    vmprojPHI3Z2_->addTracklet(inputproj_[j]->getFPGATracklet(i),index);
 	  }
 	
 	  if (iphi==3&&iz==0) {
-	    vmprojPHI4Z1_->addTracklet(inputproj_[j]->getFPGATracklet(i));
+	    vmprojPHI4Z1_->addTracklet(inputproj_[j]->getFPGATracklet(i),index);
 	  }
 	  if (iphi==3&&iz==1) {
-	    vmprojPHI4Z2_->addTracklet(inputproj_[j]->getFPGATracklet(i));
+	    vmprojPHI4Z2_->addTracklet(inputproj_[j]->getFPGATracklet(i),index);
 	  }
 	}
       }
     } else {
       for (unsigned int j=0;j<inputproj_.size();j++){
+	//cout << "Inputproj : "<<inputproj_[j]->getName()<<" "
+        //     <<inputproj_[j]->nTracklets()<<endl;
 	for (unsigned int i=0;i<inputproj_[j]-> nTracklets();i++){
-	  //cout << "Doing disk projection disk="<<disk_<<" in "<<getName()<<endl;
-	  //assert(inputproj_[j]->getFPGATracklet(i)->isDisk());
+	  count++;
+	  if (count>MAXPROJROUTER) continue;
+
 	  FPGAWord fpgaphi=inputproj_[j]->getFPGATracklet(i)->fpgaphiprojdisk(disk_);
 	  FPGAWord fpgar=inputproj_[j]->getFPGATracklet(i)->fpgarprojdisk(disk_);
+
+	  //cout << "fpgaphi fpgar : "<<fpgaphi.nbits()<<" "<<fpgar.nbits()<<endl;
+	 
+	  // cout<<" string: "<<inputproj_[j]->getFPGATracklet(i)->trackletprojstrD(i)<<endl; 
+
 	  
 	  //skip if projection is out of range!
 	  if (fpgar.atExtreme()) continue;
 	  if (fpgaphi.atExtreme()) continue;
 	
-	  int ir=(1<<2)*(fpgar.value()*krprojshiftdisk-rmindisk)/(rmaxdisk-rmindisk);
+	  // Print out Projected Tracklets	  
+
+
+	  //FIXME this should come from the integer calculations!!!
+	  int ir=(1<<2)*(fpgar.value()*krprojshiftdisk)/(rmaxdisk-rmindisk);
+          
 
 	  int iphitmp=fpgaphi.value();
 	  if ((disk_%2)==0) iphitmp-=(1<<(fpgaphi.nbits()-3));  
@@ -279,50 +313,128 @@ public:
 	  
 	  //cout << "Will add to allproj_ in "<<getName()<<endl;
 	  assert(allproj_!=0);
+
+	  unsigned int index=allproj_->nTracklets();
 	  allproj_->addTracklet(inputproj_[j]->getFPGATracklet(i));
 	  
 	  if (iphi==0&&ir==0) {
-	    vmprojPHI1R1_->addTracklet(inputproj_[j]->getFPGATracklet(i));
+	    //cout << "Adding projection to "<<vmprojPHI1R1_->getName()<<endl;
+	    vmprojPHI1R1_->addTracklet(inputproj_[j]->getFPGATracklet(i),index);
 	  }
 	  if (iphi==0&&ir==1) {
-	    vmprojPHI1R2_->addTracklet(inputproj_[j]->getFPGATracklet(i));
+	    //cout << "Adding projection to "<<vmprojPHI1R2_->getName()<<endl;
+	    vmprojPHI1R2_->addTracklet(inputproj_[j]->getFPGATracklet(i),index);
 	  }
 	  
 	  if (iphi==1&&ir==0) {
-	    vmprojPHI2R1_->addTracklet(inputproj_[j]->getFPGATracklet(i));
+	    //cout << "Adding projection to "<<vmprojPHI2R1_->getName()<<endl;
+	    vmprojPHI2R1_->addTracklet(inputproj_[j]->getFPGATracklet(i),index);
 	  }
 	  if (iphi==1&&ir==1) {
-	    vmprojPHI2R2_->addTracklet(inputproj_[j]->getFPGATracklet(i));
+	    //cout << "Adding projection to "<<vmprojPHI2R2_->getName()<<endl;
+	    vmprojPHI2R2_->addTracklet(inputproj_[j]->getFPGATracklet(i),index);
 	  }
 	  
 	  if (iphi==2&&ir==0) {
-	    vmprojPHI3R1_->addTracklet(inputproj_[j]->getFPGATracklet(i));
+	    //cout << "Adding projection to "<<vmprojPHI3R1_->getName()<<endl;
+	    vmprojPHI3R1_->addTracklet(inputproj_[j]->getFPGATracklet(i),index);
 	  }
 	  if (iphi==2&&ir==1) {
-	    vmprojPHI3R2_->addTracklet(inputproj_[j]->getFPGATracklet(i));
+	    //cout << "Adding projection to "<<vmprojPHI3R2_->getName()<<endl;
+	    vmprojPHI3R2_->addTracklet(inputproj_[j]->getFPGATracklet(i),index);
 	  }
 	
 	  if (iphi==3&&ir==0&&vmprojPHI4R1_!=0) {
-	    vmprojPHI4R1_->addTracklet(inputproj_[j]->getFPGATracklet(i));
+	    //cout << "Adding projection to "<<vmprojPHI4R1_->getName()<<endl;
+	    vmprojPHI4R1_->addTracklet(inputproj_[j]->getFPGATracklet(i),index);
 	  }
 	  if (iphi==3&&ir==1&&vmprojPHI4R2_!=0) {
-	    vmprojPHI4R2_->addTracklet(inputproj_[j]->getFPGATracklet(i));
+	    //cout << "Adding projection to "<<vmprojPHI4R2_->getName()<<endl;
+	    vmprojPHI4R2_->addTracklet(inputproj_[j]->getFPGATracklet(i),index);
 	  }
 	}
       }
     }
 
-
-    if (layer_!=0) {
-      if (writeAllProjections) {
-	static ofstream out("allprojections.txt"); 
+     
+    if (writeAllProjections) {
+      static ofstream out("allprojections.txt");
+      out << getName()<<" "<<allproj_->nTracklets()<<endl;
+      /*
+      if( allproj_->nTracklets() > 0 && disk_ == 0  && allproj_->nTracklets() < 4 ){
+	// 	out << getName() << " " << allproj_->nTracklets() << endl;
+      	for(uint i  = 0; i  < allproj_->nTracklets(); i++){
+	  out <<i<<" "<<getName()<<" "<< allproj_->getFPGATracklet(i)->trackletprojstr(i)<<" "<<layer_<<endl;
+	}
+      }
+      if( allproj_->nTracklets() > 0 && layer_ == 0  && allproj_->nTracklets() < 4 ){
 	out << getName() << " " << allproj_->nTracklets() << endl;
+      	for(uint i  = 0; i  < allproj_->nTracklets(); i++){
+	  out <<i<<" "<< allproj_->getFPGATracklet(i)->trackletprojstrD(i)<<" "<<layer_<<endl;
+	}
       } 
+      */
     }
 
     if (layer_!=0) {
       if (writeVMProjections) {
-	static ofstream out("vmprojections.txt"); 
+	static ofstream out("vmprojections.txt");
+
+	/*
+	if(vmprojPHI1Z1_->nTracklets() != 0  ){
+	  out << vmprojPHI1Z1_->getName() << " " << vmprojPHI1Z1_->nTracklets() << endl; 
+	  for(uint i = 0; i < vmprojPHI1Z1_->nTracklets(); i++){
+	    out<<i<<" "<< vmprojPHI1Z1_->getFPGATracklet(i)->trackletprojstr(i)<<endl;;
+	  }
+	}
+	if(vmprojPHI1Z2_->nTracklets() != 0  ){
+	  out << vmprojPHI1Z2_->getName() << " " << vmprojPHI1Z2_->nTracklets() << endl; 
+	  for(uint i = 0; i < vmprojPHI1Z2_->nTracklets(); i++){
+	    out<<i<<" "<< vmprojPHI1Z2_->getFPGATracklet(i)->trackletprojstr(i)<<endl;;
+	  }
+	}
+	if(vmprojPHI2Z1_->nTracklets() != 0  ){
+	  out << vmprojPHI2Z1_->getName() << " " << vmprojPHI2Z1_->nTracklets() << endl; 
+	  for(uint i = 0; i < vmprojPHI2Z1_->nTracklets(); i++){
+	    out<<i<<" "<< vmprojPHI2Z1_->getFPGATracklet(i)->trackletprojstr(i)<<endl;;
+	  }
+	}
+	if(vmprojPHI2Z2_->nTracklets() != 0  ){
+	  out << vmprojPHI2Z2_->getName() << " " << vmprojPHI2Z2_->nTracklets() << endl; 
+	  for(uint i = 0; i < vmprojPHI2Z2_->nTracklets(); i++){
+	    out<<i<<" "<< vmprojPHI2Z2_->getFPGATracklet(i)->trackletprojstr(i)<<endl;;
+	  }
+	}
+
+	cout<<"here 2"<<endl;
+	if(vmprojPHI3Z1_->nTracklets() != 0 && layer_< 7  ){ 
+	  out << vmprojPHI3Z1_->getName() << " " << vmprojPHI3Z1_->nTracklets() << endl; 
+	  // for(uint i = 0; i < vmprojPHI3Z1_->nTracklets(); i++){
+	    // out<<i<<" "<< vmprojPHI3Z1_->getFPGATracklet(i)->trackletprojstr(i)<<endl;;
+	  // }
+	}
+
+	cout<<"here 3"<<endl;
+	if(vmprojPHI3Z2_->nTracklets() != 0  ){
+	  out << vmprojPHI3Z2_->getName() << " " << vmprojPHI3Z2_->nTracklets() << endl; 
+	  //	  for(uint i = 0; i < vmprojPHI3Z2_->nTracklets(); i++){
+	  //  out<<i<<" "<< vmprojPHI3Z2_->getFPGATracklet(i)->trackletprojstr(i)<<endl;;
+	  //}
+	}
+	cout<<"here! 4"<<endl;
+
+	if (layer_%2==0) {
+	  if(vmprojPHI4Z1_->nTracklets() != 0  ) out << vmprojPHI4Z1_->getName() << " " << vmprojPHI4Z1_->nTracklets() << endl; 
+	  for(uint i = 0; i < vmprojPHI4Z1_->nTracklets(); i++){
+	    //    out<<i<<" "<< vmprojPHI4Z1_->getFPGATracklet(i)->trackletprojstrD(i)<<endl;;
+	  }
+	  
+	  if(vmprojPHI4Z2_->nTracklets() != 0  ) out << vmprojPHI4Z2_->getName() << " " << vmprojPHI4Z2_->nTracklets() << endl; 
+	  for(uint i = 0; i < vmprojPHI4Z2_->nTracklets(); i++){
+	    // out<<i<<" "<< vmprojPHI4Z2_->getFPGATracklet(i)->trackletprojstrD(i)<<endl;;
+	  }
+	}
+	*/
 	out << vmprojPHI1Z1_->getName() << " " << vmprojPHI1Z1_->nTracklets() << endl; 
 	out << vmprojPHI1Z2_->getName() << " " << vmprojPHI1Z2_->nTracklets() << endl; 
 	out << vmprojPHI2Z1_->getName() << " " << vmprojPHI2Z1_->nTracklets() << endl; 
@@ -332,9 +444,14 @@ public:
 	if (layer_%2==0) {
 	  out << vmprojPHI4Z1_->getName() << " " << vmprojPHI4Z1_->nTracklets() << endl; 
 	  out << vmprojPHI4Z2_->getName() << " " << vmprojPHI4Z2_->nTracklets() << endl;
-	} 
+	}
+
       }
     }
+
+
+
+
   }
   
 
@@ -342,6 +459,7 @@ private:
 
   int layer_; 
   int disk_; 
+  int dct_;
 
   vector<FPGATrackletProjections*> inputproj_;
   FPGATrackletProjections* inputplusproj_;

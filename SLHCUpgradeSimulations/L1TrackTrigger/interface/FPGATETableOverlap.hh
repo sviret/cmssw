@@ -106,8 +106,9 @@ public:
       }
       */
 
-      if (ideltaphi>7) ideltaphi-=8;
-
+      //now ideltaphi is actually a signed integer. Convert
+      int iphishift = 8*sizeof(int)-deltaphibits;
+      ideltaphi = (ideltaphi<<iphishift)>>iphishift;
 
       double deltaphiavg=deltaphioffset+2*(deltaphi*ideltaphi)/(1<<deltaphibits);
       double deltar=(rmin1-rmin2)+ideltar*(rmax1-rmin1)/(1<<deltarbits);
@@ -116,24 +117,33 @@ public:
 
       double ptstubinv1;
       double ptstubinv2;
-      if (istubpt1==0) ptstubinv1=0.40;
-      if (istubpt1==1) ptstubinv1=0.25;
-      if (istubpt1==2) ptstubinv1=0.15;
-      if (istubpt1==3) ptstubinv1=0.05;
-      if (istubpt1==4) ptstubinv1=-0.05;
-      if (istubpt1==5) ptstubinv1=-0.15;
-      if (istubpt1==6) ptstubinv1=-0.25;
-      if (istubpt1==7) ptstubinv1=-0.40;
 
-      if (istubpt2==0) ptstubinv2=0.40;
-      if (istubpt2==1) ptstubinv2=0.25;
-      if (istubpt2==2) ptstubinv2=0.15;
-      if (istubpt2==3) ptstubinv2=0.05;
-      if (istubpt2==4) ptstubinv2=-0.05;
-      if (istubpt2==5) ptstubinv2=-0.15;
-      if (istubpt2==6) ptstubinv2=-0.25;
-      if (istubpt2==7) ptstubinv2=-0.40;
 
+      if(!enstubbend){
+	if (istubpt1==0) ptstubinv1=0.40;
+	if (istubpt1==1) ptstubinv1=0.25;
+	if (istubpt1==2) ptstubinv1=0.15;
+	if (istubpt1==3) ptstubinv1=0.05;
+	if (istubpt1==4) ptstubinv1=-0.05;
+	if (istubpt1==5) ptstubinv1=-0.15;
+	if (istubpt1==6) ptstubinv1=-0.25;
+	if (istubpt1==7) ptstubinv1=-0.40;
+	
+	if (istubpt2==0) ptstubinv2=0.40;
+	if (istubpt2==1) ptstubinv2=0.25;
+	if (istubpt2==2) ptstubinv2=0.15;
+	if (istubpt2==3) ptstubinv2=0.05;
+	if (istubpt2==4) ptstubinv2=-0.05;
+	if (istubpt2==5) ptstubinv2=-0.15;
+	if (istubpt2==6) ptstubinv2=-0.25;
+	if (istubpt2==7) ptstubinv2=-0.40;
+      }
+      
+      if(enstubbend){
+      float KL1 =1./6.;
+      ptstubinv1 = (istubpt1)*KL1 -0.66666;
+      ptstubinv2 = istubpt2*KL1 -0.66666;         
+      }
       
 
       double pttracklet=0.3*3.8/(rinv*100); 
@@ -193,6 +203,11 @@ public:
       int iz2=i>>(r1bits+r2bits)&((1<<z2bits)-1);
       int ir1=i>>(r2bits)&((1<<r1bits)-1);
       int ir2=i&((1<<r2bits)-1);
+      // z1 and r2 are signed integers. Convert
+      int iz1shift = 8*sizeof(int)-z1bits;
+      iz1 = (iz1<<iz1shift)>>iz1shift;
+      int ir2shift = 8*sizeof(int)-r2bits;
+      ir2 = (ir2<<ir2shift)>>ir2shift;
 
       bool printz=false;
 
@@ -206,8 +221,8 @@ public:
       double r2[2];
 
 
-      z1[0]=zmin1+iz1*(zmax1-zmin1)/(1<<z1bits);
-      z1[1]=zmin1+(iz1+1)*(zmax1-zmin1)/(1<<z1bits);
+      z1[0]=0.5*(zmin1+zmax1)+iz1*(zmax1-zmin1)/(1<<z1bits);
+      z1[1]=0.5*(zmin1+zmax1)+(iz1+1)*(zmax1-zmin1)/(1<<z1bits);
 
       if (printz) {
       	cout <<  "zmin1 zmax1 z1bits z1[0] z1[1]:" <<
@@ -221,8 +236,8 @@ public:
       r1[0]=rmin1+ir1*(rmax1-rmin1)/(1<<r1bits);
       r1[1]=rmin1+(ir1+1)*(rmax1-rmin1)/(1<<r1bits);
 
-      r2[0]=rmin2+ir2*(rmax2-rmin2)/(1<<r2bits);
-      r2[1]=rmin2+(ir2+1)*(rmax2-rmin2)/(1<<r2bits);
+      r2[0]=0.5*(rmin2+rmax2)+ir2*(rmax2-rmin2)/(1<<r2bits);
+      r2[1]=0.5*(rmin2+rmax2)+(ir2+1)*(rmax2-rmin2)/(1<<r2bits);
 
       bool below=false;
       bool center=false;
@@ -300,7 +315,7 @@ public:
       FPGAWord entry;
       //cout << "ztablebits_ : "<<ztablebits_<<endl;
       entry.set(i,ztablebits_);
-      out << entry.str()<<" "<<tablez_[i]<<endl;
+      out <<tablez_[i]<<endl;
     }
     out.close();
       
@@ -323,20 +338,20 @@ public:
     //cout << "r1 r1bits_ "<<r1<<" "<<r1bits_<<endl;
     //cout << "r2 r2bits_ "<<r2<<" "<<r2bits_<<endl;
 
-    assert(z1>=0);
+    // z1 and r2 are signed integers
+
     assert(z2>=0);
     assert(r1>=0);
-    assert(r2>=0);
-    assert(z1<(1<<z1bits_));
     assert(z2<(1<<z2bits_));
     assert(r1<(1<<r1bits_));
-    assert(r2<(1<<r2bits_));
 
+    int uz1 = z1 & ((1<<z1bits_)-1);
+    int ur2 = r2 & ((1<<r2bits_)-1);
 
-    int address=(z1<<(z2bits_+r1bits_+r2bits_))+
+    int address=(uz1<<(z2bits_+r1bits_+r2bits_))+
       (z2<<(r1bits_+r2bits_))+
       (r1<<r2bits_)+
-      r2;
+      ur2;
 
     //cout << "address "<<address<<" ["<<z1<<" "<<z2<<" "<<r1<<" "<<r2<<" ]"<<tablez_[address]<<endl;
 

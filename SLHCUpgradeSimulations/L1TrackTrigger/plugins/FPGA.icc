@@ -10,8 +10,12 @@
 
 
     int stublayer[6];
+    int stublayer1[6][28];
     for (unsigned int ll=0;ll<6;ll++){
       stublayer[ll]=0;
+      for (unsigned int jj=0;jj<28;jj++){
+        stublayer1[ll][jj]=0;
+      }
     }
 	
     int stubcount[6][24*28];	
@@ -30,16 +34,19 @@
       L1TStub stub=ev.stub(j);
       //if (stub.layer()>999) {
       //	 cout << "Found stub in disk : "<<stub.module()<<" r= "<<stub.r()
-//	 <<" z= "<<stub.z()<<endl;
-  //    }
+	// <<" z= "<<stub.z()<<endl;
+      //}
 
-	//cout << "Stub: layer="<<stub.layer()+1
-	//     <<" pt="<<stub.pt()
-	//     <<" phi="<<stub.phi()
-	//     <<" r="<<stub.r()
-	//     <<" ladder="<<stub.ladder()
-	//     <<" module="<<stub.module()
-	//     <<endl;
+      if(0) {
+	cout << "Stub: layer="<<stub.layer()+1
+	       <<" pt="<<stub.pt()
+	       <<" phi="<<stub.phi()
+	       <<" r="<<stub.r()
+	       <<" z="<<stub.z()
+	       <<" ladder="<<stub.ladder()
+	       <<" module="<<stub.module()
+	       <<endl;
+      } 
 
       if (stub.layer()<7) {
 
@@ -50,13 +57,30 @@
         int iphi=24*28*phi/two_pi;
         assert(iphi>=0);
         assert(iphi<24*28);
-        if (fabs(stub.z())<80.0) stubcount[stub.layer()][iphi]++;
-
+	double max=115.0;
+	if (stub.layer()==0) max=70.0;
+        if (fabs(stub.z())<max) stubcount[stub.layer()][iphi]++;
+	int isector=iphi/24;
+	assert(isector<28);
+	stublayer1[stub.layer()][isector]++;
         stublayer[stub.layer()]++;
 
       }
 
+      double phi=stub.phi();
+      if (phi<0.0) phi+=two_pi;
+      int isector=28*phi/two_pi;
+      assert(isector>=0);
+      assert(isector<28);
+
+      
+
       for (unsigned int k=0;k<NSector;k++) {
+        int diff=k-isector;
+	int nSector=NSector;
+        if (diff>nSector/2) diff-=NSector;
+        if (diff<-nSector/2) diff+=NSector;
+	if (abs(diff)>1) continue;
         sectors[k]->addStub(stub);	  
       }
     }
@@ -67,42 +91,37 @@
       }
     }
 
-    int highocc=-1;
-
     if (writeStubsLayer) {
       static ofstream out("stubslayer.txt");
       out <<stublayer[0]<<" "<<stublayer[1]<<" "<<stublayer[2]<<" "
           <<stublayer[3]<<" "<<stublayer[4]<<" "<<stublayer[5]<<endl;
     }     
 
-    //static ofstream out("newvmoccupancy.txt");
-    //for (unsigned int ll=0;ll<24*28;ll++){
-    //    out<<1<<" "<<stubcount[0][ll]<<endl;
-    //	  if (stubcount[0][ll]>15) highocc=ll;
-    //    out<<2<<" "<<stubcount[1][ll]<<endl;
-    //    out<<3<<" "<<stubcount[2][ll]<<endl;
-    //    out<<4<<" "<<stubcount[3][ll]<<endl;
-    //    out<<5<<" "<<stubcount[4][ll]<<endl;
-    //    out<<6<<" "<<stubcount[5][ll]<<endl;
-    //} 
+
+    if (writeStubsLayerperSector) {
+      static ofstream out("stubslayerpersector.txt");
+      for(unsigned int jj=0;jj<28;jj++){
+        out <<stublayer1[0][jj]<<" "<<stublayer1[1][jj]<<" "
+	    <<stublayer1[2][jj]<<" "
+            <<stublayer1[3][jj]<<" "<<stublayer1[4][jj]<<" "
+            <<stublayer1[5][jj]<<endl; 
+      }
+    }     
 
 
-    if (highocc!=-1){
-      for (int j=0;j<ev.nstubs();j++){
+    
+    if (0) {
+      static ofstream out("newvmoccupancy.txt");
+      for (unsigned int ll=0;ll<24*28;ll++){
+        out<<1<<" "<<stubcount[0][ll]<<endl;
+        out<<2<<" "<<stubcount[1][ll]<<endl;
+        out<<3<<" "<<stubcount[2][ll]<<endl;
+        out<<4<<" "<<stubcount[3][ll]<<endl;
+        out<<5<<" "<<stubcount[4][ll]<<endl;
+        out<<6<<" "<<stubcount[5][ll]<<endl;
+      }
+    } 
 
-        L1TStub stub=ev.stub(j);
-
-        if (stub.layer()==0) {
-          double phi=stub.phi();
-          if (phi<0.0) phi+=two_pi;
-          int iphi=24*28*phi/two_pi;
-          assert(iphi>=0);
-          assert(iphi<24*28);
-	  //if (iphi==highocc)
-          //cout << "z position"<<stub.z()<<endl;
-        }
-      }  
-    }
 
 
     addStubTimer.stop();
@@ -115,7 +134,7 @@
     for (unsigned int k=0;k<NSector;k++) {
       sectors[k]->executeLR();	 
       sectors[k]->executeDR();	
-      if (writemem&&k==3) {
+      if (writemem&&k<4) {
         sectors[k]->writeSL(first);	 
         sectors[k]->writeSD(first);	 
       }      
@@ -126,7 +145,7 @@
     VMRouterTimer.start();
     for (unsigned int k=0;k<NSector;k++) {
       sectors[k]->executeVMR();	 
-      if (writemem&&k==3) {
+      if (writemem&&k<4) {
         sectors[k]->writeVMS(first);	 
         sectors[k]->writeAS(first);	 
       }      
@@ -136,7 +155,7 @@
     TETimer.start();
     for (unsigned int k=0;k<NSector;k++) {
       sectors[k]->executeTE();	
-      if(writemem && k==3){
+      if(writemem && k<4){
         sectors[k]->writeSP(first);
       } 
     }
@@ -146,9 +165,8 @@
     TCTimer.start();
     for (unsigned int k=0;k<NSector;k++) {
       sectors[k]->executeTC();	 
-      if(writemem && k==3){
+      if(writemem && k<4){
         sectors[k]->writeTPAR(first);
-        sectors[k]->writeTPROJ(first);
       } 
     }
     TCTimer.stop();
@@ -163,13 +181,22 @@
       int minus=k-1;
       if (minus<0) minus=NSector-1;
       sectors[k]->executePT(sectors[plus],sectors[minus]);	 
+      if(writemem && k<4){
+        sectors[k]->writeTPROJ(first);
+      } 
+
     }
     PTTimer.stop();
 
 
     PRTimer.start();
     for (unsigned int k=0;k<NSector;k++) {
-      sectors[k]->executePR();	 
+      sectors[k]->executePR();	
+    }
+    for (unsigned int k=0;k<NSector;k++) {
+      if(writemem && k<4){
+        sectors[k]->writeVMPROJ(first);
+      }
     }
     PRTimer.stop();
 
@@ -183,7 +210,7 @@
 
     MCTimer.start();
     for (unsigned int k=0;k<NSector;k++) {
-      sectors[k]->executeMC();	 
+      sectors[k]->executeMC();
     }
     MCTimer.stop();
 
@@ -198,63 +225,88 @@
       sectors[k]->executeMT(sectors[plus],sectors[minus]);	 
       //sectors[k]->executeMT(sectors[minus],sectors[plus]);	 
     }
+    for (unsigned int k=0;k<NSector;k++) {
+      if(writemem && k<4){
+        sectors[k]->writeMC(first);
+      }
+    }   
     MTTimer.stop();
 
 
     FTTimer.start();
     for (unsigned int k=0;k<NSector;k++) {
       sectors[k]->executeFT();	 
-      if(writeifit&&k==3){
+      if(writeifit&&(k==1||k==2||k==3||k==4||k==5)){
          sectors[k]->writeTF(first);
       }
     }
     FTTimer.stop();
 
-    DuplicateTimer.start();
+    PDTimer.start();
+    for (unsigned int k=0;k<NSector;k++) {
+      sectors[k]->executePD(tracks);	  
+      if(writeifit&&(k==1||k==2||k==3||k==4||k==5)){
+         sectors[k]->writeCT(first);
+      }
+    }
+    PDTimer.stop();
+    
     bool match=false;
     for (unsigned int k=0;k<NSector;k++) {
       //cout << "FPGA.icc " << k << " " << tracks.size() << endl;
-      sectors[k]->findduplicates(tracks);
+      //sectors[k]->findduplicates(tracks);
       if (selectmu==1) {
-	if (ev.nsimtracks()>0) {
-	  match=match||sectors[k]->foundTrack(outres,simtrk);
-	}
+	    if (ev.nsimtracks()>0) {
+	      match=match||sectors[k]->foundTrack(outres,simtrk);
+	    }
       }
     }
-    DuplicateTimer.stop();
+    
 
-
+    
     //Tag adjacent sector duplicates
-    for (int itrk=0; itrk<(int)tracks.size(); itrk++) {
+    if(adjacentRemoval==true) {
+      int numTrk = tracks.size();
+
+      for (int itrk=0; itrk<(int)tracks.size(); itrk++) {
         //if primary track is a duplicate, it cannot veto any...move on
-        if(!tracks[itrk].duplicate()) {	  
-	
-            for(int jtrk=itrk+1; jtrk<(int)tracks.size(); jtrk++){
-	            //if secondary track is a duplicate or not in an adjacent sector, it cannot veto any...move on
-                if(!tracks[jtrk].duplicate() && (tracks[itrk].isector()-tracks[jtrk].isector()==1 || tracks[itrk].isector()-tracks[jtrk].isector()==27)) {
+        if(tracks[itrk]->duplicate()) continue;
 
-                    //get stub information
-		            int nShare=0;
-		            std::map<int, int> stubsTrk1 = tracks[itrk].stubID();
-		            std::map<int, int> stubsTrk2 = tracks[jtrk].stubID();
+        int nStubP = 0;
+        int nStubS[numTrk];
+        int nShare[numTrk];
+        
+        // Get and count primary stubs
+        std::map<int, int> stubsTrk1 = tracks[itrk]->stubID();
+        nStubP = stubsTrk1.size();
 
-                    //count shared stubs
-                    for(std::map<int, int>::iterator  st=stubsTrk1.begin(); st!=stubsTrk1.end(); st++) {
-                        if( stubsTrk2.find(st->first) != stubsTrk2.end() ) {
-                            if(st->second == stubsTrk2[st->first] && st->second != 63) { nShare++; }
-                        }   	  
-                    } //loop over stubs
+        for(int jtrk=itrk+1; jtrk<(int)tracks.size(); jtrk++){
+          //if secondary track is a duplicate or not in an adjacent sector, it cannot veto any...move on
+          if(tracks[jtrk]->duplicate()) continue;
+          if(tracks[jtrk]->isector()-tracks[itrk]->isector() != 1 || tracks[jtrk]->isector()-tracks[itrk]->isector() != -27) continue;
 
-	           	    //Decide if we should flag either of the tracks as a duplicate
-			        if(stubsTrk1.size()>=stubsTrk2.size()) {
-			            if( (((int)stubsTrk2.size()-nShare)<minIndepStubs)) tracks[jtrk].setDuplicate(true);
-			        } else {
-			            if( (((int)stubsTrk1.size()-nShare)<minIndepStubs)) tracks[itrk].setDuplicate(true);
-                    }
-                } //if second track not a duplicate already
-            } //loop over second track
-        } //if first track not a duplicate already  	  
-    } //loop over first track
+          // Get and count secondary stubs
+          std::map<int, int> stubsTrk2 = tracks[jtrk]->stubID();
+          nStubS[jtrk] = stubsTrk2.size();
+
+          // Count shared stubs
+          for(std::map<int, int>::iterator  st=stubsTrk1.begin(); st!=stubsTrk1.end(); st++) {
+            if( stubsTrk2.find(st->first) != stubsTrk2.end() ) {
+              if(st->second == stubsTrk2[st->first] && st->second != 63) nShare[jtrk]++;
+            }   	  
+          } //loop over stubs
+        }
+        
+        //Decide if we should flag a duplicate (only in n+1 sector)
+        for(int jtrk=itrk+1; jtrk<numTrk; jtrk++) {
+          // Skip duplicate tracks
+          if(tracks[jtrk]->duplicate()==1) continue;
+
+          if((nStubS[jtrk]-nShare[jtrk] < minIndStubs) && (nStubS[jtrk] <= nStubP)) tracks[jtrk]->setDuplicate(true);
+        }
+      } //loop over first track
+    }
+    
 
     outeff << simtrk.pt()*simtrk.id()/fabs(simtrk.id())<<" "<<simtrk.eta()
 	   <<" "<<simtrk.phi();
