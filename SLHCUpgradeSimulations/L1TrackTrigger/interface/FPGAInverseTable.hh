@@ -23,22 +23,45 @@ public:
   }
 
 
-  void init(int nbits,
-	    int offset
+  void initR(int nbits,
+	     int offset,
+	     int invbits,
+	     bool pos,
+	     int shift
 	    ) {
 
     nbits_=nbits;
     entries_=(1<<nbits);
     
     for(int i=0;i<entries_;i++) {
-      int idrrel=i;
-      if (i>((1<<(nbits-1))-1)) {
-	idrrel=i-(1<<nbits);
+      int idrrel=i<<shift;
+      if(!pos){
+	if (i>((1<<(nbits-1))-1)) {
+	  idrrel=i-(1<<nbits);
+	}
       }
       int idr=offset+idrrel;
-      table_.push_back(round_int((1<<idrinvbits)/(1.0*idr)));
+      table_.push_back(round_int((1<<invbits)/(1.0*idr)));
     }
 
+  }
+  void initT(int nbits,
+	     int offset,
+	     int invbits,
+	     bool pos
+	    ) {
+
+    nbits_=nbits;
+    entries_=(1<<nbits);
+    
+    for(int i=0;i<entries_;i++) {
+      int itrel=i;
+      if(!pos)
+	itrel = i-entries_;
+      int it=itrel<<offset;
+      int invt = round_int((1<<invbits)/(1.0*it));
+      table_.push_back(invt);
+    }
 
   }
 	    
@@ -49,14 +72,14 @@ public:
 
     for (int i=0;i<entries_;i++){
       //cout << "i "<<i<<endl;
-      out <<table_[i]<<endl;
+      unsigned int tt = table_[i];
+      out<<"0x" <<std::hex<<tt<<endl;
     }
     out.close();
-  
   }
 
 
-  unsigned int lookup(int drrel) const {
+  int lookup(int drrel) const {
     assert(drrel>=0);
     assert(drrel<(1<<nbits_));
     return table_[drrel];
@@ -71,7 +94,7 @@ private:
 
   int nbits_;
   int entries_;
-  vector<unsigned int> table_;
+  vector<int> table_;
   
 
 };

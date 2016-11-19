@@ -53,9 +53,16 @@ public:
     assert(!(disk&&overlap));
     barrel_=(!disk)&&(!overlap);
 
+    trackletIndex_=-1;
+    TCIndex_=-1;
+
+    fpgatrack_=0;
+
     phioffset_=phioffset;
 
     assert(disk_||barrel_||overlap_);
+
+    if (barrel_) assert(innerStub->layer()<6);
   
     innerStub_=innerStub;
     outerStub_=outerStub;
@@ -125,7 +132,9 @@ public:
       rproj_[1]=rmeanL2;
       projlayer_[0]=1;
       projlayer_[1]=2;
-      
+      projlayer_[2]=-1;
+      projlayer_[3]=-1;
+
       if (overlap_) {
 	assert((innerStub->disk()==1)||(innerStub->disk()==-1));
 	if (innerStub->disk()==1) {
@@ -286,14 +295,14 @@ public:
 
 	fpgaphiprojdisk_[i].set(iphiprojDisk[i],nbitsphiprojL123,true,__LINE__,__FILE__);
 	int iphivm=(iphiprojDisk[i]>>(nbitsphiprojL123-5))&0x7;
-	if ((abs(projdisk_[i])%2)==1) {
+	if ((abs(projdisk_[i])%2)==0) {
 	  iphivm^=4;
 	}
 	fpgaphiprojvmdisk_[i].set(iphivm,3,true,__LINE__,__FILE__);
-	fpgarprojdisk_[i].set(irprojDisk[i],nrbitsprojdisk,false,__LINE__,__FILE__);
-	int irvm=irprojDisk[i]>>(13-7)&0xf;
-	fpgarprojvmdisk_[i].set(irvm,4,true,__LINE__,__FILE__);
-	fpgaphiprojderdisk_[i].set(iphiderDisk[i],nbitsphiprojderL123,false,__LINE__,__FILE__);
+	fpgarprojdisk_[i].set(irprojDisk[i],nrbitsprojdisk,true,__LINE__,__FILE__);
+	int irvm=irprojDisk[i]>>(nrbitsdisk-(Nrbitsdisk+nrbitsdiskvm))&((1<<nrbitsdiskvm)-1);
+	fpgarprojvmdisk_[i].set(irvm,nrbitsdiskvm,true,__LINE__,__FILE__);
+	fpgaphiprojderdisk_[i].set(iphiderDisk[i],nphibitsprojderdisk,false,__LINE__,__FILE__); //was nbitsphiprojderL123
 	fpgarprojderdisk_[i].set(irderDisk[i],nrbitsprojderdisk,false,__LINE__,__FILE__);
       }
     } 
@@ -315,15 +324,18 @@ public:
 	if (iphiprojDisk[i]<0) iphiprojDisk[i]=0; //FIXME should be assert?
 	
 	fpgaphiprojdisk_[i].set(iphiprojDisk[i],nbitsphiprojL123,true,__LINE__,__FILE__);
+	//fpgaphiprojdisk_[i].set(iphiprojDisk[i],nrbitsphiprojdisk,true,__LINE__,__FILE__);
 	int iphivm=(iphiprojDisk[i]>>(nbitsphiprojL123-5))&0x7;
-	if ((abs(projdisk_[i])%2)==1) {
+	if ((abs(projdisk_[i])%2)==0) {
 	  iphivm^=4;
 	}
 	fpgaphiprojvmdisk_[i].set(iphivm,3,true,__LINE__,__FILE__);
-	fpgarprojdisk_[i].set(irprojDisk[i],nrbitsprojdisk,false,__LINE__,__FILE__);
-	int irvm=irprojDisk[i]>>(13-7)&0xf;
-	fpgarprojvmdisk_[i].set(irvm,4,true,__LINE__,__FILE__);
-	fpgaphiprojderdisk_[i].set(iphiderDisk[i],nbitsphiprojderL123,false,__LINE__,__FILE__);
+	fpgarprojdisk_[i].set(irprojDisk[i],nrbitsprojdisk,true,__LINE__,__FILE__);
+	//fpgarprojdisk_[i].set(irprojDisk[i],nrbitsrprojdisk,true,__LINE__,__FILE__);
+	int irvm=irprojDisk[i]>>(nrbitsdisk-(Nrbitsdisk+nrbitsdiskvm))&((1<<nrbitsdiskvm)-1);
+	fpgarprojvmdisk_[i].set(irvm,nrbitsdiskvm,true,__LINE__,__FILE__);
+	//fpgaphiprojderdisk_[i].set(iphiderDisk[i],nbitsphiprojderL123,false,__LINE__,__FILE__);
+	fpgaphiprojderdisk_[i].set(iphiderDisk[i],nphibitsprojderdisk,false,__LINE__,__FILE__);
 	fpgarprojderdisk_[i].set(irderDisk[i],nrbitsprojderdisk,false,__LINE__,__FILE__);
       }
       for (int i=0;i<2;i++) {
@@ -399,14 +411,14 @@ public:
 
 	fpgaphiprojdisk_[i+1].set(iphiprojDisk[i],nbitsphiprojL123,true,__LINE__,__FILE__);
 	int iphivm=(iphiprojDisk[i]>>(nbitsphiprojL123-5))&0x7;
-	if ((abs(projdisk_[i+1])%2)==1) {
+	if ((abs(projdisk_[i+1])%2)==0) {
 	  iphivm^=4;
 	}
 	fpgaphiprojvmdisk_[i+1].set(iphivm,3,true,__LINE__,__FILE__);
-	fpgarprojdisk_[i+1].set(irprojDisk[i],nrbitsprojdisk,false,__LINE__,__FILE__);
-	int irvm=irprojDisk[i]>>(13-7)&0xf;
-	fpgarprojvmdisk_[i+1].set(irvm,4,true,__LINE__,__FILE__);
-	fpgaphiprojderdisk_[i+1].set(iphiderDisk[i],nbitsphiprojderL123,false,__LINE__,__FILE__);
+	fpgarprojdisk_[i+1].set(irprojDisk[i],nrbitsprojdisk,true,__LINE__,__FILE__);
+	int irvm=irprojDisk[i]>>(nrbitsdisk-(Nrbitsdisk+nrbitsdiskvm))&((1<<nrbitsdiskvm)-1);
+	fpgarprojvmdisk_[i+1].set(irvm,nrbitsdiskvm,true,__LINE__,__FILE__);
+	fpgaphiprojderdisk_[i+1].set(iphiderDisk[i],nphibitsprojderdisk,false,__LINE__,__FILE__);
 	fpgarprojderdisk_[i+1].set(irderDisk[i],nrbitsprojderdisk,false,__LINE__,__FILE__);
       }
     } 
@@ -420,21 +432,6 @@ public:
 
 
   ~FPGATracklet() {
-
-    if (writeTrackletParameters) {
-      static ofstream out("trackletparameters.txt");
-
-      out << innerStub_->r() 
-	  << " " << rinv_
-	  << " " << phi0_
-	  << " " << z0_
-	  << " " << t_
-	  << "     " << rinvapprox_
-	  << " " << phi0approx_
-	  << " " << z0approx_
-	  << " " << tapprox_<<endl;
-    }
-
   }
 
 
@@ -451,20 +448,88 @@ public:
 
   }
 
+
+  //Tracklet parameters print out
   std::string trackletparstr() {
     std::ostringstream oss;
-    oss << fpgarinv_.str()<<"|"
-	<< fpgaphi0_.str()<<"|"
-	<< fpgaz0_.str()<<"|"
-	<< fpgat_.str();
+    if(writeoutReal){
+      oss << fpgarinv_.value()*krinvpars<<" "
+        << fpgaphi0_.value()*kphi0pars<<" "
+        << fpgaz0_.value()*kz<<" "
+        << fpgat_.value()*ktpars;
+    }
 
+    // For comparing with real quantities                    
+    /*                                                
+    std::ostringstream oss;                                  
+    oss << fpgarinv_.value()*krinvpars<<"|"<< fpgarinv_.str(\
+    )<<" | fl :"<<rinv_<<"|"                                     
+    << fpgaphi0_.value()*kphi0pars<<"|"<< fpgaphi0_.str(\
+    )<<"| fl :"<<phi0_<<"|"                                      
+    << fpgaz0_.value()*kz<<"|"<< fpgaz0_.str()<<"| fl :"\
+    <<z0_<<"|"                                                   
+    << fpgat_.value()*ktpars<<"|"<< fpgat_.str()<<"| fl \
+    :"<<t_<<endl;                                                
+    */
+    //Binary Print out
+      if(!writeoutReal){
+	oss << fpgarinv_.str()<<"|"
+	    << fpgaphi0_.str()<<"|"
+	    << fpgaz0_.str()<<"|"
+	    << fpgat_.str();
+      }
+    return oss.str();
+  }
+
+  std::string vmstrlayer(int layer, unsigned int allstubindex) {
+    std::ostringstream oss;
+    int count=0;
+    for (int i=0;i<4;i++) {
+      if (projlayer_[i]==layer) {
+        count++;
+        FPGAWord index;
+        if (allstubindex>=(1<<6)) {
+          cout << "Warning projection number too large!"<<endl;	
+          index.set((1<<6)-1,6);
+        } else {
+          index.set(allstubindex,6);
+        }
+        oss << index.str()<<"|"<<fpgaphiprojvm_[i].str()
+            <<"|"<< fpgazprojvm_[i].str();
+      }
+    }
+    assert(count==1);
+    return oss.str();
+  }
+
+  std::string vmstrdisk(int disk, unsigned int allstubindex) {
+    std::ostringstream oss;
+    int count=0; 
+    int numproj=3;          // disk seeding can go to 3 disks
+    if (overlap_) numproj=4;// hybrid seeding can go to 4 disks
+    if (barrel_) numproj=5; // barrel seeding can go to 5 disks
+    for (int i=0;i<numproj;i++) {
+      if (projdisk_[i]==disk) {
+	count++;
+	FPGAWord index;
+	if (allstubindex>=(1<<6)) {
+	  cout << "Warning projection number too large!"<<endl;	
+	  index.set((1<<6)-1,6);
+	} else {
+	  index.set(allstubindex,6);
+	}
+	oss << index.str()<<"|"<<fpgaphiprojvmdisk_[i].str()
+	    <<"|"<< fpgarprojvmdisk_[i].str();
+      }
+    }
+    assert(count==1);
     return oss.str();
 
   }
 
   std::string trackletprojstr(int i) const {
     std::ostringstream oss;
-    oss << "yyyy|yyyyyy|"
+    oss << "LLLL|yyyyyy|"
 	<< fpgaphiproj_[i].str()<<"|"
 	<< fpgazproj_[i].str()<<"|"
 	<< fpgaphiprojder_[i].str()<<"|"
@@ -473,31 +538,32 @@ public:
     return oss.str();
 
   }
-
-  std::string vmstrlayer(int layer) {
+  std::string trackletprojstrD(int i) const {
     std::ostringstream oss;
-    int count=0;
-    for (int i=0;i<4;i++) {
-      if (projlayer_[i]==layer) {
-	count++;
-	FPGAWord index;
-	if (projnum_[i]>=(1<<6)) {
-	  cout << "Warning projection number too large!"<<endl;
-	  projnum_[i]=(1<<6)-1;
-	}
-	index.set(projnum_[i],6);
-	oss << "xxx|"<<index.str()<<"|"<<fpgaphiprojvm_[i].str()<<"|"
-	    << fpgazprojvm_[i].str();
+    oss << "DDDD|yyyyyy|"
+	<< fpgaphiprojdisk_[i].str()<<"|"
+	<< fpgarprojdisk_[i].str()<<"|"
+	<< fpgaphiprojderdisk_[i].str()<<"|"
+	<< fpgarprojderdisk_[i].str();
+
+    /*
+    if(fpgaphiprojdisk_[i].nbits()<1){
+      cout<<"trackletprojstrD: "<<i<<" is empty!!\n";
+      for(int j=0; j<5; ++j){
+	cout<<j<<"\t phi:"<< fpgaphiprojdisk_[j].str()<<"|"<<phiprojdisk_[j]<<"\n";
+	cout<<j<<"\t r  :"<< fpgarprojdisk_[j].str()<<"|"<<rprojdisk_[j]<<"\n";
       }
+
     }
-    assert(count==1);
+    */
+
     return oss.str();
 
   }
 
-
   std::string trackletprojstrlayer(int layer) const {
     std::ostringstream oss;
+
     if (disk_||overlap_) return trackletprojstr(layer-1);
     int count=0;
     for (int i=0;i<4;i++) {
@@ -507,6 +573,7 @@ public:
       }
     }
 
+    cout << "layer: "<<layer<<endl;
     cout << "In trackletprojstrlayer "<<layer<<endl;
     for (int i=0;i<4;i++) {
       cout << "projlayer = "<<projlayer_[i]<<endl;
@@ -516,6 +583,33 @@ public:
     assert(count==1);
     return oss.str();
 
+  }
+  std::string trackletprojstrdisk(int disk) const {
+    std::ostringstream oss;
+    if (barrel_) return trackletprojstrD(abs(disk)-1);
+    if (disk_) {
+      int count=0;
+      for (int i=0;i<5;i++) {
+	if (projdisk_[i]==disk) {
+	  count++;
+	  return trackletprojstrD(i); 
+	}
+      }
+
+      cout << "In trackletprojstrdisk DD "<<disk<<endl;
+    
+      assert(count==1);
+      return oss.str();
+    }
+    else { // overlap
+      int j = abs(disk)-1;
+      if(j>=0 && j<5) return trackletprojstrD(j);
+      cout << "In trackletprojstrdisk DL "<<disk<<endl;
+    
+      assert(0);
+      return oss.str();
+      
+    }
   }
 
 
@@ -713,36 +807,13 @@ public:
 	return fpgaphiproj_[i];
       }
     }
+    cout << "layer projlayer_ "<<layer
+	 <<" "<<projlayer_[0]<<" "<<projlayer_[1]
+	 <<" "<<projlayer_[2]<<" "<<projlayer_[3]<<endl;
     assert(0);
     FPGAWord tmp;
     return tmp;
 
-  }
-
-  void setProjNum(int projnum,int layer){
-    if (disk_||overlap_) {
-      projnum_[layer-1]=projnum;
-      return;
-    }
-    for (int i=0;i<4;i++) {
-      if (projlayer_[i]==layer) {
-	projnum_[i]=projnum;
-	return;
-      }
-    }
-    assert(0);
-  }
-
-
-  int getProjNum(int layer) const {
-    if (disk_||overlap_) return projnum_[layer-1];
-    for (int i=0;i<4;i++) {
-      if (projlayer_[i]==layer) {
-	return projnum_[i];
-      }
-    }
-    assert(0);
-    return 0;
   }
 
   double zproj(int layer) {
@@ -886,6 +957,54 @@ public:
     assert(0);
     return 0.0;
 
+  }
+  FPGAWord ialphadisk(int disk) const {
+    if (!disk_) return ialphadisk_[abs(disk)-1];
+    for (int i=0;i<3;i++) {
+      if (projdisk_[i]==disk) {
+	return ialphadisk_[i];
+      }
+    }
+    assert(0);
+    FPGAWord tmp;
+    return tmp;
+
+  }
+
+  FPGAWord ialphatable(int disk) const {
+    if (!disk_) {
+      //if in disk PS module we should return 0
+      if (fpgarprojdisk_[abs(disk)-1].value()*krprojshiftdisk+rmindisk<60.0){
+	FPGAWord tmp;
+	tmp.set(0,alphaBitsTable,true,__LINE__,__FILE__);
+	return tmp;
+      }
+      int alphanbits=ialphadisk_[abs(disk)-1].nbits();
+      int ialphanew=(ialphadisk_[abs(disk)-1].value()+(1<<(alphanbits-1)))>>
+	(alphanbits-alphaBitsTable);
+      FPGAWord tmp;
+      tmp.set(ialphanew,alphaBitsTable,true,__LINE__,__FILE__);
+      return tmp;
+    }
+    for (int i=0;i<3;i++) {
+      if (projdisk_[i]==disk) {
+	//if in disk PS module we should return 0
+	if (fpgarprojdisk_[i].value()*krprojshiftdisk+rmindisk<60.0){
+	  FPGAWord tmp;
+	  tmp.set(0,alphaBitsTable,true,__LINE__,__FILE__);
+	  return tmp;
+	}
+	int alphanbits=ialphadisk_[i].nbits();
+	int ialphanew=(ialphadisk_[i].value()+(1<<(alphanbits-1)))>>
+	  (alphanbits-alphaBitsTable);
+	FPGAWord tmp;
+	tmp.set(ialphanew,alphaBitsTable,true,__LINE__,__FILE__);
+	return tmp;
+      }
+    }
+    assert(0);
+    FPGAWord tmp;
+    return tmp;
   }
 
   double rprojapproxdisk(int disk) {
@@ -1051,32 +1170,6 @@ public:
   }
 
 
-  void setProjNumDisk(int projnum,int disk){
-    if (!disk_) {
-      projnumdisk_[abs(disk)-1]=projnum;
-      return;
-    }
-    for (int i=0;i<3;i++) {
-      if (projdisk_[i]==disk) {
-	projnumdisk_[i]=projnum;
-	return;
-      }
-    }
-    assert(0);
-  }
-
-
-  int getProjNumDisk(int disk) const {
-    if (!disk_) return projnumdisk_[abs(disk)-1];
-    for (int i=0;i<3;i++) {
-      if (projdisk_[i]==disk) {
-	return projnumdisk_[i];
-      }
-    }
-    assert(0);
-    return 0;
-  }
-
   bool matchdisk(int disk) {
     if (!disk_) return !fpgaphiresiddisk_[abs(disk)-1].atExtreme();
     for (int i=0;i<3;i++) {
@@ -1098,8 +1191,12 @@ public:
 		double dphiapprox, double dzapprox, 
 		int stubid,double rstub,
 		std::pair<FPGAStub*,L1TStub*> stubptrs){
-    
+
+    //cout << "FPGATracklet::addMatch adding match in layer = "<<layer<<endl;
+
     for (int i=0;i<4;i++) {
+      //cout << "FPGATracklet::addMatch "<<i+1<<" "<<fpgaphiresid_[i].value()
+      //   <<" "<<projlayer_[i]<<endl;
       if (projlayer_[i]==layer) {
 	assert(abs(ideltaphi)<(1<<(phiresidbits-1)));
 	assert(abs(ideltaz)<(1<<(zresidbits-1)));
@@ -1154,6 +1251,7 @@ public:
 	rresidapproxdisk_[abs(disk)-1]=drapprox;
 	zstub_[abs(disk)-1]=zstub;
 	alphadisk_[abs(disk)-1]=alpha;
+	ialphadisk_[abs(disk)-1].set(stubptrs.first->alpha().value(),stubptrs.first->alpha().nbits(), false); 
 	fpgaphiresiddisk_[abs(disk)-1].set(ideltaphi,phiresidbits,false,__LINE__,__FILE__);
 	fpgarresiddisk_[abs(disk)-1].set(ideltar,rresidbits,false,__LINE__,__FILE__);
 	if (stubid<0) stubid=(1<<9)-1;
@@ -1189,6 +1287,7 @@ public:
 	  stubptrsdisk_[i]=stubptrs;
 	  zstub_[i]=zstub;
 	  alphadisk_[i]=alpha;
+	  ialphadisk_[i].set(stubptrs.first->alpha().value(),stubptrs.first->alpha().nbits(), false); 
 	  fpgaphiresiddisk_[i].set(ideltaphi,phiresidbits,false,__LINE__,__FILE__);
 	  fpgarresiddisk_[i].set(ideltar,rresidbits,false,__LINE__,__FILE__);
 	  if (stubid<0) stubid=(1<<9)-1;
@@ -1227,16 +1326,18 @@ public:
     
   }
 
-  int nMatchesDisk() {
+  int nMatchesDisk(bool skipD5=false) {
 
     int nmatches=0;
 
     if (!disk_) {
       //cout << "nMatchesDisk : ";
-      for (int i=0;i<5;i++) {
+      int lastdisk=5;
+      if (skipD5) lastdisk--; 
+      for (int i=0;i<lastdisk;i++) {
 	//cout <<" "<<!fpgaphiresiddisk_[i].atExtreme();
 	if (!fpgaphiresiddisk_[i].atExtreme()) {
-	  //cout << "Match1 in disk : "<<i+1<<endl; 
+	  //cout << "Match in disk : "<<i+1<<" "<<this<<endl; 
 	  nmatches++;
 	}
       }
@@ -1294,15 +1395,39 @@ public:
       if (projlayer_[i]==layer) {
 	count++;
 	FPGAWord tmp;
-	if (projnum_[i]<0||projnum_[i]>63) {
-	  cout << "projnum_[i] = "<<projnum_[i]<<endl;
+	if (trackletIndex_<0||trackletIndex_>63) {
+	  cout << "trackletIndex_ = "<<trackletIndex_<<endl;
 	  continue;
 	}
-	tmp.set(projnum_[i],6);
+	tmp.set(trackletIndex_,6);
 	oss << "yyyy|"<<tmp.str()<<"|"
 	    << fpgastubid_[i].str()<<"|"
 	    << fpgaphiresid_[i].str()<<"|"
 	    << fpgazresid_[i].str();
+      }
+    }
+    //assert(count==1);
+    return oss.str();
+
+  }
+
+  std::string fullmatchstrdisk(int disk) {
+    std::ostringstream oss;
+    int count=0;
+    for (int i=0;i<3;i++) {
+      if (projdisk_[i]==disk) {
+	count++;
+	FPGAWord tmp;
+	if (trackletIndex_<0||trackletIndex_>63) {
+	  cout << "trackletIndex_ = "<<trackletIndex_<<endl;
+	  continue;
+	}
+	tmp.set(trackletIndex_,6);
+	oss << "yyyy|"<<tmp.str()<<"|"
+	    << fpgastubiddisk_[i].str()<<"|"
+	    << fpgaphiresiddisk_[i].str()<<"|"
+	    << ialphatable(disk).str()<<"|"
+	    << fpgarresiddisk_[i].str();
       }
     }
     //assert(count==1);
@@ -1350,6 +1475,57 @@ public:
     return 0.0;
 
   }
+
+  int phiprojvm(int layer) {
+    for (int i=0;i<4;i++) {
+      if (projlayer_[i]==layer) {
+	return fpgaphiprojvm_[i].value();
+      }
+    }
+    assert(0);
+    return 0;
+
+  }
+
+  int zprojvm(int layer) {
+    for (int i=0;i<4;i++) {
+      if (projlayer_[i]==layer) {
+	return fpgazprojvm_[i].value();
+      }
+    }
+    assert(0);
+    return 0;
+
+  }
+
+
+  int phiprojvmdisk(int disk) {
+    if (!disk_) return fpgaphiprojvmdisk_[abs(disk)-1].value();
+    for (int i=0;i<3;i++) {
+      if (projdisk_[i]==disk) {
+	return fpgaphiprojvmdisk_[i].value();
+      }
+    }
+    assert(0);
+    return 0;
+
+  }
+
+  int rprojvmdisk(int disk) {
+    if (!disk_) return fpgarprojvmdisk_[abs(disk)-1].value();
+    for (int i=0;i<3;i++) {
+      if (projdisk_[i]==disk) {
+	return fpgarprojvmdisk_[i].value();
+      }
+    }
+    assert(0);
+    return 0;
+
+  }
+
+
+
+
 
   FPGAWord fpgaphiresid(int layer) {
     for (int i=0;i<4;i++) {
@@ -1600,27 +1776,63 @@ public:
     iz0fit_.set(iz0fit,11,false,__LINE__,__FILE__);
     ichisqfit_.set(ichisqfit,5,true,__LINE__,__FILE__);
 
+    fpgatrack_=new FPGATrack(makeTrack());
+    
   }
+
 
   std::string trackfitstr() {
     std::ostringstream oss;
+
+    // real Q print out for fitted tracks
+    if(writeoutReal){
+    oss << (irinvfit_.value())*krinvpars<<" "
+        << (iphi0fit_.value())*kphi0pars<<" "
+        << (itfit_.value())*ktpars<<" "
+        << (iz0fit_.value())*kz<<" "
+      //<< ichisqfit_.str()<< "|"                            
+        << innerFPGAStub_->fedregionaddressstr()<<" "
+        << outerFPGAStub_->fedregionaddressstr()<<" "
+        <<fpgastubid_[0].str()<<" "
+        <<fpgastubid_[1].str()<<" "
+        <<fpgastubid_[2].str()<<" "
+        <<fpgastubid_[3].str();
+    }
+    // for debugging (comparing with real quantities)                    
+    /*                                                       
+    oss << (irinvfit_.value())*krinvpars<<"| fl :"<<rinvfit_<<"|"                                                          
+    << (iphi0fit_.value())*kphi0pars<<"| fl :"<<phi0fit_<<"|"                                                        
+    << (itfit_.value())*ktpars<<"| fl :"<< tfit_ <<"|"   
+    << (iz0fit_.value())*kz<<"| fl :"<< z0fit_<<"|"   
+    //<< ichisqfit_.str()<< "|"                                                           
+    << innerFPGAStub_->fedregionaddressstr()<<"|"        
+    << outerFPGAStub_->fedregionaddressstr()<<"|"        
+    <<fpgastubid_[0].str()<<"|"                          
+    <<fpgastubid_[1].str()<<"|"                          
+    <<fpgastubid_[2].str()<<"|"                          
+    <<fpgastubid_[3].str();                              
+    */
+    //Binary print out
+    if(!writeoutReal){ 
     oss << irinvfit_.str()<<"|"
 	<< iphi0fit_.str()<<"|"
-        << "xxxxxxxxxxx|"
+      //<< "xxxxxxxxxxx|"
 	<< itfit_.str()<<"|"
 	<< iz0fit_.str()<<"|"
-	<< ichisqfit_.str()<< "|"
-	<< innerFPGAStub_->fedregionaddressstr()<< "|"
-	<< outerFPGAStub_->fedregionaddressstr()
-	<< "|"<<fpgastubid_[0].str()
-	<< "|"<<fpgastubid_[1].str()
-	<< "|"<<fpgastubid_[2].str()
-	<< "|"<<fpgastubid_[3].str();
+      //<< ichisqfit_.str()<< "|"
+	<< innerFPGAStub_->fedregionaddressstr()<<"|"
+	<< outerFPGAStub_->fedregionaddressstr()<<"|"
+	<<fpgastubid_[0].str()<<"|"
+	<<fpgastubid_[1].str()<<"|"
+	<<fpgastubid_[2].str()<<"|"
+	<<fpgastubid_[3].str();
+    }
     return oss.str();
-
   }
 
-  FPGATrack getTrack() {
+
+
+  FPGATrack makeTrack() {
     assert(fit());
     FPGATrack tmpTrack(irinvfit_.value(),
 		       iphi0fit_.value(),
@@ -1632,16 +1844,28 @@ public:
     return tmpTrack;
     
   }
+
+  FPGATrack* getTrack() {
+    assert(fpgatrack_!=0);
+    return fpgatrack_;
+  }
   
 
   bool fit() const { return ichisqfit_.value()!=-1; }
 
-  int layer() const { 
-    if (isOverlap()) return outerStub_->layer()+1;
+  int layer() const {
+    if (isDisk()) return 0; 
+    if (isOverlap()) {
+      //assert(outerStub_->layer()+1<7);
+      return outerStub_->layer()+1;
+    }
+    assert(isBarrel());
+    // assert(innerStub_->layer()+1<7);
     return innerStub_->layer()+1; 
   }
 
   int disk() const {
+    if (isBarrel()) return 0;
     return innerStub_->disk(); 
   }
 
@@ -1676,13 +1900,23 @@ public:
     if (dphi>0.5*two_pi) dphi-=two_pi;
     if (dphi<-0.5*two_pi) dphi+=two_pi;
 
-    //cout << "deta dphi : "<<deta<<" "<<dphi<<endl;
+    bool pass=(fabs(deta)<0.02)&&(fabs(dphi)<0.01);
 
-    return (fabs(deta)<0.02)&&(fabs(dphi)<0.01);
+    //cout << "deta dphi : "<<deta<<" "<<dphi<<" "<<pass<<endl;
+
+    return pass;
 
   }
 
   double phioffset() const {return phioffset_;}
+
+  void setTrackletIndex(int index) {trackletIndex_=index;}
+
+  int trackletIndex() const {return trackletIndex_;}
+
+  void setTCIndex(int index) {TCIndex_=index;}
+
+  int TCIndex() const {return TCIndex_;}
 
 private:
 
@@ -1699,6 +1933,9 @@ private:
 
   L1TStub* innerStub_;
   L1TStub* outerStub_;
+
+  int trackletIndex_;
+  int TCIndex_;
 
   double rinv_;
   double phi0_;
@@ -1743,7 +1980,6 @@ private:
   double phiprojderapprox_[4];
   double zprojderapprox_[4];
   
-  int projnum_[4];
 
   double phiresid_[4];
   double zresid_[4];
@@ -1782,8 +2018,6 @@ private:
   double phiprojderapproxdisk_[5];
   double rprojderapproxdisk_[5];
   
-  int projnumdisk_[5];
-
   double phiresiddisk_[5];
   double rresiddisk_[5];
   double phiresidapproxdisk_[5];
@@ -1793,7 +2027,7 @@ private:
   FPGAWord fpgastubiddisk_[5];
 
   double alphadisk_[5];
-
+  FPGAWord ialphadisk_[5];
 
   double rinvfit_;
   double phi0fit_;
@@ -1816,6 +2050,8 @@ private:
   std::pair<FPGAStub*,L1TStub*> stubptrs_[4];
   std::pair<FPGAStub*,L1TStub*> stubptrsdisk_[5];
 
+  FPGATrack *fpgatrack_; 
+  
 };
 
 

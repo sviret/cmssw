@@ -17,6 +17,7 @@
 #include "FPGACandidateMatch.hh"
 #include "FPGAFullMatch.hh"
 #include "FPGATrackFit.hh"
+#include "FPGACleanTrack.hh"
 
 #include "FPGALayerRouter.hh"
 #include "FPGADiskRouter.hh"
@@ -29,6 +30,7 @@
 #include "FPGAMatchCalculator.hh"
 #include "FPGAMatchTransceiver.hh"
 #include "FPGAFitTrack.hh"
+#include "FPGAPurgeDuplicate.hh"
 
 using namespace std;
 
@@ -54,19 +56,18 @@ public:
     if (layer<999) {
       if ((layer%2==1&&(phi>phimin_)&&(phi<phimax_))||
 	  (layer%2==0&&(phi>phimin_-dphi)&&(phi<phimax_+dphi))) {
+	FPGAStub fpgastub(stub,phimin_,phimax_);
 	for (unsigned int i=0;i<IL_.size();i++){
-	  IL_[i]->addStub(stub);
+	  IL_[i]->addStub(stub,fpgastub);
 	}
       }
     } else {
       int disk=stub.disk();
       if ((abs(disk)%2==0&&(phi>phimin_)&&(phi<phimax_))||
 	  (abs(disk)%2==1&&(phi>phimin_-dphi)&&(phi<phimax_+dphi))) {
-	//cout << "IL_.size() "<<IL_.size()<<endl;
 	for (unsigned int i=0;i<IL_.size();i++){
-	  //cout << "adding stub in disks z= " 
-	  //     << stub.z()<<" r= "<<stub.r()<<endl;
-	  IL_[i]->addStub(stub);
+	  FPGAStub fpgastub(stub,phimin_,phimax_);
+	  IL_[i]->addStub(stub,fpgastub);
 	}      
       }
     }
@@ -126,6 +127,10 @@ public:
       TF_.push_back(new FPGATrackFit(memName,isector_,phimin_,phimax_));
       Memories_[memName]=TF_.back();
       MemoriesV_.push_back(TF_.back());
+    } else if (memType=="CleanTrack:") {
+      CT_.push_back(new FPGACleanTrack(memName,isector_,phimin_,phimax_));
+      Memories_[memName]=CT_.back();
+      MemoriesV_.push_back(CT_.back());
     } else {
       cout << "Don't know of memory type: "<<memType<<endl;
       exit(0);
@@ -146,7 +151,8 @@ public:
     } else if (procType=="TrackletEngine:") {
       TE_.push_back(new FPGATrackletEngine(procName,isector_));
       Processes_[procName]=TE_.back();
-    } else if (procType=="TrackletCalculator:") {
+    } else if (procType=="TrackletCalculator:"||
+	       procType=="TrackletDiskCalculator:") {
       TC_.push_back(new FPGATrackletCalculator(procName,isector_));
       Processes_[procName]=TC_.back();
     } else if (procType=="ProjectionRouter:") {
@@ -158,7 +164,8 @@ public:
     } else if (procType=="MatchEngine:") {
       ME_.push_back(new FPGAMatchEngine(procName,isector_));
       Processes_[procName]=ME_.back();
-    } else if (procType=="MatchCalculator:") {
+    } else if (procType=="MatchCalculator:"||
+	       procType=="DiskMatchCalculator:") {
       MC_.push_back(new FPGAMatchCalculator(procName,isector_));
       Processes_[procName]=MC_.back();
     } else if (procType=="MatchTransceiver:") {
@@ -167,6 +174,9 @@ public:
     } else if (procType=="FitTrack:") {
       FT_.push_back(new FPGAFitTrack(procName,isector_));
       Processes_[procName]=FT_.back();
+    } else if (procType=="PurgeDuplicate:") {
+      PD_.push_back(new FPGAPurgeDuplicate(procName,isector_));
+      Processes_[procName]=PD_.back();
     } else {
       cout << "Don't know of processing type: "<<procType<<endl;
       exit(0);      
@@ -233,7 +243,7 @@ public:
 
   void writeInputStubs(bool first) {
     for (unsigned int i=0;i<IL_.size();i++){
-      IL_[i]->writeStubs(first, writestubs_in2);
+      IL_[i]->writeStubs(first, writestubs_in2,padding);
     }
   }
 
@@ -279,13 +289,43 @@ public:
     }
   }
 
+  void writeVMPROJ(bool first) {
+    for (unsigned int i=0;i<VMPROJ_.size();i++){
+      VMPROJ_[i]->writeVMPROJ(first);
+    }
+  }
+
+  void writeMC(bool first) {
+    for (unsigned int i=0;i<FM_.size();i++){
+      FM_[i]->writeMC(first);
+    }
+  }
+
   void writeTF(bool first){
     for(unsigned int i=0; i<TF_.size(); ++i){
       TF_[i]->writeTF(first);
     }
   }
 
+  void writeCT(bool first) {
+    for(unsigned int i=0; i<CT_.size(); ++i){
+      CT_[i]->writeCT(first);
+    }
+  }
+
   void clean() {
+    if (writeNMatches) {
+      int matchesL1=0;
+      int matchesL3=0;
+      int matchesL5=0;
+      for(unsigned int i=0;i<TPAR_.size();i++) {
+	TPAR_[i]->writeMatches(matchesL1,matchesL3,matchesL5);
+      }
+      static ofstream out("nmatchessector.txt");
+      out <<matchesL1<<" "<<matchesL3<<" "<<matchesL5<<endl;
+    }
+    
+   
     for(unsigned int i=0;i<MemoriesV_.size();i++) {
       MemoriesV_[i]->clean();
     }
@@ -345,141 +385,78 @@ public:
     for (unsigned int i=0;i<FT_.size();i++){
       FT_[i]->execute(fpgatracks_);
     }
+
+    if (writeTrackProjOcc) {
+      static ofstream out("trackprojocc.txt");
+      for (unsigned int i=0; i<TPROJ_.size();i++){
+	out << TPROJ_[i]->getName()<<" "<<TPROJ_[i]->nTracklets()<<endl;
+      }
+    }
+  }
+  
+  void executePD(std::vector<FPGATrack*>& tracks){
+    for (unsigned int i=0;i<PD_.size();i++){
+      PD_[i]->execute(tracks);
+    }
   }
 
   void executePT(FPGASector* sectorPlus,FPGASector* sectorMinus){
-    assert(PT_.size()==2);
-    assert(sectorPlus->PT_.size()==2);
-    assert(sectorMinus->PT_.size()==2);
-    //For now the order is assumed
-    assert(PT_[0]->getName()=="PT_Plus");
-    assert(PT_[1]->getName()=="PT_Minus");
-    //cout << "executePT: "<<PT_[0]->getName()<<" "<<PT_[1]->getName()<<endl;
-    PT_[0]->execute(sectorPlus->PT_[1]);
-    PT_[1]->execute(sectorMinus->PT_[0]);
-  }
 
+    for (unsigned int i=0;i<PT_.size();i++){
+      string name=PT_[i]->getName();
+      //cout << "FPGASector:executePT "<<name<<endl;
+      //cout << "name.find(\"Minus\") : "<<name.find("Minus")<<endl;
+      if (name.find("Minus")!=std::string::npos) {
+	name.replace(name.find("Minus"),5,"Plus");
+	//cout << "New name : "<<name<<endl;
+	for (unsigned int j=0;j<sectorMinus->PT_.size();j++){
+	  if (sectorMinus->PT_[j]->getName()==name) {
+	    PT_[i]->execute(sectorMinus->PT_[j]);
+	  }
+	}
+      } else if (name.find("Plus")!=std::string::npos) {
+	name.replace(name.find("Plus"),4,"Minus");
+	//cout << "New name : "<<name<<endl;
+	for (unsigned int j=0;j<sectorPlus->PT_.size();j++){
+	  if (sectorPlus->PT_[j]->getName()==name) {
+	    PT_[i]->execute(sectorPlus->PT_[j]);
+	  }
+	}
+      } else {
+	assert(0);
+      }
+    }
+  }
+    
 
   void executeMT(FPGASector* sectorPlus,FPGASector* sectorMinus){
-    assert(sectorPlus->MT_.size()==MT_.size());
-    assert(sectorMinus->MT_.size()==MT_.size());
-    //cout << "MT_.size() : "<<MT_.size()<<endl;
-    assert(MT_.size()==14||MT_.size()==6);
-    //for(unsigned int i=0;i<MT_.size();i++){
-    //  cout << "MT name : "<<MT_[i]->getName()<<endl;
-    //}
-    //For now the order is assumed
-    assert(MT_[0]->getName()=="MT_L3L4_Minus"&&
-	   sectorMinus->MT_[3]->getName()=="MT_L3L4_Plus");
-    MT_[0]->execute(sectorMinus->MT_[3]);
-
-    assert(MT_[1]->getName()=="MT_L5L6_Minus"&&
-	   sectorMinus->MT_[4]->getName()=="MT_L5L6_Plus");
-    MT_[1]->execute(sectorMinus->MT_[4]);
-
-    assert(MT_[2]->getName()=="MT_L1L2_Minus"&&
-	   sectorMinus->MT_[5]->getName()=="MT_L1L2_Plus");
-    MT_[2]->execute(sectorMinus->MT_[5]);
-
-    assert(MT_[3]->getName()=="MT_L3L4_Plus"&&
-	   sectorPlus->MT_[0]->getName()=="MT_L3L4_Minus");
-    MT_[3]->execute(sectorPlus->MT_[0]);
-
-    assert(MT_[4]->getName()=="MT_L5L6_Plus"&&
-	   sectorPlus->MT_[1]->getName()=="MT_L5L6_Minus");
-    MT_[4]->execute(sectorPlus->MT_[1]);
-
-    assert(MT_[5]->getName()=="MT_L1L2_Plus"&&
-	   sectorPlus->MT_[2]->getName()=="MT_L1L2_Minus");
-    MT_[5]->execute(sectorPlus->MT_[2]);
-
-    if (MT_.size()==14) {
-      assert(MT_[6]->getName()=="MT_F1F2_Minus"&&
-	     sectorMinus->MT_[8]->getName()=="MT_F1F2_Plus");
-      MT_[6]->execute(sectorMinus->MT_[8]);
-      
-      assert(MT_[7]->getName()=="MT_F3F4_Minus"&&
-	     sectorMinus->MT_[9]->getName()=="MT_F3F4_Plus");
-      MT_[7]->execute(sectorMinus->MT_[9]);
-      
-      assert(MT_[8]->getName()=="MT_F1F2_Plus"&&
-	     sectorPlus->MT_[6]->getName()=="MT_F1F2_Minus");
-      MT_[8]->execute(sectorPlus->MT_[6]);
-      
-      assert(MT_[9]->getName()=="MT_F3F4_Plus"&&
-	     sectorPlus->MT_[7]->getName()=="MT_F3F4_Minus");
-      MT_[9]->execute(sectorPlus->MT_[7]);
-      
-      assert(MT_[10]->getName()=="MT_B1B2_Minus"&&
-	     sectorMinus->MT_[12]->getName()=="MT_B1B2_Plus");
-      MT_[10]->execute(sectorMinus->MT_[12]);
-    
-      assert(MT_[11]->getName()=="MT_B3B4_Minus"&&
-	     sectorMinus->MT_[13]->getName()=="MT_B3B4_Plus");
-      MT_[11]->execute(sectorMinus->MT_[13]);
-    
-      assert(MT_[12]->getName()=="MT_B1B2_Plus"&&
-	     sectorPlus->MT_[10]->getName()=="MT_B1B2_Minus");
-      MT_[12]->execute(sectorPlus->MT_[10]);
-
-      assert(MT_[13]->getName()=="MT_B3B4_Plus"&&
-	     sectorPlus->MT_[11]->getName()=="MT_B3B4_Minus");
-      MT_[13]->execute(sectorPlus->MT_[11]);
+    for (unsigned int i=0;i<MT_.size();i++){
+      string name=MT_[i]->getName();
+      //cout << "FPGASector:executeMT "<<name<<endl;
+      if (name.find("Minus")!=std::string::npos) {
+	name.replace(8,5,"Plus");
+	//cout << "FPGASector:executeMT New name : "<<name<<endl;
+	for (unsigned int j=0;j<sectorMinus->MT_.size();j++){
+	  //cout << "FPGASector:executeMT compare name : "
+	  //   <<sectorMinus->MT_[j]->getName()<<endl;
+	  if (sectorMinus->MT_[j]->getName()==name) {
+	    MT_[i]->execute(sectorMinus->MT_[j]);
+	  }
+	}
+      } else if (name.find("Plus")!=std::string::npos) {
+	name.replace(8,4,"Minus");
+	//cout << "New name : "<<name<<endl;
+	for (unsigned int j=0;j<sectorPlus->MT_.size();j++){
+	  if (sectorPlus->MT_[j]->getName()==name) {
+	    MT_[i]->execute(sectorPlus->MT_[j]);
+	  }
+	}
+      } else {
+	assert(0);
+      }
     }
 
   }
-
-  void findduplicates(std::vector<FPGATrack>& tracks) {
-  
-     int numTrk = fpgatracks_.size();
-
-     //set the sector for FPGATrack, enabling the ability for adjacent sector removal
-     for(int itrk=0; itrk<numTrk; itrk++) {
-        fpgatracks_[itrk].setSector(isector_);
-     }
-
-     for(int itrk=0; itrk<numTrk-1; itrk++){
-
-       //if primary track is a duplicate, it cannot veto any...move on
-	    if(!fpgatracks_[itrk].duplicate()) {	  
-		
-	      for(int jtrk=itrk+1; jtrk<numTrk; jtrk++){
-		    
-		   	//get stub information	 
-				int nShare=0;
-				std::map<int, int> stubsTrk1 = fpgatracks_[itrk].stubID();
-				std::map<int, int> stubsTrk2 = fpgatracks_[jtrk].stubID();
-				
-            //count shared stubs
-				for(std::map<int, int>::iterator  st=stubsTrk1.begin(); st!=stubsTrk1.end(); st++) {
-				   if( stubsTrk2.find(st->first) != stubsTrk2.end() ) {
-				     //printf("First  %i   %i   Second  %i \n",st->first,st->second,stubsTrk2[st->first]);
-					  if(st->second == stubsTrk2[st->first] && st->second != 63) nShare++;
-               }   	  
-				} //loop over stubs
-
-		   	//Decide if we should flag either of the tracks as a duplicate
-				if(stubsTrk1.size()>=stubsTrk2.size()) {
-				  //don't allow primary track to veto if it is already a duplicate
-				  if( (((int)stubsTrk2.size()-nShare)<minIndepStubs) & !fpgatracks_[itrk].duplicate())  fpgatracks_[jtrk].setDuplicate(true);				     
-				} else {
-				  //don't allow second track to veto if it is already a duplicate
-				  if( (((int)stubsTrk1.size()-nShare)<minIndepStubs) & !fpgatracks_[jtrk].duplicate() ) fpgatracks_[itrk].setDuplicate(true);
-				} 
-							  		  
-		   } //loop over second track
-		 }//if first track not a duplicate already  	  
-	  } //loop over first track
-
-//Now that we have the duplicate flag set, push the tracks out
-    for(unsigned int i=0;i<fpgatracks_.size();i++){
-      tracks.push_back(fpgatracks_[i]);
-    }
-  
-  }
-
-
-
 
   bool foundTrack(ofstream& outres, L1SimTrack simtrk){
     bool match=false;
@@ -513,10 +490,10 @@ public:
 
   std::vector<FPGAStub*> getDiskStubs(int disk){
     std::vector<FPGAStub*> tmp;
-    for(unsigned int i=0;i<SD_.size();i++){
-      for(unsigned int j=0;j<SD_[i]->nStubs();j++){
-	if (SD_[i]->getFPGAStub(j)->disk().value()==disk) {
-	  tmp.push_back(SD_[i]->getFPGAStub(j));
+    for(unsigned int i=0;i<SL_.size();i++){
+      for(unsigned int j=0;j<SL_[i]->nStubs();j++){
+	if (SL_[i]->getFPGAStub(j)->disk().value()==disk) {
+	  tmp.push_back(SL_[i]->getFPGAStub(j));
 	}
       }
     }
@@ -532,8 +509,7 @@ private:
   double phimin_;
   double phimax_;
 
-  std::vector<FPGATrack> fpgatracks_;
-
+  std::vector<FPGATrack*> fpgatracks_;
 
   std::map<string, FPGAMemoryBase*> Memories_;
   std::vector<FPGAMemoryBase*> MemoriesV_;
@@ -550,6 +526,7 @@ private:
   std::vector<FPGACandidateMatch*> CM_;
   std::vector<FPGAFullMatch*> FM_;
   std::vector<FPGATrackFit*> TF_;
+  std::vector<FPGACleanTrack*> CT_;
   
   std::map<string, FPGAProcessBase*> Processes_;
   std::vector<FPGALayerRouter*> LR_;
@@ -563,6 +540,7 @@ private:
   std::vector<FPGAMatchCalculator*> MC_;
   std::vector<FPGAMatchTransceiver*> MT_;
   std::vector<FPGAFitTrack*> FT_;
+  std::vector<FPGAPurgeDuplicate*> PD_;
 
 
 

@@ -27,29 +27,83 @@ public:
     double r=stub.r();
     double z=stub.z();
     double ptinv=1.0/stub.pt();
+    double sbend = stub.bend();
+
     //HACK!!! seems like stubs in negative disk has wrong sign!
     if (z<-120.0) ptinv=-ptinv;
     //cout << "z stub.pt() : "<<z<<" "<<stub.pt()<<endl;
     int ipt=0;
-    if (fabs(ptinv)<0.4) ipt=0;
-    if (fabs(ptinv)<0.3) ipt=1;
-    if (fabs(ptinv)<0.2) ipt=2;
-    if (fabs(ptinv)<0.1) ipt=3;
-    if (ptinv<0.0) ipt=7-ipt;
+    int layer = stub.layer()+1; 
+
+    if(!enstubbend){
+      if (fabs(ptinv)<0.4) ipt=0;
+      if (fabs(ptinv)<0.3) ipt=1;
+      if (fabs(ptinv)<0.2) ipt=2;
+      if (fabs(ptinv)<0.1) ipt=3;
+      if (ptinv<0.0) ipt=7-ipt;
+    }
+    //Stub pt encoding based on bend
+    if(enstubbend){
+      if(layer == 1 || layer == 2){                      
+	if(fabs(sbend)  >=  2   ) ipt = 7;               
+	if(fabs(sbend)  ==  1.5 ) ipt = 6;               
+	if(fabs(sbend)  ==  1   ) ipt = 5;               
+	if(fabs(sbend)  <=  0.5 ) ipt = 4;               
+	if( sbend < -0.5 ) ipt = 8 - ipt;                                                       
+      }                                                  
+      if(layer == 3){                                    
+	if(fabs(sbend)  >=  2.5 || fabs(sbend)  ==  3  )	ipt = 7;                                              
+	if(fabs(sbend)  ==  2 || fabs(sbend)  ==  1.5) ipt = 6;                                            
+	if(fabs(sbend)  ==  1 ) ipt = 5;                 
+	if(fabs(sbend)  <=  0.5 ) ipt = 4;               
+	if( sbend < -0.5 ) ipt = 8 - ipt;                
+      }                                                  
       
-	 // hold the real values from L1Stub	
+      if(layer == 4){                                    
+	if(fabs(sbend)  >=  4   || fabs(sbend) == 3.5 || fabs(sbend) == 3 ) ipt = 7;                           
+	if(fabs(sbend)  ==  2.5 || fabs(sbend) == 2 ) ipt = 6;                                              
+	if(fabs(sbend)  ==  1.5 ) ipt = 5;               
+	if(fabs(sbend)  <=  1   ) ipt = 4;               
+	if( sbend < -1 ) ipt = 8 - ipt;                  
+      }                                                  
+      
+      
+      if(layer == 5){                                    
+	if(fabs(sbend)  >=  5.5 || fabs(sbend)  ==  5  || fabs(sbend)  ==  4.5 ) ipt = 7;                     
+	if(fabs(sbend)  ==  4   || fabs(sbend)  ==  3.5|| fabs(sbend)  ==  3   ) ipt = 6;                     
+	if(fabs(sbend)  ==  2.5 || fabs(sbend)  ==  2  || fabs(sbend)  ==  1.5 ) ipt = 5;                     
+	if(fabs(sbend)  <=  1 ) ipt = 4;                 
+	if( sbend < -1 ) ipt = 8 - ipt;                  
+      }                                  
+      
+      if(layer == 6){                                                                          
+	if(fabs(sbend)  >=  6.5 || fabs(sbend)  == 6   || fabs(sbend)  == 5.5 ) ipt= 7;        
+	if(fabs(sbend)  ==  5   || fabs(sbend)  == 4.5 || fabs(sbend)  == 4   ) ipt= 6;        
+	if(fabs(sbend)  ==  3.5 || fabs(sbend)  == 3   || fabs(sbend)  == 2.5 || fabs(sbend) == 2 ) ipt = 5;           
+	if(fabs(sbend)  <=  1.5 ) ipt = 4;                                                     
+	if( sbend < -1.5 ) ipt = 8 - ipt;                                                      
+      }        
+    }
+
+    // hold the real values from L1Stub	
     stubphi_=stub.phi();
-	 stubr_  =stub.r();
-	 stubz_  =stub.z();
-	 stubrpt_=stub.pt();
-	    
-    int layer=stub.layer()+1;
+    stubr_  =stub.r();
+    stubz_  =stub.z();
+    stubrpt_=stub.pt();
+
+    stubphimaxsec_ = phimaxsec;
+    stubphiminsec_ = phiminsec;
+   
 
     isbarrel_=false;
 
+    stubindex_.set(63,6);
+    
     if (layer<999) {
 
       isbarrel_=true;
+
+      disk_.set(0,4,false,__LINE__,__FILE__);    
 
       double rmin=-1.0;
       double rmax=-1.0;
@@ -143,7 +197,7 @@ public:
     
       int izvm=(iz>>(izbits-(Nzbits+VMzbits)))&((1<<VMzbits)-1);
       //cout << "izvm "<<izvm<<endl;
-      int irvm=(ir+(1<<(irbits-1)))>>(irbits-VMrbits)&((1<<VMrbits)-1);
+      int irvm=ir>>(irbits-VMrbits);
       int iphivm=0;
       //cout << "iphi third : "<<iphi<<endl;
       
@@ -155,9 +209,9 @@ public:
 
       //cout << "iphivm :"<<iphivm<<endl;
       
-      zvm_.set(izvm,VMzbits);
-      phivm_.set(iphivm,VMphibits);
-      rvm_.set(irvm,VMrbits);
+      zvm_.set(izvm,VMzbits,true,__LINE__,__FILE__);
+      phivm_.set(iphivm,VMphibits,true,__LINE__,__FILE__);
+      rvm_.set(irvm,VMrbits,false,__LINE__,__FILE__);
 
       //cout << "ASTUB "<<r<<" "<<ir<<" "<<irvm<<endl;
 
@@ -177,9 +231,47 @@ public:
       int sign=1;
       if (disk<0) sign=-1;
 
-
       double zmin=0.0;
       double zmax=0.0;
+      if(enstubbend){
+      //pt encoding based on position                                                        
+                                                                                             
+      if(r  > 24.5559 && r  < 40.7415 ){//rings 1-4                                          
+        if(fabs(sbend)  ==  2  ) ipt = 7;                                                    
+        if(fabs(sbend)  ==  1.5) ipt = 6;                                                    
+        if(fabs(sbend)  ==  1  ) ipt = 5;                                                    
+        if(fabs(sbend)  <=  0.5) ipt = 4;                                                    
+        if( sbend < -0.5 ) ipt = 8 - ipt;                                                    
+      }                                                                                      
+      if(r  > 40.7415 && r  < 51.6901 ){//rings 5-7                                          
+        if(fabs(sbend)  ==  2.5) ipt = 7;                                                    
+        if(fabs(sbend)  ==  2  ) ipt = 6;                                                    
+        if(fabs(sbend)  ==  1.5) ipt = 5;                                                    
+        if(fabs(sbend)  <=  1  ) ipt = 4;                                                    
+        if( sbend < -1  ) ipt = 8 -  ipt;                                                     
+      }                                                                                      
+      if(r  > 51.9273 && r  < 55.8049 ){//ring 8                                             
+        if(fabs(sbend)  ==  3  ) ipt = 7;                                                    
+        if(fabs(sbend)  ==  2.5) ipt = 6;                                                    
+        if(fabs(sbend)  ==  2 || fabs(sbend)  == 1.5 ) ipt = 5;                              
+        if(fabs(sbend)  <=  1  ) ipt = 4;                                                    
+        if( sbend < -1  ) ipt = 8 - ipt;                                                     
+      }                                                                                      
+      if(r  > 55.8049 && r  < 59.6825 ){//ring 9                                             
+        if(fabs(sbend)  ==  3.5) ipt = 7;                                                    
+        if(fabs(sbend)  ==  3 || fabs(sbend) == 2.5 ) ipt = 6;                               
+        if(fabs(sbend)  ==  2 || fabs(sbend) == 1.5 ) ipt = 5;                               
+        if(fabs(sbend)  <=  1) ipt = 4;                                                      
+        if( sbend < -1 ) ipt = 8 - ipt;                                                      
+      }                                                                                      
+      if(r  > 60.0567 && r  < 110.0000 ){//ring 10 to 15                                     
+        if(fabs(sbend)  ==  5.5 || fabs(sbend)  ==  5) ipt = 7;                              
+        if(fabs(sbend)  ==  4.5 || fabs(sbend)  ==  4 || fabs(sbend)  ==  3.5 || fabs(sbend) ==  3) ipt = 6;
+        if(fabs(sbend)  ==  2.5 || fabs(sbend)  ==  2 || fabs(sbend)  ==  1.5  ) ipt = 5;    
+        if(fabs(sbend)  <=  1) ipt = 4;                                                      
+        if( sbend < -1 ) ipt = 8 - ipt ;                                                      
+      } 
+      }
 
       if (disk==1) {zmin=zminD1; zmax=zmaxD1;}
       if (disk==2) {zmin=zminD2; zmax=zmaxD2;}
@@ -196,7 +288,6 @@ public:
       if ((z>zmax)||(z<zmin)) {
 	cout << "Error disk z, zmax, zmin: "<<z<<" "<<zmax<<" "<<zmin<<endl;
       }
-
 
       int iz=(1<<nzbitsdisk)*((z-sign*zmean[abs(disk)-1])/fabs(zmax-zmin));
 
@@ -219,13 +310,10 @@ public:
 
       int iphibits=nbitsphistubL123;
       //if (layer>=4) iphibits=nbitsphistubL456; //Need to figure out this...
-
-
       //cout << "phimax-phimin : "<<phimax-phimin<<" "<<two_pi/28.0<<endl;
       
       int iphi=(1<<iphibits)*(0.125+0.75*(stubphi_-phiminsec)/(phimaxsec-phiminsec));
 
-      
       double rmin=rmindisk;
       double rmax=rmaxdisk;
     
@@ -233,16 +321,34 @@ public:
 			     <<" "<<rmin<<" "<<rmax<<endl;
     
       int ir=(1<<nrbitsdisk)*(r-rmin)/(rmax-rmin);
-      
-      //cout << "ir irbits : "<<ir<<" "<<irbits<<endl;
-      r_.set(ir,nrbitsdisk,true,__LINE__,__FILE__);
+
+      int irSS = -1;
+      for(int i=0; i<16; ++i){
+	if(fabs(r-rDSS[i])<.2){
+	  irSS = i;
+	  break;
+	}
+      }
+      if(irSS < 0){
+	//PS modules
+	assert (r<60);
+      	//cout << "ir irbits : "<<ir<<" "<<irbits<<endl;
+	r_.set(ir,nrbitsdisk,true,__LINE__,__FILE__);
+      }
+      else {
+	//SS modules
+	r_.set(irSS,4,true,__LINE__,__FILE__);  // in case of SS modules, store index, not r itself
+      }
+
       //cout << "iz izbits : "<<iz<<" "<<izbits<<" "<<disk<<endl;
       z_.set(iz,nzbitsdisk,false,__LINE__,__FILE__);
-      phi_.set(iphi,iphibits);
-      stubpt_.set(ipt,3);
+      phi_.set(iphi,iphibits,true,__LINE__,__FILE__);
+      stubpt_.set(ipt,3,true,__LINE__,__FILE__);
 
       int irvm=ir>>(nrbitsdisk-(Nrbitsdisk+nrbitsdiskvm))&((1<<nrbitsdiskvm)-1);
-      int izvm=(iz+(1<<(nzbitsdisk-1)))>>(nzbitsdisk-nzbitsdiskvm)&((1<<nzbitsdiskvm)-1);
+      //cout << "Bits for irvm : "<<(nrbitsdisk-(Nrbitsdisk+nrbitsdiskvm))
+      //	   <<" "<<((1<<nrbitsdiskvm)-1)<<endl;
+      int izvm=iz>>(nzbitsdisk-nzbitsdiskvm);
       int iphivm=0;
 
       iphivm=(iphi>>(iphibits-(Nphibits+VMphibits)))&((1<<VMphibits)-1);
@@ -258,11 +364,11 @@ public:
 
       //cout << "iphivm :"<<iphivm<<endl;
 
-      disk_.set(disk,4,false);    
-      zvm_.set(izvm,nzbitsdiskvm);
-      phivm_.set(iphivm,3);
+      disk_.set(disk,4,false,__LINE__,__FILE__);    
+      zvm_.set(izvm,nzbitsdiskvm,false,__LINE__,__FILE__);
+      phivm_.set(iphivm,3,true,__LINE__,__FILE__);
       //phivm_.set(iphivm,VMphibits); should really be this!!!
-      rvm_.set(irvm,nrbitsdiskvm);
+      rvm_.set(irvm,nrbitsdiskvm,true,__LINE__,__FILE__);
 
       double alpha=stub.alpha();
       assert(fabs(alpha)<alphamax);
@@ -289,6 +395,68 @@ public:
 
   }
 
+  std::string str_phys() const {
+
+    std::ostringstream oss;
+   
+    int ilz_   = 1;
+    float nbsr = 128.0;
+    float nphibs = 16384;
+    float rmean_ = rmean[layer_.value() ];
+    int Layer = layer_.value() + 1;
+
+    double rmin=1.0;
+    double rmax=10.0;
+
+    if (Layer==1) {rmin=rminL1; rmax=rmaxL1;}
+    if (Layer==2) {rmin=rminL2; rmax=rmaxL2;}
+    if (Layer==3) {rmin=rminL3; rmax=rmaxL3;}
+    if (Layer==4) {rmin=rminL4; rmax=rmaxL4;}
+    if (Layer==5) {rmin=rminL5; rmax=rmaxL5;}
+    if (Layer==6) {rmin=rminL6; rmax=rmaxL6;}
+    if(Layer > 3){
+      ilz_   = 16;
+      nbsr   = 256.0;
+      nphibs = 131072;
+    }
+
+    double pt_r = -99;
+    if(stubpt_.value() == 0 ) pt_r = 1/0.4;
+    if(stubpt_.value() == 1 ) pt_r = 1/0.3;
+    if(stubpt_.value() == 2 ) pt_r = 1/0.2;
+    if(stubpt_.value() == 3 ) pt_r = 1/0.1;
+    if(stubpt_.value() == 4 ) pt_r = -1/0.1;
+    if(stubpt_.value() == 5 ) pt_r = -1/0.2;
+    if(stubpt_.value() == 6 ) pt_r = -1/0.3;
+    if(stubpt_.value() == 7 ) pt_r = -1/0.4;
+
+    double rreal = r_.value()/nbsr*(rmax - rmin) + rmean_;
+    double phireal = ((phi_.value()*1.0)/nphibs  - 0.125 )*(1.0/0.75)*(stubphimaxsec_ - stubphiminsec_) + stubphiminsec_;
+
+
+
+
+    oss << pt_r<<" "
+	<<rreal<<" "
+        << z_.value()*kz*ilz_<<" "
+        <<phireal;
+
+
+    /*  //For comparison with the real quantities                                                                 
+	oss << pt_r<<"| fl :"<<stubrpt_ <<"|"                                                                         
+        <<rreal<<"| fl :"<<stubr_ <<"|"                                                                           
+        << z_.value()*kz*ilz_<<"|fl :"<<stubz_ <<"|"                                                              
+        <<phireal<<"| fl :"<<stubphi_ ;                                                                           
+    */
+
+    return oss.str();
+
+  }
+
+
+
+
+
   std::string strbare() const {
     
     std::ostringstream oss;
@@ -302,9 +470,16 @@ public:
   std::string strbareUNFLIPPED() const {
     
     std::ostringstream oss;
-    oss << r_.str()
-	<< z_.str()<< phi_.str()<<stubpt_.str();
+    if((stubr_ > 60.) && isDisk()){
 
+      oss << alpha_.str() << r_.str()
+          << z_.str() << phi_.str() << stubpt_.str(); 
+    }else{
+
+      oss << r_.str()
+          << z_.str()<< phi_.str()<<stubpt_.str();
+
+    }
     return oss.str();
 
   }
@@ -343,8 +518,7 @@ public:
   std::string fedregionaddressstr() {
 
     std::ostringstream oss;
-    oss <<  (bitset<3>)(fedregion()-1)<<"|"
-        << stubindex_.str();
+    oss <<  (bitset<3>)(fedregion()-1)<< stubindex_.str();
 
     return oss.str();
 
@@ -370,10 +544,10 @@ public:
 
     //cout << "fedregion z :"<<z_.value()<<" "<<disk_.value()<<endl;
     if (disk_.value()>0) {
-      if (r_.value()<(1<<(r_.nbits()-1))) return 5;
+      if (stubr_<60.) return 5;
       return 6;
     } else {
-      if (r_.value()<(1<<(r_.nbits()-1))) return 7;
+      if (stubr_<60.) return 7;
       return 8;
     }
 
@@ -381,10 +555,14 @@ public:
 
   void setAllStubIndex(int nstub){
     if (nstub>=(1<<6)){
-      cout << "Warning too large stubindex!"<<endl;
+      //cout << "Warning too large stubindex : "<<nstub<<endl;
       nstub=(1<<6)-1;
     }
-
+    if (stubindex_.value()!=63) {
+      cout << "FPGAStuf::setAllStubIndex is reseting index from "<<stubindex_.value()<<" to "<<nstub<<endl;
+    }
+    
+    
     stubindex_.set(nstub,6);
   }
   
@@ -444,6 +622,9 @@ private:
   double stubr_;
   double stubz_;
   double stubrpt_;
+
+  double stubphiminsec_;
+  double stubphimaxsec_;
 
 
   double phitmp_;

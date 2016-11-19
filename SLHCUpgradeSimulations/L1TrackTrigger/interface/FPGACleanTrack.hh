@@ -1,17 +1,17 @@
 //This class stores the track fit
-#ifndef FPGATRACKFIT_H
-#define FPGATRACKFIT_H
+#ifndef FPGACLEANTRACK_H
+#define FPGACLEANTRACK_H
 
 #include "FPGATracklet.hh"
 #include "FPGAMemoryBase.hh"
 
 using namespace std;
 
-class FPGATrackFit:public FPGAMemoryBase{
+class FPGACleanTrack:public FPGAMemoryBase{
 
 public:
 
-  FPGATrackFit(string name, unsigned int iSector, 
+  FPGACleanTrack(string name, unsigned int iSector, 
 	       double phimin, double phimax):
     FPGAMemoryBase(name,iSector){
     phimin_=phimin;
@@ -24,10 +24,6 @@ public:
 
   unsigned int nTracks() const {return tracks_.size();}
 
-  FPGATracklet* getTrack(unsigned int i) const {
-    return tracks_[i];
-  }
-  
   void clean() {
     //cout << "Cleaning tracks : "<<tracks_.size()<<endl;
     tracks_.clear();
@@ -88,9 +84,10 @@ public:
     }
     return match;
   }
-  void writeTF(bool first) {
 
-    std::string fname="./MemPrints/TrackFit/TrackFit_";
+  void writeCT(bool first) {
+
+    std::string fname="./MemPrints/CleanTrack/CleanTrack_";
     fname+=getName();
     fname+="_";
     ostringstream oss;

@@ -15,6 +15,28 @@ class FPGATrackDer{
 public:
 
   FPGATrackDer() {
+    
+    for (unsigned int i=0;i<6;i++){
+
+      irinvdphi_[i]=9999999; 
+      irinvdzordr_[i]=9999999; 
+      iphi0dphi_[i]=9999999; 
+      iphi0dzordr_[i]=9999999; 
+      itdphi_[i]=9999999; 
+      itdzordr_[i]=9999999; 
+      iz0dphi_[i]=9999999; 
+      iz0dzordr_[i]=9999999; 
+      
+      rinvdphi_[i]=0.0; 
+      rinvdzordr_[i]=0.0; 
+      phi0dphi_[i]=0.0; 
+      phi0dzordr_[i]=0.0; 
+      tdphi_[i]=0.0; 
+      tdzordr_[i]=0.0; 
+      z0dphi_[i]=0.0; 
+      z0dzordr_[i]=0.0; 
+
+    }
 
   }
 
@@ -60,6 +82,15 @@ public:
   double gettdzordr(int i) const { return tdzordr_[i];} 
   double getz0dphi(int i) const { return z0dphi_[i];} 
   double getz0dzordr(int i) const { return z0dzordr_[i];} 
+
+  double getirinvdphi(int i) const { return irinvdphi_[i];} 
+  double getirinvdzordr(int i) const { return irinvdzordr_[i];} 
+  double getiphi0dphi(int i) const { return iphi0dphi_[i];} 
+  double getiphi0dzordr(int i) const { return iphi0dzordr_[i];} 
+  double getitdphi(int i) const { return itdphi_[i];} 
+  double getitdzordr(int i) const { return itdzordr_[i];} 
+  double getiz0dphi(int i) const { return iz0dphi_[i];} 
+  double getiz0dzordr(int i) const { return iz0dzordr_[i];} 
 
   void sett(double t) { t_=t; }
   double gett() const { return t_; }
