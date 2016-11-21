@@ -113,6 +113,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   vector<int>*   tp_pdgid;
   vector<int>*   tp_nmatch;
   vector<int>*   tp_nstub;
+  vector<int>*   tp_nstublayer;
   vector<int>*   tp_eventid;
   vector<int>*   tp_injet;
   vector<int>*   tp_injet_highpt;
@@ -153,6 +154,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   TBranch* b_tp_pdgid;
   TBranch* b_tp_nmatch;
   TBranch* b_tp_nstub;
+  TBranch* b_tp_nstublayer;
   TBranch* b_tp_eventid;
   TBranch* b_tp_injet;
   TBranch* b_tp_injet_highpt;
@@ -190,6 +192,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   tp_pdgid = 0;
   tp_nmatch = 0;
   tp_nstub = 0;
+  tp_nstublayer = 0;
   tp_eventid = 0;
   tp_injet = 0;
   tp_injet_highpt = 0;
@@ -229,6 +232,7 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   if (doLooseMatch) tree->SetBranchAddress("tp_nloosematch", &tp_nmatch, &b_tp_nmatch);
   else tree->SetBranchAddress("tp_nmatch", &tp_nmatch, &b_tp_nmatch);
   tree->SetBranchAddress("tp_nstub",      &tp_nstub,      &b_tp_nstub);
+  tree->SetBranchAddress("tp_nstublayer", &tp_nstublayer, &b_tp_nstublayer);
   tree->SetBranchAddress("tp_eventid",    &tp_eventid,    &b_tp_eventid);
   tree->SetBranchAddress("tp_injet",   &tp_injet,   &b_tp_injet);
   tree->SetBranchAddress("tp_injet_highpt",   &tp_injet_highpt,   &b_tp_injet_highpt);
