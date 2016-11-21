@@ -42,12 +42,13 @@ Source_Files = cms.untracked.vstring(
     #'/store/group/upgrade/Tracker/L1Tracking/Synchro/Input/Muon/RelValSingleMuPt100_CMSSW_6_2_0_SLHC26-DES23_62_V1_LHCCRefPU140-v1/C2D56BE8-392F-E511-814C-0025905B8598.root',
     
     ## new ttbar sample
-    'file:TTbar_new_1.root',
-    'file:TTbar_new_2.root',
-    'file:TTbar_new_3.root',
-    'file:TTbar_new_4.root',
-    'file:TTbar_new_5.root',
-    'file:TTbar_new_6.root',
+    #'file:TTbar_new_1.root',
+    #'file:TTbar_new_2.root',
+    #'file:TTbar_new_3.root',
+    #'file:TTbar_new_4.root',
+    #'file:TTbar_new_5.root',
+    #'file:TTbar_new_6.root',
+    "root://xrootd.unl.edu//store/mc/TTI2023Upg14D/PYTHIA6_Tauola_TTbar_TuneZ2star_14TeV/GEN-SIM-DIGI-RAW/DES23_62_V1-v1/70000/0040AD92-0493-E611-9E16-0025907B4EDC.root"
 	)
 process.source = cms.Source("PoolSource", fileNames = Source_Files)
 
@@ -91,7 +92,7 @@ process.pL1TkPrimaryVertexMC = cms.Path( process.L1TkPrimaryVertexMC )
 
 process.L1TrackNtuple = cms.EDAnalyzer('L1TrackNtupleMaker',
                                        MyProcess = cms.int32(1),
-                                       Slim = cms.bool(False),            # only keep the branches we really need
+                                       Slim = cms.bool(True),            # only keep the branches we really need
                                        DebugMode = cms.bool(False),      # printout lots of debug statements
                                        SaveAllTracks = cms.bool(True),   # save *all* L1 tracks, not just truth matched to primary particle
                                        SaveStubs = cms.bool(False),      # save some info for *all* stubs
