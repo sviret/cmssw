@@ -35,7 +35,7 @@ public:
 
   void writeStubs(bool first) {
 
-    std::string fname="./MemPrints/Stubs/LayerStubs_";
+    std::string fname="LayerStubs_";
     fname+=getName();
     fname+="_";
     ostringstream oss;

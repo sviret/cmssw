@@ -70,10 +70,7 @@ public:
 
     const int nbit=nbits_;
 
-    if(!(nbit>0&&nbit<21)) cout<<"nbit: "<<nbit<<"\n";
-    if(nbit == -1)  return "?";
-    if(nbit == 0)  return "~";
-    
+    //cout << "nbit:"<<nbit<<endl;
 
     assert(nbit>0&&nbit<21);
     

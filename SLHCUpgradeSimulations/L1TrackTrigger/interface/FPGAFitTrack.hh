@@ -47,7 +47,7 @@ public:
       FPGATrackletParameters* tmp=dynamic_cast<FPGATrackletParameters*>(memory);
       assert(tmp!=0);
       seedtracklet_.push_back(tmp);
-      return; 
+      return;
     }
     if (input=="fullmatch1in1"||
 	input=="fullmatch1in2"||
@@ -60,22 +60,7 @@ public:
 	input=="fullmatch1in9"||
 	input=="fullmatch1in10"||
 	input=="fullmatch1in11"||
-	input=="fullmatch1in12"||
-	input=="fullmatch1in13"||
-	input=="fullmatch8in1"||
-	input=="fullmatch8in2"||
-	input=="fullmatch8in3"||
-	input=="fullmatch8in4"||
-	input=="fullmatch8in5"||
-	input=="fullmatch8in6"||
-	input=="fullmatch8in7"||
-	input=="fullmatch8in8"||
-	input=="fullmatch8in9"||
-	input=="fullmatch8in10"||
-	input=="fullmatch8in11"||
-	input=="fullmatch8in12"||
-	input=="fullmatch8in13"||
-	input=="fullmatch8in14"
+	input=="fullmatch1in12"
 	){
       FPGAFullMatch* tmp=dynamic_cast<FPGAFullMatch*>(memory);
       assert(tmp!=0);
@@ -93,23 +78,7 @@ public:
 	input=="fullmatch2in9"||
 	input=="fullmatch2in10"||
 	input=="fullmatch2in11"||
-	input=="fullmatch2in12"||
-	input=="fullmatch2in13"||
-	input=="fullmatch2in14"||
-	input=="fullmatch7in1"||
-	input=="fullmatch7in2"||
-	input=="fullmatch7in3"||
-	input=="fullmatch7in4"||
-	input=="fullmatch7in5"||
-	input=="fullmatch7in6"||
-	input=="fullmatch7in7"||
-	input=="fullmatch7in8"||
-	input=="fullmatch7in9"||
-	input=="fullmatch7in10"||
-	input=="fullmatch7in11"||
-	input=="fullmatch7in12"||
-	input=="fullmatch7in13"||
-	input=="fullmatch7in14"
+	input=="fullmatch2in12"
 	){
       FPGAFullMatch* tmp=dynamic_cast<FPGAFullMatch*>(memory);
       assert(tmp!=0);
@@ -127,23 +96,7 @@ public:
 	input=="fullmatch3in9"||
 	input=="fullmatch3in10"||
 	input=="fullmatch3in11"||
-	input=="fullmatch3in12"||
-	input=="fullmatch3in13"||
-	input=="fullmatch3in14"||
-	input=="fullmatch6in1"||
-	input=="fullmatch6in2"||
-	input=="fullmatch6in3"||
-	input=="fullmatch6in4"||
-	input=="fullmatch6in5"||
-	input=="fullmatch6in6"||
-	input=="fullmatch6in7"||
-	input=="fullmatch6in8"||
-	input=="fullmatch6in9"||
-	input=="fullmatch6in10"||
-	input=="fullmatch6in11"||
-	input=="fullmatch6in12"||
-	input=="fullmatch6in13"||
-	input=="fullmatch6in14"
+	input=="fullmatch3in12"
 	){
       FPGAFullMatch* tmp=dynamic_cast<FPGAFullMatch*>(memory);
       assert(tmp!=0);
@@ -161,10 +114,14 @@ public:
 	input=="fullmatch4in9"||
 	input=="fullmatch4in10"||
 	input=="fullmatch4in11"||
-	input=="fullmatch4in12"||
-	input=="fullmatch4in13"||
-	input=="fullmatch4in14"||
-	input=="fullmatch5in1"||
+	input=="fullmatch4in12"
+	){
+      FPGAFullMatch* tmp=dynamic_cast<FPGAFullMatch*>(memory);
+      assert(tmp!=0);
+      fullmatch4_.push_back(tmp);
+      return;
+    }
+    if (input=="fullmatch5in1"||
 	input=="fullmatch5in2"||
 	input=="fullmatch5in3"||
 	input=="fullmatch5in4"||
@@ -175,13 +132,23 @@ public:
 	input=="fullmatch5in9"||
 	input=="fullmatch5in10"||
 	input=="fullmatch5in11"||
-	input=="fullmatch5in12"||
-	input=="fullmatch5in13"||
-	input=="fullmatch5in14"
+	input=="fullmatch5in12"
 	){
       FPGAFullMatch* tmp=dynamic_cast<FPGAFullMatch*>(memory);
       assert(tmp!=0);
-      fullmatch4_.push_back(tmp);
+      fullmatch5_.push_back(tmp);
+      return;
+    }
+    if (input=="fullmatch6in1"||
+	input=="fullmatch6in2"||
+	input=="fullmatch6in3"||
+	input=="fullmatch6in4"||
+	input=="fullmatch6in5"||
+	input=="fullmatch6in6"
+	){
+      FPGAFullMatch* tmp=dynamic_cast<FPGAFullMatch*>(memory);
+      assert(tmp!=0);
+      fullmatch6_.push_back(tmp);
       return;
     }
     cout << "Did not find input : "<<input<<endl;
@@ -416,7 +383,7 @@ public:
 	iMinvDt[2][2*i]=(1<<fittbitshift)*MinvDt[2][2*i]*kphi1/ktpars;
 	iMinvDt[3][2*i]=(1<<fitz0bitshift)*MinvDt[3][2*i]*kphi1/kzpars;
 
-	if (rnew[i]<60.0) {
+	if (rnew[i]<57.0) {
 	  MinvDt[0][2*i+1]/=sigmaz;
 	  MinvDt[1][2*i+1]/=sigmaz;
 	  MinvDt[2][2*i+1]/=sigmaz;
@@ -466,7 +433,7 @@ public:
 	iMinvDt[2][2*i]=(1<<fittbitshift)*MinvDt[2][2*i]*kphiprojdisk/ktparsdisk;
 	iMinvDt[3][2*i]=(1<<fitz0bitshift)*MinvDt[3][2*i]*kphiprojdisk/kzdisk;
 
-	if (fabs(alpha[i])<1e-10) {
+	if (alpha[i]==0.0) {
 	  MinvDt[0][2*i+1]/=sigmaz;
 	  MinvDt[1][2*i+1]/=sigmaz;
 	  MinvDt[2][2*i+1]/=sigmaz;
@@ -482,9 +449,7 @@ public:
 	iMinvDt[1][2*i+1]=(1<<fitphi0bitshift)*MinvDt[1][2*i+1]*krprojshiftdisk/kphi0parsdisk;
 	iMinvDt[2][2*i+1]=(1<<fittbitshift)*MinvDt[2][2*i+1]*krprojshiftdisk/ktparsdisk;
 	iMinvDt[3][2*i+1]=(1<<fitz0bitshift)*MinvDt[3][2*i+1]*krprojshiftdisk/kzdisk;
-
-	//cout << "i alpha iMinvDt[3][2*i+1] "<<i<<" "<<alpha[i]<<" "<<iMinvDt[3][2*i+1]<<endl;
-
+      
       }
 
     }
@@ -602,7 +567,7 @@ public:
 
 
       for (unsigned int d=1;d<=5;d++) {
-        if (mult==1<<(3*alphaBitsTable)) continue;
+        if (mult==512) continue;
 	//cout << "d ndisks nlayers : "<<d<<" "<<ndisks<<" "<<nlayers<<endl;
 	if (ndisks+nlayers>=6) continue;
 	if (tracklet->matchdisk(d)) {
@@ -612,12 +577,21 @@ public:
 	    diskmask|=(1<<(2*(5-d)+1));
 	  }
 	  else{
-		int ialpha=tracklet->ialphatable(d).value();
+	    double alphastub=tracklet->alphadisk(d);
+            double rstub=zmean[d-1]/tracklet->t();
+	    double alphamax=480*0.009/(rstub*rstub);
+            int ialpha=4*(1.0+alphastub/alphamax);
+	    if (ialpha<0) ialpha=0;
+	    if (ialpha>7) ialpha=7;
+	    //if (t<0) ialpha=7-ialpha;
+	    //cout << "z alpha alphamax ialpha : "
+	    //	 <<zmean[d-1]<<" "<<alphastub<<" "
+	    //	 <<alphamax<<" "<<ialpha<<endl;
 	    alphaindex+=ialpha*power;
-	    power=power<<alphaBitsTable;
+	    power*=8;
 	    matches2[2*(d-1)+1]='1';
 	    diskmask|=(1<<(2*(5-d)));
-	    mult=mult<<alphaBitsTable;;
+	    mult*=8;
 	  }
 	  alpha[ndisks]=tracklet->alphadisk(d);
 	  phiresid[nlayers+ndisks]=tracklet->phiresidapproxdisk(d);
@@ -631,7 +605,7 @@ public:
 	}
       }
 
-      if (mult<=1<<(3*alphaBitsTable)) {
+      if (mult<=512) {
 	if (writeHitPattern) {
 	  out2<<matches<<" "<<matches2<<" "<<mult<<endl;
 	}
@@ -681,14 +655,23 @@ public:
 	    diskmask|=(1<<(2*(5-d1)+1));
 	  }
 	  else{
-		int ialpha=tracklet->ialphatable(d).value();
+	    double alphastub=tracklet->alphadisk(d);
+            double rstub=zmean[d-1]/fabs(tracklet->t());
+	    double alphamax=480*0.009/(rstub*rstub);
+            int ialpha=4*(1.0+alphastub/alphamax);
+	    if (ialpha<0) ialpha=0;
+	    if (ialpha>7) ialpha=7;
+	    //if (t<0) ialpha=7-ialpha;
+	    //cout << "z alpha alphamax ialpha : "
+	    //	 <<zmean[d1-1]<<" "<<alphastub<<" "
+	    // 	 <<alphamax<<" "<<ialpha<<endl;
 	    alphaindex+=ialpha*power;
-	    power*=(1<<alphaBitsTable); 
- 	    matches2[2*(d1-1)+1]='1';
+	    power*=8;
+	    matches2[2*(d1-1)+1]='1';
 	    diskmask|=(1<<(2*(5-d1)));
-	    mult*=(1<<alphaBitsTable); 
+	    mult*=8;
 	  }
-
+	  
 	  alpha[ndisks]=tracklet->alphadisk(d);
 	  phiresid[nlayers+ndisks]=tracklet->phiresidapproxdisk(d);
 	  zresid[nlayers+ndisks]=tracklet->rresidapproxdisk(d);
@@ -761,7 +744,7 @@ public:
 
       for (unsigned int d1=1;d1<=5;d1++) {
 	//cout << "d1 diskmask : "<<d1<<" "<<diskmask<<endl;
-        if (mult==1<<(3*alphaBitsTable)) continue;
+        if (mult==512) continue;
 	int d=d1;
 	if (tracklet->fpgat().value()<0.0) d=-d1;
 	if (d==tracklet->disk()){  //All seeds in PS modules
@@ -781,12 +764,21 @@ public:
 	    diskmask|=(1<<(2*(5-d1)+1));
 	  }
 	  else{
-	    int ialpha=tracklet->ialphatable(d).value();
+	    double alphastub=tracklet->alphadisk(d);
+            double rstub=zmean[d-1]/tracklet->t();
+	    double alphamax=480*0.009/(rstub*rstub);
+            int ialpha=4*(1.0+alphastub/alphamax);
+	    if (ialpha<0) ialpha=0;
+	    if (ialpha>7) ialpha=7;
+	    //if (t<0) ialpha=7-ialpha;
+	    //cout << "z alpha alphamax ialpha : "
+	    // 	 <<zmean[d1-1]<<" "<<alphastub<<" "
+	    //	 <<alphamax<<" "<<ialpha<<endl;
 	    alphaindex+=ialpha*power;
-	    power*=(1<<alphaBitsTable);
+	    power*=8;
 	    matches2[2*(d1-1)+1]='1';
 	    diskmask|=(1<<(2*(5-d1)));
-	    mult*=(1<<alphaBitsTable);
+	    mult*=8;
 	  }
 	  
 
@@ -807,10 +799,9 @@ public:
 
     } 
 
-    //FPGAWord layermasktmp;
-    //layermasktmp.set(layermask,6);
+
     //cout << "layermask diskmask alphaindex: "
-    //	 <<layermasktmp.str()<<" "<<diskmask<<" "<<alphaindex<<endl;
+    //	 <<layermask<<" "<<diskmask<<" "<<alphaindex<<endl;
 
 
     FPGATrackDer* derivatives=derTable.getDerivatives(layermask, diskmask,alphaindex);
@@ -905,12 +896,7 @@ public:
 	}
 	*/
 	int iMinvDtDummy[4][12];
-	double ttable=derTable.gett(diskmask);
-	if (t<0.0) ttable=-ttable;
-	//cout << "t gett : "<<t<<" "<<ttable<<endl;
-	//calculateDerivativesNew(nlayers,r,ndisks,z,alpha,t,rinv,
-	//			D,MinvDt,iMinvDtDummy);
-	calculateDerivativesNew(nlayers,r,ndisks,z,alpha,ttable,rinv,
+	calculateDerivativesNew(nlayers,r,ndisks,z,alpha,t,rinv,
 				D,MinvDt,iMinvDtDummy);
       } else {
 	derivatives->fill(tracklet->fpgat().value(),MinvDt,iMinvDt);
@@ -1002,12 +988,8 @@ public:
     double dz0_covexact=0.0;
 
 
-    //cout << "n = "<<n<<endl;
 
     for(unsigned int j=0;j<2*n;j++) {
-
-      assert(iMinvDt[1][j]!=9999999);
-
 
       //cout << "j deltaj dt : "<<j<<" "<<delta[j]<<" "
       //	   <<MinvDt[2][j]*delta[j]<<endl;
@@ -1044,20 +1026,10 @@ public:
       dt_covexact+=D[2][j]*deltaexact[j];
       dz0_covexact+=D[3][j]*deltaexact[j];
 
-      //cout << "j idelta iMinvDt[0] iMinvDt[1]  iMinvDt[2]  iMinvDt[3] : "
-      //	   <<j<<" "<<idelta[j]<<" "<<iMinvDt[0][j]<<" "<<iMinvDt[1][j]<<" "<<iMinvDt[2][j]<<" "<<iMinvDt[3][j]<<endl;
-
-      //assert bitsize
-      assert(abs(iMinvDt[0][j]*idelta[j])<(1<<20));
-      idrinv+=((iMinvDt[0][j]*idelta[j]));
-      idphi0+=((iMinvDt[1][j]*idelta[j]));
-      idt+=((iMinvDt[2][j]*idelta[j]));
-      idz0+=((iMinvDt[3][j]*idelta[j]));
-
-      //int tmp=((iMinvDt[3][j]*idelta[j]));
-
-      //cout << "j idz dz iMinvDt[3][j] idelta[j]"<<j<<" "<<(tmp>>fitz0bitshift)*kzpars<<" "
-      //	   <<MinvDt[3][j]*delta[j]<<" "<<iMinvDt[3][j]<<" "<<idelta[j]<<endl;
+      idrinv-=((iMinvDt[0][j]*idelta[j]));
+      idphi0-=((iMinvDt[1][j]*idelta[j]));
+      idt-=((iMinvDt[2][j]*idelta[j]));
+      idz0-=((iMinvDt[3][j]*idelta[j]));
 
       /*
 
@@ -1111,10 +1083,11 @@ public:
     int itseed=tracklet->fpgat().value();
     int iz0seed=tracklet->fpgaz0().value();
 
-    int irinvfit=irinvseed+(idrinv>>fitrinvbitshift);
-    int iphi0fit=iphi0seed+(idphi0>>fitphi0bitshift);
-    int itfit=itseed+(idt>>fittbitshift);
-    int iz0fit=iz0seed+(idz0>>fitz0bitshift);
+    int irinvfit=irinvseed-(idrinv>>fitrinvbitshift);
+    int iphi0fit=iphi0seed-(idphi0>>fitphi0bitshift);
+
+    int itfit=itseed-(idt>>fittbitshift);
+    int iz0fit=iz0seed-(idz0>>fitz0bitshift);
 
     int ichisqfit=0;
 
@@ -1169,7 +1142,7 @@ public:
 
 
 
-  void execute(std::vector<FPGATrack*>& tracks) {
+  void execute(std::vector<FPGATrack>& tracks) {
 
     //cout << "Fit track in "<<getName()<<endl;
 
@@ -1177,10 +1150,11 @@ public:
     //Again taking a bit of a short cut in order to reuse old code
     map<FPGATracklet*,int> counts;
 
+
     for(unsigned int j=0;j<fullmatch1_.size();j++){
       for(unsigned int i=0;i<fullmatch1_[j]->nMatches();i++){
 	FPGATracklet* tracklet=fullmatch1_[j]->getFPGATracklet(i);
-	//cout << "In FPGAFitTrack 1 "<<fullmatch1_[j]->getName()<<endl;
+	//cout << "In FPGAFitTrack 1 "<<tracklet<<endl;
 	if (getName()=="FT_L1L2"&&!tracklet->isBarrel()) continue;
 	if (getName()=="FT_L3L4"&&!tracklet->isBarrel()) continue;
 	if (getName()=="FT_L5L6"&&!tracklet->isBarrel()) continue;
@@ -1188,8 +1162,8 @@ public:
 	if (getName()=="FT_B1B2"&&!tracklet->isDisk()) continue;
 	if (getName()=="FT_F3F4"&&!tracklet->isDisk()) continue;
 	if (getName()=="FT_B3B4"&&!tracklet->isDisk()) continue;
-	if (getName()=="FT_F1L1"&&!tracklet->isOverlap()) continue;
-	if (getName()=="FT_B1L1"&&!tracklet->isOverlap()) continue;
+	if (getName()=="FT_F1L"&&!tracklet->isOverlap()) continue;
+	if (getName()=="FT_B1L"&&!tracklet->isOverlap()) continue;
 
 	if (getName()=="FT_L1L2"&&tracklet->layer()!=1) continue;
 	if (getName()=="FT_L3L4"&&tracklet->layer()!=3) continue;
@@ -1198,7 +1172,6 @@ public:
 	if (getName()=="FT_B1B2"&&tracklet->disk()!=-1) continue;
 	if (getName()=="FT_F3F4"&&tracklet->disk()!=3) continue;
 	if (getName()=="FT_B3B4"&&tracklet->disk()!=-3) continue;
-	//cout << "Found match1 for "<<tracklet<<" "<<getName()<<endl;
 	if (counts.find(tracklet)==counts.end()){
 	  counts[tracklet]=1;
 	}
@@ -1219,8 +1192,8 @@ public:
 	if (getName()=="FT_B1B2"&&!tracklet->isDisk()) continue;
 	if (getName()=="FT_F3F4"&&!tracklet->isDisk()) continue;
 	if (getName()=="FT_B3B4"&&!tracklet->isDisk()) continue;
-	if (getName()=="FT_F1L1"&&!tracklet->isOverlap()) continue;
-	if (getName()=="FT_B1L1"&&!tracklet->isOverlap()) continue;
+	if (getName()=="FT_F1L"&&!tracklet->isOverlap()) continue;
+	if (getName()=="FT_B1L"&&!tracklet->isOverlap()) continue;
 
 	if (getName()=="FT_L1L2"&&tracklet->layer()!=1) continue;
 	if (getName()=="FT_L3L4"&&tracklet->layer()!=3) continue;
@@ -1229,7 +1202,7 @@ public:
 	if (getName()=="FT_B1B2"&&tracklet->disk()!=-1) continue;
 	if (getName()=="FT_F3F4"&&tracklet->disk()!=3) continue;
 	if (getName()=="FT_B3B4"&&tracklet->disk()!=-3) continue;
-	//cout << "Found match2 for "<<tracklet<<" "<<getName()<<endl;
+	//cout << "Found match2 for "<<tracklet<<endl;
 	if (counts.find(tracklet)==counts.end()){
 	  counts[tracklet]=1;
 	}
@@ -1250,8 +1223,8 @@ public:
 	if (getName()=="FT_B1B2"&&!tracklet->isDisk()) continue;
 	if (getName()=="FT_F3F4"&&!tracklet->isDisk()) continue;
 	if (getName()=="FT_B3B4"&&!tracklet->isDisk()) continue;
-	if (getName()=="FT_F1L1"&&!tracklet->isOverlap()) continue;
-	if (getName()=="FT_B1L1"&&!tracklet->isOverlap()) continue;
+	if (getName()=="FT_F1L"&&!tracklet->isOverlap()) continue;
+	if (getName()=="FT_B1L"&&!tracklet->isOverlap()) continue;
 
 	if (getName()=="FT_L1L2"&&tracklet->layer()!=1) continue;
 	if (getName()=="FT_L3L4"&&tracklet->layer()!=3) continue;
@@ -1281,8 +1254,8 @@ public:
 	if (getName()=="FT_B1B2"&&!tracklet->isDisk()) continue;
 	if (getName()=="FT_F3F4"&&!tracklet->isDisk()) continue;
 	if (getName()=="FT_B3B4"&&!tracklet->isDisk()) continue;
-	if (getName()=="FT_F1L1"&&!tracklet->isOverlap()) continue;
-	if (getName()=="FT_B1L1"&&!tracklet->isOverlap()) continue;
+	if (getName()=="FT_F1L"&&!tracklet->isOverlap()) continue;
+	if (getName()=="FT_B1L"&&!tracklet->isOverlap()) continue;
 
 	if (getName()=="FT_L1L2"&&tracklet->layer()!=1) continue;
 	if (getName()=="FT_L3L4"&&tracklet->layer()!=3) continue;
@@ -1301,34 +1274,67 @@ public:
       }
     }
 
+    for(unsigned int j=0;j<fullmatch5_.size();j++){
+      for(unsigned int i=0;i<fullmatch5_[j]->nMatches();i++){
+	FPGATracklet* tracklet=fullmatch5_[j]->getFPGATracklet(i);
+	//cout << "In FPGAFitTrack 5 "<<tracklet<<endl;
+	if (getName()=="FT_L1L2"&&!tracklet->isBarrel()) continue;
+	if (getName()=="FT_L3L4"&&!tracklet->isBarrel()) continue;
+	if (getName()=="FT_L5L6"&&!tracklet->isBarrel()) continue;
+	if (getName()=="FT_F1F2"&&!tracklet->isDisk()) continue;
+	if (getName()=="FT_B1B2"&&!tracklet->isDisk()) continue;
+	if (getName()=="FT_F3F4"&&!tracklet->isDisk()) continue;
+	if (getName()=="FT_B3B4"&&!tracklet->isDisk()) continue;
+	if (getName()=="FT_F1L"&&!tracklet->isOverlap()) continue;
+	if (getName()=="FT_B1L"&&!tracklet->isOverlap()) continue;
 
-
-    if (writeFitTrack) {
-      int matches[4]={0,0,0,0};  
-      static ofstream out1("fittrack1.txt");
-      for (std::map<FPGATracklet*,int>::iterator it=counts.begin(); it!=counts.end(); ++it){
-	FPGATracklet* tracklet=it->first;
-	int nmatch=tracklet->nMatches();
-	int nmatchdisk=tracklet->nMatchesDisk();
-	if (getName()=="FT_L1L2") nmatchdisk=tracklet->nMatchesDisk(true);
-	if (nmatch+nmatchdisk!=it->second) out1 << "xxx ";
-	out1 << getName()<<" "<<nmatch<<" "<<nmatchdisk<<" "
-	     <<it->second<<" "<<tracklet<<endl;
-	int count=it->second;
-	if (count>4) count=4;
-	matches[count-1]++;
+	if (getName()=="FT_L1L2"&&tracklet->layer()!=1) continue;
+	if (getName()=="FT_L3L4"&&tracklet->layer()!=3) continue;
+	if (getName()=="FT_L5L6"&&tracklet->layer()!=5) continue;
+	if (getName()=="FT_F1F2"&&tracklet->disk()!=1) continue;
+	if (getName()=="FT_B1B2"&&tracklet->disk()!=-1) continue;
+	if (getName()=="FT_F3F4"&&tracklet->disk()!=3) continue;
+	if (getName()=="FT_B3B4"&&tracklet->disk()!=-3) continue;
+	//cout << "Found match5 for "<<tracklet<<endl;
+	if (counts.find(tracklet)==counts.end()){
+	  counts[tracklet]=1;
+	}
+	else{
+	  counts[tracklet]++;
+	}
       }
-      static ofstream out("fittrack.txt");
-      out << getName()
-	  << " " << matches[0] 
-	  << " " << matches[1] 
-	  << " " << matches[2] 
-	  << " " << matches[3] 
-	  <<endl;
     }
 
+    for(unsigned int j=0;j<fullmatch6_.size();j++){
+      for(unsigned int i=0;i<fullmatch6_[j]->nMatches();i++){
+	FPGATracklet* tracklet=fullmatch6_[j]->getFPGATracklet(i);
+	//cout << "In FPGAFitTrack 6 "<<tracklet<<endl;
+	if (getName()=="FT_L1L2"&&!tracklet->isBarrel()) continue;
+	if (getName()=="FT_L3L4"&&!tracklet->isBarrel()) continue;
+	if (getName()=="FT_L5L6"&&!tracklet->isBarrel()) continue;
+	if (getName()=="FT_F1F2"&&!tracklet->isDisk()) continue;
+	if (getName()=="FT_B1B2"&&!tracklet->isDisk()) continue;
+	if (getName()=="FT_F3F4"&&!tracklet->isDisk()) continue;
+	if (getName()=="FT_B3B4"&&!tracklet->isDisk()) continue;
+	if (getName()=="FT_F1L"&&!tracklet->isOverlap()) continue;
+	if (getName()=="FT_B1L"&&!tracklet->isOverlap()) continue;
 
-    unsigned int count=0;
+	if (getName()=="FT_L1L2"&&tracklet->layer()!=1) continue;
+	if (getName()=="FT_L3L4"&&tracklet->layer()!=3) continue;
+	if (getName()=="FT_L5L6"&&tracklet->layer()!=5) continue;
+	if (getName()=="FT_F1F2"&&tracklet->disk()!=1) continue;
+	if (getName()=="FT_B1B2"&&tracklet->disk()!=-1) continue;
+	if (getName()=="FT_F3F4"&&tracklet->disk()!=3) continue;
+	if (getName()=="FT_B3B4"&&tracklet->disk()!=-3) continue;
+	if (counts.find(tracklet)==counts.end()){
+	  counts[tracklet]=1;
+	}
+	else{
+	  counts[tracklet]++;
+	}
+      }
+    }
+
 
 
     for (std::map<FPGATracklet*,int>::iterator it=counts.begin(); it!=counts.end(); ++it){
@@ -1336,8 +1342,6 @@ public:
       FPGATracklet* tracklet=it->first;
       int nmatch=tracklet->nMatches();
       int nmatchdisk=tracklet->nMatchesDisk();
-
-      //cout << "FPGAFitTrack : "<<nmatch<<" "<<nmatchdisk<<endl;
 
       //cout << getName()<<" "<<tracklet<<" "<<iSector_<<" "<<tracklet->layer()
       //     <<" "<<tracklet->disk()
@@ -1360,8 +1364,6 @@ public:
       //static ofstream out("nmatches1.txt");
       //	out << tracklet->nMatches()+tracklet->nMatchesDisk() << endl;
       if (nmatch+nmatchdisk>1) {
-	count++;
-	if (count>MAXFIT) continue;
 	//cout << "Will perform trackfit"<<endl;
 	trackFitNew(tracklet);
 	if (tracklet->fit()){
@@ -1387,6 +1389,8 @@ private:
   vector<FPGAFullMatch*> fullmatch2_;
   vector<FPGAFullMatch*> fullmatch3_;
   vector<FPGAFullMatch*> fullmatch4_;
+  vector<FPGAFullMatch*> fullmatch5_;
+  vector<FPGAFullMatch*> fullmatch6_;
 
   FPGATrackFit* trackfit_;
 

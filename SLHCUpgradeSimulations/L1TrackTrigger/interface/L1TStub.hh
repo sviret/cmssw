@@ -19,8 +19,7 @@ public:
   }
 
   L1TStub(int simtrackid, int iphi, int iz, int layer, int ladder, int module, int strip,
-	  double x, double y, double z, double sigmax, double sigmaz, double pt, double bend, 
-	  int simtrk){
+	  double x, double y, double z, double sigmax, double sigmaz, double pt, double bend){
     simtrackid_=simtrackid;
     iphi_=iphi;
     iz_=iz;
@@ -35,15 +34,17 @@ public:
     sigmaz_=sigmaz;
     pt_=pt;
     bend_ = bend;
-    simtrk_=simtrk;
 
     allstubindex_=999;
 
+    /*
+    // the sign shouldn't be flipped here!!
     if (layer_>999&&z_<0.0) {
       //cout <<"Flipping pt sign"<<endl;
       pt_=-pt_;
       bend_ = -bend_;
     }
+    */
 
   }
 
@@ -155,7 +156,6 @@ public:
     return phi_tmp/innerdigis_.size();
   }
 
-
   double iphiouter() {
     if (outerdigis_.size()==0) {
       // cout << "outerdigis_.size()="<<outerdigis_.size()<<endl;
@@ -233,9 +233,6 @@ public:
 
   int simtrackid() const { return simtrackid_;}
 
-
-  int simtrk() const { return simtrk_; }
-
   void setAllStubIndex(unsigned int index) { allstubindex_=index; }
 
   unsigned int allStubIndex() const { return allstubindex_; }
@@ -243,7 +240,7 @@ public:
   unsigned int strip() const { return strip_; }
 
   double alpha() const {
-    if (r()<60.0) return 0.0;
+    if (r()<57.0) return 0.0;
     if (z_>0.0) {
       return ((int)strip_-480.5)*0.009/r2();
     }
@@ -251,7 +248,7 @@ public:
   }
 
   double alphatruncated() const {
-    if (r()<60.0) return 0.0;
+    if (r()<57.0) return 0.0;
     int striptruncated=strip_/1;
     striptruncated*=1;
     if (z_>0.0) {
@@ -260,15 +257,9 @@ public:
     return -(striptruncated-480.5)*0.009/r2();
   }
 
-  void setXY(double x, double y){
-    x_=x;
-    y_=y;
-  }
-
 private:
 
   int simtrackid_;
-  int simtrk_;
   unsigned int iphi_;
   unsigned int iz_;
   unsigned int layer_;

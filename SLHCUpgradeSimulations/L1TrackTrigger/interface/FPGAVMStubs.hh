@@ -35,13 +35,11 @@ public:
 
   void writeStubs(bool first) {
 
-    std::string fname="./MemPrints/Stubs/VMStubs_";
+    std::string fname="VMStubs_";
     fname+=getName();
     //get rid of duplicates
     int len = fname.size();
     if(fname[len-2]=='n'&& fname[len-1]>'1'&&fname[len-1]<='9') return;
-
-
     //
     fname+="_";
     ostringstream oss;

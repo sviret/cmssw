@@ -104,10 +104,6 @@ public:
 	assert(i2==i1||i2==i1+1);
 	double phioffset=-0.5*(phimax_-phimin_)/3.0;
 	if (i2==i1+1) phioffset=-phioffset;
-
-	double thez0cut=z0cutL1;
-	if (layer1_==3) thez0cut=z0cutL3;
-	if (layer1_==5) thez0cut=z0cutL5;
 	
 	table_=new FPGATETable();
 	table_->init(3,3,4,3,
@@ -125,14 +121,13 @@ public:
 		     i1,
 		     i2,
 		     j1,
-		     j2,
-		     thez0cut);
+		     j2);
 	
 	tetables_[index]=table_;
 
 	if(writeTETables){
 	  std::ostringstream oss;
-	  oss << "TETable_"<<getName();
+	  oss << "LUT_"<<getName();
 	  std::string fnamephi=oss.str();
 	  fnamephi+="_phi.dat";
 	  std::string fnamez=oss.str();
@@ -229,7 +224,7 @@ public:
 
 	if(writeTETables){
 	  std::ostringstream oss;
-	  oss << "TETable_"<<getName();
+	  oss << "LUT_"<<getName();
 	  std::string fnamephi=oss.str();
 	  fnamephi+="_phi.dat";
 	  std::string fnamez=oss.str();
@@ -284,8 +279,8 @@ public:
 	int i2=phi2_;
 
 	assert(i1==i2||i1==i2+1);
-	double phioffset=0.5*(phimax_-phimin_)/3.0;
-	if (i1==i2+1) phioffset=-phioffset;
+	double phioffset=-0.5*(phimax_-phimin_)/3.0;
+	//if (i1==i2+1) phioffset=-phioffset;
 	assert(layer2_==1); //have not debugged layer2_==2!
 	if (layer2_==2) phioffset=0.0; //both have four phi divisions
 	
@@ -313,7 +308,7 @@ public:
 	tetablesoverlap_[index]=tableoverlap_;
 	if(writeTETables){
 	  std::ostringstream oss;
-	  oss << "TETable_"<<getName();
+	  oss << "LUT_"<<getName();
 	  std::string fnamephi=oss.str();
 	  fnamephi+="_phi.dat";
 	  std::string fnamez=oss.str();
@@ -406,8 +401,8 @@ public:
       std::pair<FPGAStub*,L1TStub*> innerstub=innervmstubs_->getStub(i);
       for(unsigned int j=0;j<outervmstubs_->nStubs();j++){
 	std::pair<FPGAStub*,L1TStub*> outerstub=outervmstubs_->getStub(j);
-	if (countall>=MAXTE) break;
 	countall++;
+
 	if (layer1_!=0 && layer2_!=0) {
 	  assert(table_!=0);
 
@@ -427,37 +422,28 @@ public:
 	  int irvm2=outerstub.first->rvm().value();
 	  int izvm2=outerstub.first->zvm().value();
 
-	  int ideltaphi=(iphivm2-iphivm1) & 15;
-	  int ideltar=(irvm2-irvm1) & 7;
+	  int ideltaphi=iphivm2-iphivm1;
+	  int ideltar=irvm2-irvm1;
 
-	  //cout << "ideltar irvm2 irvm1 : "
-	  //     <<ideltar<<" "<<irvm2<<" "<<irvm1<<endl;
-
-	  int urvm1 = irvm1 &3;
-	  int urvm2 = irvm2 &3;
+	  if (ideltar<0) ideltar+=8;
+	  assert(ideltar>=0);
+	  if (ideltaphi<0) ideltaphi+=16;
+	  assert(ideltaphi>=0);
 
 	  assert(istubpt1>=0);
 	  assert(istubpt2>=0);
 
 
 	  int address=(istubpt1<<10)+(istubpt2<<7)+(ideltaphi<<3)+ideltar;
-	  int zaddress=(izvm1<<8)+(izvm2<<4)+(urvm1<<2)+urvm2;
-
-	  //cout << "phi address : "<<hex<<address<<dec<<endl;
+	  int zaddress=(izvm1<<8)+(izvm2<<4)+(irvm1<<2)+irvm2;
 
 	  bool phimatch=table_->phicheck(address);
 	  bool zmatch=table_->zcheck(zaddress);
 
 
-	  //cout <<getName()<<" layer matches "<<layer1_<<"  "
-	  //     <<phimatch<<" (0x"<<hex<<address<<dec<<")  "
-	  //     <<zmatch<<" (0x"<<hex<<zaddress<<dec<<")"
-	  //     <<endl;
+	  //cout << "layer matches "<<layer1_<<" "<<phimatch<<" "<<zmatch<<endl;
 
-	  if (!(phimatch&&zmatch)) {
-	    //cout << "Failed TE table "<<phimatch<<" "<<zmatch<<endl;
-	    continue;
-	  }
+	  if (!(phimatch&&zmatch)) continue;
 
 	} else if (disk1_!=0 && disk2_!=0) {
 	  assert(tabledisk_!=0);
@@ -487,15 +473,19 @@ public:
 	  int irvm2=outerstub.first->rvm().value();
 	  int izvm2=outerstub.first->zvm().value();
 
-          int ideltar=irvm2-irvm1;
-          ideltar>>=2;
-          ideltar = ideltar & 15;
+	  int ideltaphi=iphivm2-iphivm1;
+	  int ideltar=irvm2-irvm1;
 
-          int ideltaphi=iphivm2-iphivm1;
-          ideltaphi = ideltaphi & 15;
+	  ideltar>>=2;
 
-          assert(istubpt1>=0);
-          assert(istubpt2>=0);
+	  if (ideltar<0) ideltar+=16;
+	  assert(ideltar>=0);
+	  if (ideltaphi<0) ideltaphi+=16;
+	  assert(ideltaphi>=0);
+
+	  assert(istubpt1>=0);
+	  assert(istubpt2>=0);
+
 
 	  int address=(istubpt1<<11)+(istubpt2<<8)+(ideltaphi<<4)+ideltar;
 
@@ -510,8 +500,6 @@ public:
 	  //if (!phimatch) continue;
 
 	  if (!(phimatch&&zmatch)) continue;
-
-	  //cout << "FPGATrackletEngine::execute found stub pair in disks"<<endl;
 
 	} else if (disk1_!=0 && layer2_!=0) {
 
@@ -529,7 +517,6 @@ public:
       
 	  assert(tableoverlap_!=0);
 
-	  //disk
 	  int istubpt1=innerstub.first->stubpt().value();
 	  int iphivm1=innerstub.first->phivm().value();
 	  FPGAWord iphi1=innerstub.first->phi();
@@ -540,7 +527,6 @@ public:
 
 	  assert(innerstub.first->rvm().nbits()==5);
 
-	  //barrel
 	  int istubpt2=outerstub.first->stubpt().value();
 	  int iphivm2=outerstub.first->phivm().value();
 	  FPGAWord iphi2=outerstub.first->phi();
@@ -555,30 +541,27 @@ public:
 	  assert(outerstub.first->rvm().nbits()==2);
 
 	  
-	  int ideltaphi=iphivm2-iphivm1; //phivm has 3 bits in both disk and barrel
+	  int ideltaphi=iphivm2-iphivm1;
 
 	  //cout << "overlap phi :"<<ideltaphi<<" "<<iphivm2<<" "<<iphivm1<<endl;
 
-          // disk has 5 bits (unsigned), barrel has 2 bits (signed), 
-          // need to fit the difference into 3 bits
-          // 
-          //int ideltar=(irvm1>>2)-(irvm2>>1);  
-          // (irvm2>>1) can be 0 or -1. Add 1 so it's 1 or 0.
-          int ideltar = (irvm1>>2)-((irvm2>>1)+1);
-          if (ideltar<0) ideltar=0; // so ideltar now is between 7 and 0.
-          assert (ideltar < 8);
+	  int ideltar=(irvm1>>2)-(irvm2>>1);
 
-          //cout << "overlap :"<<ideltar<<" "<<irvm2<<" "<<irvm1<<endl;
+	  //cout << "overlap :"<<ideltar<<" "<<irvm2<<" "<<irvm1<<endl;
 
-          ideltaphi = ideltaphi & 15;
+	  if (ideltar<0) ideltar=0; 
+	  if (ideltaphi<0) ideltaphi+=8;
+	  assert(ideltaphi>=0);
 
-          assert(istubpt1>=0);
-          assert(istubpt2>=0);
+	  assert(istubpt1>=0);
+	  assert(istubpt2>=0);
+
 
 	  int address=(istubpt1<<10)+(istubpt2<<7)+(ideltaphi<<3)+ideltar;
 
 	  bool phimatch=tableoverlap_->phicheck(address);
 	  bool zmatch=tableoverlap_->zcheck(izvm1,izvm2,irvm1,irvm2);
+
 
 	  //cout << "overlap matches "<<getName()<<" "<<disk1_<<" "<<layer2_
 	  //     <<" "<<phimatch<<" "<<zmatch
@@ -590,8 +573,6 @@ public:
 	    continue;
 	  }
 
-	  //cout << "FPGATrackletEngine::execute found stub pair in overlap"<<endl;
-
 	} else {
 	  assert(0);
 	}
@@ -599,12 +580,11 @@ public:
 	//cout << "Adding stub pair in "<<getName()<<endl;
 	assert(stubpairs_!=0);
 	countpass++;
-	//cout << "Adding stub pair"<<endl;
 	stubpairs_->addStubPair(innerstub,outerstub);
 
-	if (countall>=MAXTE) break;
+	if (countall>=NMAXTE) break;
       }
-      if (countall>=MAXTE) break;
+      if (countall>=NMAXTE) break;
     }
 
     if (writeTE) {

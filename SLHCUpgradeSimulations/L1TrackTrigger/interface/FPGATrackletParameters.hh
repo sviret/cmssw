@@ -31,21 +31,6 @@ public:
 
   FPGATracklet* getFPGATracklet(unsigned int i) const {return tracklets_[i];}
 
-  void writeMatches(int &matchesL1,int &matchesL3,int &matchesL5) {
-    static ofstream out("nmatches.txt");
-    for(unsigned int i=0;i<tracklets_.size();i++){
-      if ((tracklets_[i]->nMatches()+tracklets_[i]->nMatchesDisk())>0) {
-	if (tracklets_[i]->layer()==1) matchesL1++;
-	if (tracklets_[i]->layer()==3) matchesL3++;
-	if (tracklets_[i]->layer()==5) matchesL5++;
-      }
-      out << tracklets_[i]->layer()<<" "
-	  << tracklets_[i]->disk()<<" "
-	  << tracklets_[i]->nMatches()<<" "
-	  << tracklets_[i]->nMatchesDisk()<<endl;
-    }
-  }
-
   void clean() {
     for(unsigned int i=0;i<tracklets_.size();i++){
       delete tracklets_[i];
@@ -55,7 +40,7 @@ public:
 
   void writeTPAR(bool first) {
 
-    std::string fname="./MemPrints/TrackletParameters/TrackletParameters_";
+    std::string fname="TrackletParameters_";
     fname+=getName();
     fname+="_";
     ostringstream oss;

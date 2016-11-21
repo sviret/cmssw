@@ -24,10 +24,6 @@ public:
 
   unsigned int nTracks() const {return tracks_.size();}
 
-  FPGATracklet* getTrack(unsigned int i) const {
-    return tracks_[i];
-  }
-  
   void clean() {
     //cout << "Cleaning tracks : "<<tracks_.size()<<endl;
     tracks_.clear();
@@ -90,7 +86,7 @@ public:
   }
   void writeTF(bool first) {
 
-    std::string fname="./MemPrints/TrackFit/TrackFit_";
+    std::string fname="TrackFit_";
     fname+=getName();
     fname+="_";
     ostringstream oss;
@@ -108,19 +104,16 @@ public:
 
     out_ << "BX = "<<(bitset<3>)bx_ << " Event : " << event_ << endl;
 
-    //unsigned long int uu;
+    unsigned long int uu;
     for (unsigned int j=0;j<tracks_.size();j++){
-      //uu = (((long int)tracks_[j]->irinvfit().value()&32767)<<44)|
-      //(((long int)tracks_[j]->iphi0fit().value()&524287)<<25)|
-      //(((long int)tracks_[j]->itfit().value()&16383)<<11)|
-      //((long int)tracks_[j]->iz0fit().value()&2047);
-      //out_<<"0000000000000000";
-      //out_.fill('0');
-      //out_.width(16);
-      //out_<<std::hex<<uu;
-      if (j<16) out_<<"0";
-      out_<<hex<<j<<dec<<" ";
-      out_<<tracks_[j]->trackfitstr();
+      uu = (((long int)tracks_[j]->irinvfit().value()&32767)<<44)|
+	(((long int)tracks_[j]->iphi0fit().value()&524287)<<25)|
+	(((long int)tracks_[j]->itfit().value()&16383)<<11)|
+	((long int)tracks_[j]->iz0fit().value()&2047);
+      out_<<"0000000000000000";
+      out_.fill('0');
+      out_.width(16);
+      out_<<std::hex<<uu;
       out_<<"\n";
     }
     out_.close();

@@ -35,7 +35,7 @@ public:
 
   void writeStubs(bool first) {
 
-    std::string fname="./MemPrints/Stubs/AllStubs_";
+    std::string fname="AllStubs_";
     fname+=getName();
     fname+="_";
     ostringstream oss;

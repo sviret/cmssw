@@ -44,8 +44,7 @@ public:
 	    int i1,
 	    int i2,
 	    int j1,
-	    int j2,
-	    double thez0cut
+	    int j2
 	    ) {
 
     //cout << "In FPGATETable::init()"<<endl;
@@ -76,11 +75,6 @@ public:
       int istubpt2=(i>>(deltaphibits+deltarbits))&((1<<stubpt2bits)-1);
       int ideltaphi=(i>>(deltarbits))&((1<<deltaphibits)-1);
       int ideltar=i&((1<<deltarbits)-1);
-      //now ideltaphi and idelta r are actually signed integers. Convert
-      int irshift = 8*sizeof(int)-deltarbits;
-      int iphishift = 8*sizeof(int)-deltaphibits;
-      ideltaphi = (ideltaphi<<iphishift)>>iphishift;
-      ideltar   = (ideltar<<irshift)>>irshift;
 
       assert(istubpt1>=0&&istubpt1<8);
       assert(istubpt2>=0&&istubpt2<8);
@@ -94,33 +88,16 @@ public:
       }
       */
 
+      if (ideltaphi>7) ideltaphi-=16;
+      if (ideltar>3) ideltar-=8;
+
       double deltaphiavg=deltaphioffset+2*(deltaphi*ideltaphi)/(1<<deltaphibits);
       double deltar=rmin2-rmin1+2.0*(ideltar)*(rmax1-rmin1)/(1<<deltarbits);
       double Delta=sqrt(deltar*deltar+2*rmax1*rmax2*(1-cos(deltaphiavg)));
       double rinv=-2*sin(deltaphiavg)/Delta; //HACK this sign should be fixed elsewhere!!!
 
-      double ptstubinv1 = -99;
-      double ptstubinv2 = -99;
-
-      int stubL1 = 0;                                                         
-      if(fabs(rmin1 - rmeanL1) <= 3 ) stubL1 = 1;                             
-      if(fabs(rmin1 - rmeanL2) <= 3 ) stubL1 = 2;                             
-      if(fabs(rmin1 - rmeanL3) <= 3 ) stubL1 = 3;                             
-      if(fabs(rmin1 - rmeanL4) <= 3 ) stubL1 = 4;                             
-      if(fabs(rmin1 - rmeanL5) <= 3 ) stubL1 = 5;                             
-      if(fabs(rmin1 - rmeanL6) <= 3 ) stubL1 = 6;                             
-                                                                              
-      int stubL2 = 0;                                                         
-      if(fabs(rmin2 - rmeanL1) <= 3 ) stubL2 = 1;                             
-      if(fabs(rmin2 - rmeanL2) <= 3 ) stubL2 = 2;                             
-      if(fabs(rmin2 - rmeanL3) <= 3 ) stubL2 = 3;                             
-      if(fabs(rmin2 - rmeanL4) <= 3 ) stubL2 = 4;                             
-      if(fabs(rmin2 - rmeanL5) <= 3 ) stubL2 = 5;                             
-      if(fabs(rmin2 - rmeanL6) <= 3 ) stubL2 = 6;      
-
-
-      // Standard encoding 
-      if(!enstubbend){
+      double ptstubinv1;
+      double ptstubinv2;
       if (istubpt1==0) ptstubinv1=0.40;
       if (istubpt1==1) ptstubinv1=0.25;
       if (istubpt1==2) ptstubinv1=0.15;
@@ -138,33 +115,6 @@ public:
       if (istubpt2==5) ptstubinv2=-0.15;
       if (istubpt2==6) ptstubinv2=-0.25;
       if (istubpt2==7) ptstubinv2=-0.40;
-      }
-
-      float KL1 =1./6.;                                                       
-      float KL2 =1./6.;                                                       
-      float KL3 =1./6.;                                                       
-      float KL4 =1./6.;                                                       
-      float KL5 =1./6.;                                                       
-      float KL6 =1./6.;                                                       
-
-      if(enstubbend){
-      if(stubL1 == 1 ) ptstubinv1 = (istubpt1)*KL1 -0.66666;                  
-      if(stubL1 == 2 ) ptstubinv1 = (istubpt1)*KL2 -0.66666;                  
-      if(stubL1 == 3 ) ptstubinv1 = istubpt1*KL3 -0.666666;                   
-      if(stubL1 == 4 ) ptstubinv1 = istubpt1*KL4 -0.666666;                   
-      if(stubL1 == 5 ) ptstubinv1 = istubpt1*KL5 -0.666666;                   
-      if(stubL1 == 6 ) ptstubinv1 = istubpt1*KL6 -0.666666;                   
-                                                                              
-      if(stubL2 == 1 ) ptstubinv2 = istubpt2*KL1 -0.66666;                    
-      if(stubL2 == 2 ) ptstubinv2 = istubpt2*KL2 -0.66666;                    
-      if(stubL2 == 3 ) ptstubinv2 = istubpt2*KL3 -0.66666;                    
-      if(stubL2 == 4 ) ptstubinv2 = istubpt2*KL4 -0.66666;                    
-      if(stubL2 == 5 ) ptstubinv2 = istubpt2*KL5 -0.66666;                    
-      if(stubL2 == 6 ) ptstubinv2 = istubpt2*KL6 -0.66666;               
-      }
-
-
-
 
       double pttracklet=0.3*3.8/(rinv*100); 
 
@@ -221,13 +171,9 @@ public:
       int iz2=(i>>(r1bits+r2bits))&((1<<z2bits)-1);
       int ir1=(i>>(r2bits))&((1<<r1bits)-1);
       int ir2=i&((1<<r2bits)-1);
-      //now ir1 and ir2 are actually signed integers. Convert
-      int ir1shift = 8*sizeof(int)-r1bits;
-      int ir2shift = 8*sizeof(int)-r2bits;
-      ir1 = (ir1<<ir1shift)>>ir1shift;
-      ir2 = (ir2<<ir2shift)>>ir2shift;
 
       //bool printz=(j1_==3)&(j2_==3)&(i==0);
+
 
       double z1[2];
       double z2[2];
@@ -240,14 +186,11 @@ public:
       z2[0]=zmin2+iz2*(zmax2-zmin2)/(1<<z2bits);
       z2[1]=zmin2+(iz2+1)*(zmax2-zmin2)/(1<<z2bits);
 
-      double rave1 = 0.5*(rmin1+rmax1);
-      double rave2 = 0.5*(rmin2+rmax2);
+      r1[0]=rmin1+ir1*(rmax1-rmin1)/(1<<r1bits);
+      r1[1]=rmin1+(ir1+1)*(rmax1-rmin1)/(1<<r1bits);
 
-      r1[0]=rave1+ir1*(rmax1-rmin1)/(1<<r1bits);
-      r1[1]=rave1+(ir1+1)*(rmax1-rmin1)/(1<<r1bits);
-
-      r2[0]=rave2+ir2*(rmax2-rmin2)/(1<<r2bits);
-      r2[1]=rave2+(ir2+1)*(rmax2-rmin2)/(1<<r2bits);
+      r2[0]=rmin2+ir2*(rmax2-rmin2)/(1<<r2bits);
+      r2[1]=rmin2+(ir2+1)*(rmax2-rmin2)/(1<<r2bits);
 
       bool below=false;
       bool center=false;
@@ -274,9 +217,9 @@ public:
 		     <<z0<<endl;
 	      }
 	      */
-	      if (fabs(z0)<thez0cut) center=true;
-	      if (z0<-thez0cut) below=true;
-	      if (z0>thez0cut) above=true;
+	      if (fabs(z0)<15.0) center=true;
+	      if (z0<-15.0) below=true;
+	      if (z0>15.0) above=true;
 	    }
 	  }
 	}
@@ -335,7 +278,7 @@ public:
       FPGAWord entry;
       //cout << "ztablebits_ : "<<ztablebits_<<endl;
       entry.set(i,ztablebits_);
-      out <<tablez_[i]<<endl;
+      out << entry.str()<<" "<<tablez_[i]<<endl;
     }
     out.close();
       

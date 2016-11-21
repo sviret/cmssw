@@ -25,9 +25,12 @@ public:
     phimax_=phimax;
   }
 
-  void addStub(L1TStub& al1stub, FPGAStub& stub) {
-    int dctregion=stub.fedregion();
-    int ilink=stub.ilink();
+  void addStub(L1TStub al1stub) {
+    L1TStub* l1stub=new L1TStub(al1stub);
+    FPGAStub* stub=new FPGAStub(*l1stub,phimin_,phimax_);
+    std::pair<FPGAStub*,L1TStub*> tmp(stub,l1stub);
+    int dctregion=stub->fedregion();
+    int ilink=stub->ilink();
     bool add=false;
     //cout << "Stub candidate in "<<getName()<<" "<<al1stub.phi()<<" "
     //	 <<al1stub.z()<<" "<<ilink<<" "<<dctregion<<endl;
@@ -57,13 +60,12 @@ public:
     if (ilink==3&&dctregion==8&&getName()=="IL3_D8") add=true;
 
     if (!add) {
+      delete l1stub;
+      delete stub;
       return;
     }
     //cout << "Will add stub in "<<getName()<<endl;
     if (stubs_.size()<MAXSTUBSLINK) {
-      L1TStub* l1stub=new L1TStub(al1stub);
-      FPGAStub* stub=new FPGAStub(*l1stub,phimin_,phimax_);
-      std::pair<FPGAStub*,L1TStub*> tmp(stub,l1stub);
       stubs_.push_back(tmp);
     }
   }
@@ -74,7 +76,7 @@ public:
   L1TStub* getL1TStub(unsigned int i) const {return stubs_[i].second;}
   std::pair<FPGAStub*,L1TStub*> getStub(unsigned int i) const {return stubs_[i];}
 
-  void writeStubs(bool first, bool w2, bool padded) {
+  void writeStubs(bool first, bool w2) {
 
     //Barrel
     std::string fname="InputStubs_";
@@ -102,16 +104,6 @@ public:
       nlay[i]=0;
     }
 
-    unsigned int maxstubslink=0;
-    if (TMUX==4) maxstubslink=21;
-    else if (TMUX==6) maxstubslink=33;
-    else if (TMUX==8) maxstubslink=45;
-    else {
-      cout << "ERROR! Only TMUX=4/6/8 are supported! Exiting..." << endl;
-      return;
-    }
-       
-
     for (unsigned int i=0;i<stubs_.size();i++){
       if(stubs_[i].first->isBarrel()){
 	int lay=stubs_[i].first->layer().value();
@@ -122,13 +114,8 @@ public:
     }
     unsigned long int nlay2[6];
     nlay2[0] = nlay[0];
-    for(unsigned int i=1; i<6; ++i) {
+    for(unsigned int i=1; i<6; ++i)
       nlay2[i] = nlay2[i-1]+nlay[i];
-      if (nlay2[i]>maxstubslink) {
-	nlay2[i]=maxstubslink;
-      }
-      assert(nlay2[i]<=maxstubslink);
-    }
 
     string marker="";
 
@@ -148,7 +135,6 @@ public:
       
       //now write the stubs in layer order
       string leftover="";
-
       
       for (unsigned int i=0;i<6;i++) {
 	for (unsigned int j=0;j<stubs_.size();j++){
@@ -198,14 +184,11 @@ public:
       out_<<(xword & 0xfffff);
       out_<<" 51000003 51000007\n";
       //the stubs      
-      int scount = 0;
       for (unsigned int i=0;i<6;i++) {
 	for (unsigned int j=0;j<stubs_.size();j++){
 	  if(stubs_[j].first->isBarrel()){
 	    unsigned int lay=stubs_[j].first->layer().value();
 	    if (lay==i) {
-	      scount++;
-	      if (scount>(int)maxstubslink) continue;
 	      string tmp=stubs_[j].first->strbareUNFLIPPED();
 	      bitset<36> btmp(tmp);
 	      xword = btmp.to_ulong();
@@ -221,13 +204,7 @@ public:
 	  }
 	}
       }
-      if (padded) {
-	for (int k=0;k<(int)maxstubslink-scount;k++) {
-	  xline = (xline+1)&15;
-	  out_<< std::hex << xline<<"0000000 "<< std::hex << xline<<"0000001";
-	  out_<<" 51000003 51000007\n";
-	}
-      }
+
       //Trailer
       xline = (xline+1)&15;
       xword = ((unsigned long int)7<<33)|(((unsigned long int) bx_)<<25);
@@ -350,14 +327,11 @@ public:
       out_<<(xword & 0xfffff);
       out_<<" 51000003 51000007\n";
       //the stubs      
-      int scount = 0;
       for (unsigned int i=0;i<5;i++) {
 	for (unsigned int j=0;j<stubs_.size();j++){
 	  if(stubs_[j].first->isDisk()&&stubs_[j].first->disk().value()>0){
 	    unsigned int lay=stubs_[j].first->disk().value()-1;
 	    if (lay==i) {
-	      scount++;
-	      if (scount>(int)maxstubslink) continue;
 	      string tmp=stubs_[j].first->strbareUNFLIPPED();
 	      bitset<36> btmp(tmp);
 	      xword = btmp.to_ulong();
@@ -371,13 +345,6 @@ public:
 	      out_<<" 51000003 51000007\n";
 	    }
 	  }
-	}
-      }
-      if (padded) {
-	for (int k=0;k<(int)maxstubslink-scount;k++) {
-	  xline = (xline+1)&15;
-	  out_<< std::hex << xline<<"0000000 "<< std::hex << xline<<"0000001";
-	  out_<<" 51000003 51000007\n";
 	}
       }
 
@@ -502,14 +469,11 @@ public:
       out_<<(xword & 0xfffff);
       out_<<" 51000003 51000007\n";
       //the stubs      
-      int scount = 0;
       for (unsigned int i=0;i<5;i++) {
 	for (unsigned int j=0;j<stubs_.size();j++){
 	  if(stubs_[j].first->isDisk()&&stubs_[j].first->disk().value()<0){
 	    unsigned int lay=-stubs_[j].first->disk().value()-1;
 	    if (lay==i) {
-	      scount++;
-	      if (scount>(int)maxstubslink) continue;
 	      string tmp=stubs_[j].first->strbareUNFLIPPED();
 	      bitset<36> btmp(tmp);
 	      xword = btmp.to_ulong();
@@ -523,13 +487,6 @@ public:
 	      out_<<" 51000003 51000007\n";
 	    }
 	  }
-	}
-      }
-      if (padded) {
-	for (int k=0;k<(int)maxstubslink-scount;k++) {
-	  xline = (xline+1)&15;
-	  out_<< std::hex << xline<<"0000000 "<< std::hex << xline<<"0000001";
-	  out_<<" 51000003 51000007\n";
 	}
       }
 
