@@ -107,7 +107,7 @@ process.pL1TkPrimaryVertexMC = cms.Path( process.L1TkPrimaryVertexMC )
 
 process.L1TrackNtuple = cms.EDAnalyzer('L1TrackNtupleMaker',
                                        MyProcess = cms.int32(1),
-                                       Slim = cms.bool(True),            # only keep the branches we really need
+                                       Slim = cms.bool(False),            # only keep the branches we really need
                                        DebugMode = cms.bool(False),      # printout lots of debug statements
                                        SaveAllTracks = cms.bool(True),   # save *all* L1 tracks, not just truth matched to primary particle
                                        SaveStubs = cms.bool(False),      # save some info for *all* stubs
