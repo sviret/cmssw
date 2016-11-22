@@ -231,11 +231,11 @@ def compareEfficiency(what, sample, ptRange=0, pdgid=0):
 if __name__ == '__main__':
   r.gROOT.SetBatch()
 
-  # for pdg in [1,2,13]:
-  #   compareEfficiency("eff_pt_L","TTbar",0,pdg)
-  #   compareEfficiency("eff_pt_H","TTbar",0,pdg)
-  #   compareEfficiency("eff_eta_L","TTbar",0,pdg)
-  #   compareEfficiency("eff_eta_H","TTbar",0,pdg)
+  for pdg in [1,2,13]:
+    compareEfficiency("eff_pt_L","TTbar",0,pdg)
+    compareEfficiency("eff_pt_H","TTbar",0,pdg)
+    compareEfficiency("eff_eta_L","TTbar",0,pdg)
+    compareEfficiency("eff_eta_H","TTbar",0,pdg)
 
 
   samplePdg = {
