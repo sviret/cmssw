@@ -77,11 +77,11 @@ class L1TkPrimaryVertexProducer : public edm::EDProducer {
       float MaxPtVertex(const edm::Handle<L1TkTrackCollectionType> & L1TkTrackHandle,
                 float& sum,
                 int nmin, int nPSmin, float ptmin, int imode,
-		const StackedTrackerGeometry* theStackedGeometry) ;
+			const StackedTrackerGeometry* theStackedGeometry, int nPar) ;
 
       float SumPtVertex(const edm::Handle<L1TkTrackCollectionType> & L1TkTrackHandle,
                 float z, int nmin, int nPSmin, float ptmin, int imode,
-		const StackedTrackerGeometry* theStackedGeometry ) ;
+		const StackedTrackerGeometry* theStackedGeometry, int nPar) ;
 
 
    private:
@@ -98,6 +98,7 @@ class L1TkPrimaryVertexProducer : public edm::EDProducer {
 
         edm::InputTag L1TrackInputTag;
 
+        int L1Tk_nPar;
 	float ZMAX;	// in cm
 	float DeltaZ;	// in cm
 	float CHI2MAX;
@@ -130,6 +131,7 @@ L1TkPrimaryVertexProducer::L1TkPrimaryVertexProducer(const edm::ParameterSet& iC
   
   L1TrackInputTag = iConfig.getParameter<edm::InputTag>("L1TrackInputTag");
 
+  L1Tk_nPar = iConfig.getParameter<int>("L1Tk_nPar");
   ZMAX = (float)iConfig.getParameter<double>("ZMAX");
   DeltaZ = (float)iConfig.getParameter<double>("DeltaZ");
   CHI2MAX = (float)iConfig.getParameter<double>("CHI2MAX");
@@ -165,6 +167,12 @@ L1TkPrimaryVertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    using namespace edm;
 
  std::auto_ptr<L1TkPrimaryVertexCollection> result(new L1TkPrimaryVertexCollection);
+
+  if ( !(L1Tk_nPar==4 || L1Tk_nPar==5) ) {
+    std::cout << "Invalid number of track parameters, specified L1Tk_nPar == " << L1Tk_nPar << " but only 4/5 are valid options! Exiting..." << std::endl;
+    return;
+  }
+
 
   /// Geometry handles etc
   edm::ESHandle<TrackerGeometry>                               geometryHandle;
@@ -214,7 +222,7 @@ L1TkPrimaryVertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
    int imode = 2;	// max(Sum PT2)
    if (! SumPtSquared)  imode = 1;   // max(Sum PT)
 
-   float z1 = MaxPtVertex( L1TkTrackHandle, sum1, nmin, nPSmin, ptmin, imode, theStackedGeometry );
+   float z1 = MaxPtVertex( L1TkTrackHandle, sum1, nmin, nPSmin, ptmin, imode, theStackedGeometry , L1Tk_nPar);
    L1TkPrimaryVertex vtx1( z1, sum1 );
 
  result -> push_back( vtx1 );
@@ -226,7 +234,8 @@ L1TkPrimaryVertexProducer::produce(edm::Event& iEvent, const edm::EventSetup& iS
 float L1TkPrimaryVertexProducer::MaxPtVertex(const edm::Handle<L1TkTrackCollectionType> & L1TkTrackHandle,
  		float& Sum,
 		int nmin, int nPSmin, float ptmin, int imode,
-		const StackedTrackerGeometry*                   theStackedGeometry) {
+		const StackedTrackerGeometry*                   theStackedGeometry,
+		int nPar) {
         // return the zvtx corresponding to the max(SumPT)
         // of tracks with at least nPSmin stubs in PS modules
    
@@ -238,7 +247,7 @@ float L1TkPrimaryVertexProducer::MaxPtVertex(const edm::Handle<L1TkTrackCollecti
         //float z = -100 + itest;         // z in mm
 	float z = -ZMAX * 10 + itest ;  	// z in mm
         z = z/10.  ;   // z in cm
-        float sum = SumPtVertex(L1TkTrackHandle, z, nmin, nPSmin, ptmin, imode, theStackedGeometry);
+        float sum = SumPtVertex(L1TkTrackHandle, z, nmin, nPSmin, ptmin, imode, theStackedGeometry, nPar);
         if (sumMax >0 && sum == sumMax) {
           //cout << " Note: Several vertices have the same sum " << zvtxmax << " " << z << " " << sumMax << endl;
         }
@@ -256,7 +265,8 @@ float L1TkPrimaryVertexProducer::MaxPtVertex(const edm::Handle<L1TkTrackCollecti
 
 float L1TkPrimaryVertexProducer::SumPtVertex(const edm::Handle<L1TkTrackCollectionType> & L1TkTrackHandle,
 		float z, int nmin, int nPSmin, float ptmin, int imode,
-		const StackedTrackerGeometry*                   theStackedGeometry) {
+		const StackedTrackerGeometry*                   theStackedGeometry,
+		int nPar) {
 
         // sumPT of tracks with >= nPSmin stubs in PS modules
         // z in cm
@@ -267,9 +277,9 @@ float L1TkPrimaryVertexProducer::SumPtVertex(const edm::Handle<L1TkTrackCollecti
 
   for (trackIter = L1TkTrackHandle->begin(); trackIter != L1TkTrackHandle->end(); ++trackIter) {
 
-    float pt = trackIter->getMomentum().perp();
-    float chi2 = trackIter->getChi2();
-    float ztr  = trackIter->getPOCA().z();
+    float pt = trackIter->getMomentum(nPar).perp();
+    float chi2 = trackIter->getChi2(nPar);
+    float ztr  = trackIter->getPOCA(nPar).z();
 
     if (pt < ptmin) continue;
     if (fabs(ztr) > ZMAX ) continue;

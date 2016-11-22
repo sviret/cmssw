@@ -2,6 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 L1TkPrimaryVertex = cms.EDProducer('L1TkFastVertexProducer',
      L1TrackInputTag = cms.InputTag("TTTracksFromPixelDigis","Level1TTTracks"),
+     L1Tk_nPar = cms.int32( 4 ) ,   # use 4/5 parameter tracks?
      ZMAX = cms.double ( 25. ) ,        # in cm
      CHI2MAX = cms.double( 100. ),
      PTMINTRA = cms.double( 2.),        # PTMIN of L1Tracks, in GeV

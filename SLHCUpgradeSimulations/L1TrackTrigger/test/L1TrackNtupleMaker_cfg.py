@@ -65,6 +65,22 @@ BeamSpotFromSim = cms.EDProducer("BeamSpotFromSimProducer")
 process.TT_step = cms.Path(process.TrackTriggerTTTracks)
 process.TTAssociator_step = cms.Path(process.TrackTriggerAssociatorTracks)
 
+## run tracklet integer emulation instead 
+#process.TTTracksFromPixelDigisInteger = cms.EDProducer("L1FPGATrackProducer",
+#                                                       fitPatternFile  = cms.FileInPath('SLHCUpgradeSimulations/L1TrackTrigger/test/fitpattern.txt'),
+#                                                       memoryModulesFile  = cms.FileInPath('SLHCUpgradeSimulations/L1TrackTrigger/test/memorymodules_full.dat'),
+#                                                       processingModulesFile  = cms.FileInPath('SLHCUpgradeSimulations/L1TrackTrigger/test/processingmodules_full.dat'),
+#                                                       wiresFile  = cms.FileInPath('SLHCUpgradeSimulations/L1TrackTrigger/test/wires_full.dat')
+#)
+#process.TrackTriggerTTTracksInteger = cms.Sequence(process.BeamSpotFromSim*process.TTTracksFromPixelDigisInteger)
+#process.TT_step_Integer = cms.Path(process.TrackTriggerTTTracksInteger)
+#
+#from SimTracker.TrackTriggerAssociation.TrackTriggerAssociator_cff import *
+#
+#process.TTTrackAssociatorInteger = TTTrackAssociatorFromPixelDigis.clone()
+#process.TTTrackAssociatorInteger.TTTracks = cms.VInputTag( cms.InputTag("TTTracksFromPixelDigisInteger", "Level1TTTracks") )
+#process.TTAssociator_step_Integer = cms.Path( process.TTTrackAssociatorInteger )
+
 
 ############################################################
 # primary vertex producer 
@@ -72,6 +88,7 @@ process.TTAssociator_step = cms.Path(process.TrackTriggerAssociatorTracks)
 
 process.load("SLHCUpgradeSimulations.L1TrackTrigger.L1TkPrimaryVertexProducer_cfi")
 process.L1TkPrimaryVertex.L1TrackInputTag = cms.InputTag("TTTracksFromPixelDigis","Level1TTTracks")
+process.L1TkPrimaryVertex.L1Tk_nPar = cms.int32(4)   ## use 4 or 5 parameter track fit
 process.pL1TkPrimaryVertex = cms.Path( process.L1TkPrimaryVertex )
 
 process.L1TkPrimaryVertexMC = process.L1TkPrimaryVertex.clone()
