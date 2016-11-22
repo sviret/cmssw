@@ -462,12 +462,12 @@ void L1TrackNtupleMaker::beginJob()
   eventTree->Branch("tp_pdgid",  &m_tp_pdgid);
   eventTree->Branch("tp_momid",  &m_tp_momid);
   eventTree->Branch("tp_nmatch", &m_tp_nmatch);
+  eventTree->Branch("tp_nloosematch", &m_tp_nloosematch);
   eventTree->Branch("tp_nstub",  &m_tp_nstub);
   eventTree->Branch("tp_eventid",&m_tp_eventid);
   if (!Slim) {
     eventTree->Branch("tp_d0_prod",&m_tp_d0_prod);
     eventTree->Branch("tp_z0_prod",&m_tp_z0_prod);
-    eventTree->Branch("tp_nloosematch", &m_tp_nloosematch);
     eventTree->Branch("tp_ngenstublayer", &m_tp_ngenstublayer);
     eventTree->Branch("tp_nstublayer",    &m_tp_nstublayer);
   }
@@ -489,19 +489,17 @@ void L1TrackNtupleMaker::beginJob()
     eventTree->Branch("matchtrk_injet_highpt",    &m_matchtrk_injet_highpt);
   }
 
-  if (!Slim) {
-    eventTree->Branch("loosematchtrk_pt",      &m_loosematchtrk_pt);
-    eventTree->Branch("loosematchtrk_eta",     &m_loosematchtrk_eta);
-    eventTree->Branch("loosematchtrk_phi",     &m_loosematchtrk_phi);
-    eventTree->Branch("loosematchtrk_z0",      &m_loosematchtrk_z0);
-    eventTree->Branch("loosematchtrk_d0",      &m_loosematchtrk_d0);
-    eventTree->Branch("loosematchtrk_chi2",    &m_loosematchtrk_chi2);
-    eventTree->Branch("loosematchtrk_nstub",   &m_loosematchtrk_nstub);
-    eventTree->Branch("loosematchtrk_consistency", &m_loosematchtrk_consistency);
-    if (TrackingInJets) {
-      eventTree->Branch("loosematchtrk_injet",   &m_loosematchtrk_injet);
-      eventTree->Branch("loosematchtrk_injet_highpt",   &m_loosematchtrk_injet_highpt);
-    }
+  eventTree->Branch("loosematchtrk_pt",      &m_loosematchtrk_pt);
+  eventTree->Branch("loosematchtrk_eta",     &m_loosematchtrk_eta);
+  eventTree->Branch("loosematchtrk_phi",     &m_loosematchtrk_phi);
+  eventTree->Branch("loosematchtrk_z0",      &m_loosematchtrk_z0);
+  eventTree->Branch("loosematchtrk_d0",      &m_loosematchtrk_d0);
+  eventTree->Branch("loosematchtrk_chi2",    &m_loosematchtrk_chi2);
+  eventTree->Branch("loosematchtrk_nstub",   &m_loosematchtrk_nstub);
+  if (!Slim) eventTree->Branch("loosematchtrk_consistency", &m_loosematchtrk_consistency);
+  if (TrackingInJets) {
+    eventTree->Branch("loosematchtrk_injet",   &m_loosematchtrk_injet);
+    eventTree->Branch("loosematchtrk_injet_highpt",   &m_loosematchtrk_injet_highpt);
   }
 
   if (SaveStubs) {
