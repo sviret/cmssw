@@ -3,7 +3,22 @@ import os
 import os.path
 
 # Use this for user specific label at the end of the filename
-userLabel = "_NoSFKF4ParamsComb"
+userLabel = "_KF4ParamsComb"
+
+# Labels for input files
+PUtypes = ["0","140","200"]
+ptRangeTypes = {
+0:"",
+'L' : "Pt2to8",
+'H' : "Pt8to100"
+}
+pdgIdTypes = { 0 : "",
+               1 : "injet",
+               2 : "injet_highpt",
+               13 : "pdgid13",
+               11 : "pdgid11",
+               211 : "pdgid211"
+}
 
 def SetPlotStyle():
   # from ATLAS plot style macro
@@ -73,19 +88,11 @@ def mySmallText(x, y, color, text):
   l.DrawLatex(x,y,text);
 
 def getAllHistogramsFromFile( what, sample, ptRange, pdgid ):
-  # Labels for input files
-  PUtypes = ["PU0","PU140","PU200"]
-  ptRangeTypes = ["", "_Pt2to8", "_Pt8to100"]
-  pdgIdTypes = { 0 : "",
-                 1 : "_inttjet",
-                 2 : "_inttjethighpt",
-                 13 : "_pdgid13",
-                 11 : "_pdgid11",
-                 211 : "_pdgid211"
-  }
+
   # Make list of input trees
   inputFileNames = [];
-  inputFileNameTemplate = "output_Hist_{sample}_{PU}{ptRange}{pdg}_{trunc}Truncation{userLabel}.root"
+  # inputFileNameTemplate = "output_Hist_{sample}_{PU}{ptRange}{pdg}_{trunc}Truncation{userLabel}.root"
+  inputFileNameTemplate = "output_{sample}{ptRange}_PU{PU}_{trunc}Truncation_{pdg}{userLabel}.root"
   inputFileNames.append( inputFileNameTemplate.format(sample = sample, PU = PUtypes[0], ptRange=ptRangeTypes[ptRange], pdg=pdgIdTypes[pdgid], trunc = 'With', userLabel=userLabel ) )
   inputFileNames.append( inputFileNameTemplate.format(sample = sample, PU = PUtypes[1], ptRange=ptRangeTypes[ptRange], pdg=pdgIdTypes[pdgid], trunc = 'With', userLabel=userLabel ) )
   inputFileNames.append( inputFileNameTemplate.format(sample = sample, PU = PUtypes[2], ptRange=ptRangeTypes[ptRange], pdg=pdgIdTypes[pdgid], trunc = 'With', userLabel=userLabel ) )
@@ -100,6 +107,7 @@ def getAllHistogramsFromFile( what, sample, ptRange, pdgid ):
       inputFiles.append(r.TFile(inputFileNames[i]))
     else:
       inputFiles.append(None)
+
   histograms68 = {
   'PU0_wt' : getHistogramFromFile(inputFiles[0], what, 68),
   'PU140_wt' : getHistogramFromFile(inputFiles[1], what, 68),
@@ -142,10 +150,11 @@ def drawHistogramWithOption(h,drawOption):
 
 def setupLegend(sample, histograms, PULabels):
   legx = 0.25;
-  legy = 0.22;
+  legy = 0.3;
   r.gPad.cd()
   l = r.TLegend(legx,legy,legx+0.3,legy+0.18)
   l.SetFillColor(0)
+  l.SetFillStyle(0)
   l.SetLineColor(0)
   l.SetTextSize(0.04)
   l.AddEntry(histograms['PU0_wt'], "With truncation", "p")
@@ -165,8 +174,6 @@ def setupLegend(sample, histograms, PULabels):
     if h == None: h = histograms['PU200_wot']
     l.AddEntry(h,PULabels[2],"lp")
   l.SetTextFont(42)
-
-  if sample=="TTbar": mySmallText(legx,legy+0.31,1,"TTbar, inclusive efficiency");
 
   return l
 
@@ -198,9 +205,9 @@ def compareResolution(what, sample, ptRange=0, pdgid=0):
     drawOption = drawHistogramWithOption( histograms99['PU140_wt'], drawOption )
 
   if histograms68['PU200_wt'] != None:
-    setMarkerAndLineAttributes( histograms68['PU200_wt'], 9, 34)
+    setMarkerAndLineAttributes( histograms68['PU200_wt'], 9, 21)
     drawOption = drawHistogramWithOption (histograms68['PU200_wt'], drawOption)
-    setMarkerAndLineAttributes( histograms99['PU200_wt'], 9, 28)
+    setMarkerAndLineAttributes( histograms99['PU200_wt'], 9, 25)
     drawOption = drawHistogramWithOption (histograms99['PU200_wt'], drawOption)
 
   if 'same' in drawOption:
@@ -233,15 +240,43 @@ def compareResolution(what, sample, ptRange=0, pdgid=0):
   # Save canvas
   if not os.path.isdir('OverlayPlots'):
     os.mkdir('OverlayPlots')
-  canvas.Print("OverlayPlots/"+sample+"_"+what+".pdf");
+  outputFileName = "OverlayPlots/{sample}_{what}_{ptRange}.pdf".format( sample = sample, what=what, ptRange=ptRange )
+  if sample == 'TTbar':
+    if pdgid == 13:
+      outputFileName = "OverlayPlots/{sample}_muons_{what}.pdf".format( sample = sample, what=what )
+    elif pdgid == 1:
+      outputFileName = "OverlayPlots/{sample}_injet_{what}.pdf".format( sample = sample, what=what )
+    elif pdgid == 2:
+      outputFileName = "OverlayPlots/{sample}_injet_highpt_{what}.pdf".format( sample = sample, what=what )
+  canvas.Print(outputFileName);
 
 if __name__ == '__main__':
   r.gROOT.SetBatch()
 
-  compareResolution("resVsEta_phi","Muon",1,13)
-  compareResolution("resVsEta_phi","TTbar")
-  compareResolution("resVsEta_z0","TTbar")
+  for pdg in [1,2,13]:
+    compareResolution("resVsEta_phi","TTbar",0,pdg)
+    compareResolution("resVsEta_z0","TTbar",0,pdg)
+    compareResolution("resVsEta_ptRel","TTbar",0,pdg)
+    compareResolution("resVsEta_eta","TTbar",0,pdg)
+    compareResolution("resVsPt2_phi","TTbar",0,pdg)
+    compareResolution("resVsPt2_z0","TTbar",0,pdg)
+    compareResolution("resVsPt2_ptRel","TTbar",0,pdg)
+    compareResolution("resVsPt2_eta","TTbar",0,pdg)
 
-  compareResolution("resVsEta_phi","TTbar",0,13)
-  compareResolution("resVsEta_z0","TTbar",0,13)
+  samplePdg = {
+    'Muon' : 13,
+    'Electron' : 11,
+    'Pion' : 211
+  }
+  for sample, pdg in samplePdg.iteritems():
+    for ptRange in ['L','H']:
+      compareResolution("resVsEta_phi",sample,ptRange,pdg)
+      compareResolution("resVsEta_z0",sample,ptRange,pdg)
+      compareResolution("resVsEta_ptRel",sample,ptRange,pdg)
+      compareResolution("resVsEta_eta",sample,ptRange,pdg)
+
+      compareResolution("resVsPt2_phi",sample,ptRange,pdg)
+      compareResolution("resVsPt2_z0",sample,ptRange,pdg)
+      compareResolution("resVsPt2_ptRel",sample,ptRange,pdg)
+      compareResolution("resVsPt2_eta",sample,ptRange,pdg)
 
