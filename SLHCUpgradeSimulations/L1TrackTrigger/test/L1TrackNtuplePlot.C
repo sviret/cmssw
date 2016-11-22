@@ -1481,10 +1481,8 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     sprintf(pdgidtxt,"_pdgid%i",TP_select_pdgid);
     type = type+pdgidtxt;
   }
-
-  if (TP_select_injet == 1) type = type+"_injet";
-  //if (TP_select_injet == 2) type = type+"_inttjet";
-  if (TP_select_injet == 2) type = type+"_injet_highpt";
+  else if (TP_select_injet == 1) type = type+"_injet";
+  else if (TP_select_injet == 2) type = type+"_injet_highpt";
 
   
   TFile* fout = new TFile("output_"+type+".root","recreate");
