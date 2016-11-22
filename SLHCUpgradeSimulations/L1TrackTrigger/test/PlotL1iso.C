@@ -249,6 +249,11 @@ void PlotL1iso(TString name) {
 
   }
 
+  //
+  // Output file
+  // 
+  TFile* fout = new TFile("output_L1Iso_"+inputFile+"_"+fitter+".root","recreate");
+
   TGraph* g_eff = new TGraph(100,passIso_nonprompt,passIso_prompt);
   TH2F* h_dummy = new TH2F("dummy", "; efficiency (non-prompt #mu); efficiency (prompt #mu)",90,0.1,1.0,10,0.9,1.0);
   g_eff->SetMarkerStyle(8);
@@ -263,6 +268,11 @@ void PlotL1iso(TString name) {
   g_eff->Draw("same,ep");
   g_eff2->Draw("same,ep");
 
+  g_eff->SetName("ROC");
+  g_eff2->SetName("ROC_Special");
+  g_eff->Write();
+  g_eff2->Write();
+
   mySmallText(0.4,0.35,1,"Relative track isolation efficiency for");
   mySmallText(0.4,0.30,1,"different isolation cuts (reliso < 0.0-1.0)");
   mySmallText(0.4,0.25,2,"Cut values = 0.1, 0.15, 0.2");
@@ -270,6 +280,7 @@ void PlotL1iso(TString name) {
   cc.SaveAs("isoeff_promptVSnonprompt.png");
   cc.SaveAs("isoeff_promptVSnonprompt.eps");
 
+  fout->Close();
 
 
   // ----------------------------------------------------------------------------------------------------------------
