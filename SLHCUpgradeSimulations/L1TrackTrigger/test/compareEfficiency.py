@@ -3,7 +3,7 @@ import os
 import os.path
 
 # Use this for user specific label at the end of the filename
-userLabel = "_KF4ParamsComb"
+userLabel = ""
 
 # Labels for input files
 PUtypes = ["0","140","200"]
