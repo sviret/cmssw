@@ -149,7 +149,7 @@ def setupLegend(sample, histograms, PULabels):
   l.SetLineColor(0)
   l.SetTextSize(0.04)
   l.AddEntry(histograms['PU0_wt'], "With truncation", "p")
-  l.AddEntry(histograms['PU0_wt'], "Without truncation", "l")
+  l.AddEntry(histograms['PU0_wot'], "Without truncation", "l")
   l.AddEntry(None,"","")
 
   if histograms['PU0_wt'] != None or histograms['PU0_wot'] != None :
