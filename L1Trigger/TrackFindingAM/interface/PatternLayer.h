@@ -73,6 +73,10 @@ class PatternLayer{
      \return The value of the DC bit in position index
   **/
   char getDC(int index);
+
+  short binaryToGray(short num);
+  short grayToBinary(short gray);
+
   /**
      \brief Returns the int value of the bitset as a string of 5 characters
      \return A string (ie : "28653" or "00142")
@@ -91,12 +95,10 @@ class PatternLayer{
   /**
      \brief Retrieve the SuperStrip objects corresponding to the PatternLayer from the Detector structure
      \param l The layer of the PatternLayer (starting from 0)
-     \param ladd The ladders of this layer for the current sector
-     \param modules The modules in the current sector
      \param d The detector structure
      \return A list of SuperStrip*. If no DC bits are used we have only one value.
   **/
-  virtual vector<SuperStrip*> getSuperStrip(int l, const vector<int>& ladd, const map<int, vector<int> >& modules, Detector& d)=0;
+  virtual vector<SuperStrip*> getSuperStrip(int l, Detector& d)=0;
 #ifdef IPNL_USE_CUDA
   /**
      \brief Retrieve the SuperStrip objects corresponding to the PatternLayer from the Detector structure
@@ -135,10 +137,24 @@ class PatternLayer{
   int getDCBitsNumber();
 
   /**
+     \brief Get the number of DC bits with the don't care value on
+     \return The number of DC bits set to X for this PatternLayer
+  **/
+  int getUsedDCBitsNumber();
+
+  /**
      \brief Check if the PatternLayer is a fake one (used on layers not crossed by the track)
      \return True if the PatternLayer is a placeholder
   **/
   virtual bool isFake()=0;
+
+  /**
+     \brief Gives the number of bits used from a mask
+     \param mask The mask used
+  **/
+  static int getSizeFromMask(short mask);
+
+  vector<int> getHDSuperstrips();  
 
  private:
   /**
@@ -152,11 +168,12 @@ class PatternLayer{
    **/
   bitset<LAYER_BITS> bits;
   /**  
-      4 possible values for a DC bit:
+      5 possible values for a DC bit:
         - 0 : 0
         - 1 : 1
 	- 2 : X (Don't Care)
-	- 3 : UNUSED
+	- 3 : UNUSED VALUE
+	- 4 : Inactive (can not be activated)
   **/
   char dc_bits[DC_BITS];
 

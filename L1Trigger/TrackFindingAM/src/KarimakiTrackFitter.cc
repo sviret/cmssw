@@ -27,7 +27,7 @@ void KarimakiTrackFitter::fit(){
   }
 }
 
-void KarimakiTrackFitter::fit(vector<Hit*> hits){
+void KarimakiTrackFitter::fit(vector<Hit*> hits, int pattern_id){
   cout<<"fit(vector<Hit*>) not implemented"<<endl;
 }
 

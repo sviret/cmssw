@@ -49,7 +49,7 @@ class PrincipalTrackFitter:public TrackFitter{
   void mergePatterns();
   void mergeTracks();
   void fit();
-  void fit(vector<Hit*> hits);
+  void fit(vector<Hit*> hits, int pattern_id=-1);
   TrackFitter* clone();
 
   /**
@@ -80,6 +80,10 @@ class PrincipalTrackFitter:public TrackFitter{
      \brief Force the computing of the MDF parameters, even if we have only few tracks in the sub-sectors
   **/
   void forceMultiDimFitParamsComputing();
+  /**
+     \brief Remove the subsectors here the eigen vector is made of NaN values
+  **/
+  void removeNanSubsectors();
 
 };
 #endif
