@@ -35,10 +35,10 @@
             "title": "Baseline Metrics: single muon",
             "toptext": "Resolution vs pT 8-100 GeV",
             "plots": [
-                ["../OverlayPlots/Muon_resVsPt2_eta_H.pdf",     ""],
-                ["../OverlayPlots/Muon_resVsPt2_phi_H.pdf",     ""],
-                ["../OverlayPlots/Muon_resVsPt2_ptRel_H.pdf",   ""],
-                ["../OverlayPlots/Muon_resVsPt2_z0_H.pdf",      ""]
+                ["../OverlayPlots/Muon_resVsPt2_eta.pdf",     ""],
+                ["../OverlayPlots/Muon_resVsPt2_phi.pdf",     ""],
+                ["../OverlayPlots/Muon_resVsPt2_ptRel.pdf",   ""],
+                ["../OverlayPlots/Muon_resVsPt2_z0.pdf",      ""]
             ],
             "bottomtext": ""
         },
@@ -96,10 +96,10 @@
             "title": "Baseline Metrics: single pion",
             "toptext": "Resolution vs pT 8-100 GeV",
             "plots": [
-                ["../OverlayPlots/Pion_resVsPt2_eta_H.pdf",     ""],
-                ["../OverlayPlots/Pion_resVsPt2_phi_H.pdf",     ""],
-                ["../OverlayPlots/Pion_resVsPt2_ptRel_H.pdf",   ""],
-                ["../OverlayPlots/Pion_resVsPt2_z0_H.pdf",      ""]
+                ["../OverlayPlots/Pion_resVsPt2_eta.pdf",     ""],
+                ["../OverlayPlots/Pion_resVsPt2_phi.pdf",     ""],
+                ["../OverlayPlots/Pion_resVsPt2_ptRel.pdf",   ""],
+                ["../OverlayPlots/Pion_resVsPt2_z0.pdf",      ""]
             ],
             "bottomtext": ""
         },
@@ -157,10 +157,10 @@
             "title": "Baseline Metrics: single electron",
             "toptext": "Resolution vs pT 8-100 GeV",
             "plots": [
-                ["../OverlayPlots/Electron_resVsPt2_eta_H.pdf",     ""],
-                ["../OverlayPlots/Electron_resVsPt2_phi_H.pdf",     ""],
-                ["../OverlayPlots/Electron_resVsPt2_ptRel_H.pdf",   ""],
-                ["../OverlayPlots/Electron_resVsPt2_z0_H.pdf",      ""]
+                ["../OverlayPlots/Electron_resVsPt2_eta.pdf",     ""],
+                ["../OverlayPlots/Electron_resVsPt2_phi.pdf",     ""],
+                ["../OverlayPlots/Electron_resVsPt2_ptRel.pdf",   ""],
+                ["../OverlayPlots/Electron_resVsPt2_z0.pdf",      ""]
             ],
             "bottomtext": ""
         },
