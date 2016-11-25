@@ -216,16 +216,17 @@ def compareEfficiency(what, sample, ptRange=0, pdgid=0):
   l.Draw()
 
   # Save canvas
-  if not os.path.isdir('OverlayPlots'):
-    os.mkdir('OverlayPlots')
-  outputFileName = "OverlayPlots/{sample}_{what}.pdf".format( sample = sample, what=what )
+  outputDir = 'OverlayPlots{userLabel}'.format(userLabel=userLabel)
+  if not os.path.isdir(outputDir):
+    os.mkdir(outputDir)
+  outputFileName = "{outputDir}/{sample}_{what}.pdf".format( outputDir=outputDir, sample = sample, what=what )
   if sample == 'TTbar':
     if pdgid == 13:
-      outputFileName = "OverlayPlots/{sample}_muons_{what}.pdf".format( sample = sample, what=what )
+      outputFileName = "{outputDir}/{sample}_muons_{what}.pdf".format( outputDir=outputDir, sample = sample, what=what )
     elif pdgid == 1:
-      outputFileName = "OverlayPlots/{sample}_injet_{what}.pdf".format( sample = sample, what=what )
+      outputFileName = "{outputDir}/{sample}_injet_{what}.pdf".format( outputDir=outputDir, sample = sample, what=what )
     elif pdgid == 2:
-      outputFileName = "OverlayPlots/{sample}_injet_highpt_{what}.pdf".format( sample = sample, what=what )
+      outputFileName = "{outputDir}/{sample}_injet_highpt_{what}.pdf".format( outputDir=outputDir, sample = sample, what=what )
   canvas.Print(outputFileName);
 
 if __name__ == '__main__':
@@ -236,7 +237,8 @@ if __name__ == '__main__':
     compareEfficiency("eff_pt_H","TTbar",0,pdg)
     compareEfficiency("eff_eta_L","TTbar",0,pdg)
     compareEfficiency("eff_eta_H","TTbar",0,pdg)
-
+    compareEfficiency("eff_pt","TTbar",0,pdg)
+    compareEfficiency("eff_eta","TTbar",0,pdg)
 
   samplePdg = {
   'Muon' : 13,
