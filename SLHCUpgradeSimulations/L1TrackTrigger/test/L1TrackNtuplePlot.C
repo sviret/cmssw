@@ -1659,6 +1659,42 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   // resoultion vs pt
   // ----------------------------------------------------------------------------------------------------------
 
+  h2_resVsPt_pt_90->SetMinimum(0);
+  h2_resVsPt_pt_90->SetMarkerStyle(20);
+  h2_resVsPt_pt_90->Draw("p");
+  c.SaveAs(DIR+type+"_resVsPt_pt_90.eps");
+  c.SaveAs(DIR+type+"_resVsPt_pt_90.png");
+
+  h2_resVsPt_ptRel_90->SetMinimum(0);
+  h2_resVsPt_ptRel_90->SetMarkerStyle(20);
+  h2_resVsPt_ptRel_90->Draw("p");
+  c.SaveAs(DIR+type+"_resVsPt_ptRel_90.eps");
+  c.SaveAs(DIR+type+"_resVsPt_ptRel_90.png");
+
+  h2_resVsPt_z0_90->SetMinimum(0);
+  h2_resVsPt_z0_90->SetMarkerStyle(20);
+  h2_resVsPt_z0_90->Draw("p");
+  c.SaveAs(DIR+type+"_resVsPt_z0_90.eps");
+  c.SaveAs(DIR+type+"_resVsPt_z0_90.png");
+
+  h2_resVsPt_phi_90->SetMinimum(0);
+  h2_resVsPt_phi_90->SetMarkerStyle(20);
+  h2_resVsPt_phi_90->Draw("p");
+  c.SaveAs(DIR+type+"_resVsPt_phi_90.eps");
+  c.SaveAs(DIR+type+"_resVsPt_phi_90.png");
+
+  h2_resVsPt_eta_90->SetMinimum(0);
+  h2_resVsPt_eta_90->SetMarkerStyle(20);
+  h2_resVsPt_eta_90->Draw("p");
+  c.SaveAs(DIR+type+"_resVsPt_eta_90.eps");
+  c.SaveAs(DIR+type+"_resVsPt_eta_90.png");
+
+  h2_resVsPt_phi_90->SetMinimum(0);
+  h2_resVsPt_d0_90->SetMarkerStyle(20);
+  h2_resVsPt_d0_90->Draw("p");
+  c.SaveAs(DIR+type+"_resVsPt_d0_90.eps");
+  c.SaveAs(DIR+type+"_resVsPt_d0_90.png");
+
   if (doDetailedPlots) {
     h2_resVsPt_eta->Write();
 
@@ -1693,6 +1729,95 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   // ----------------------------------------------------------------------------------------------------------
   // resolution vs eta
   // ----------------------------------------------------------------------------------------------------------
+
+  h2_resVsEta_eta_90->SetMinimum(0);
+  h2_resVsEta_eta_90->SetMarkerStyle(20);
+  h2_resVsEta_eta_90->Draw("p");
+  c.SaveAs(DIR+type+"_resVsEta_eta_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_eta_90.png");
+
+  h2_resVsEta_eta_L_90->Draw();
+  sprintf(ctxt,"p_{T} < 8 GeV");
+  mySmallText(0.22,0.82,1,ctxt);
+  c.SaveAs(DIR+type+"_resVsEta_eta_L_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_eta_L_90.png");
+  
+  h2_resVsEta_eta_H_90->Draw();
+  sprintf(ctxt,"p_{T} > 8 GeV");
+  mySmallText(0.22,0.82,1,ctxt);
+  c.SaveAs(DIR+type+"_resVsEta_eta_H_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_eta_H_90.png");
+
+  h2_resVsEta_z0_90->SetMinimum(0);
+  h2_resVsEta_z0_90->SetMarkerStyle(20);
+  h2_resVsEta_z0_90->Draw("p");
+  c.SaveAs(DIR+type+"_resVsEta_z0_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_z0_90.png");
+
+  h2_resVsEta_z0_L_90->Draw();
+  sprintf(ctxt,"p_{T} < 8 GeV");
+  mySmallText(0.22,0.82,1,ctxt);
+  c.SaveAs(DIR+type+"_resVsEta_z0_L_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_z0_L_90.png");
+  
+  h2_resVsEta_z0_H_90->Draw();
+  sprintf(ctxt,"p_{T} > 8 GeV");
+  mySmallText(0.22,0.82,1,ctxt);
+  c.SaveAs(DIR+type+"_resVsEta_z0_H_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_z0_H_90.png");
+
+  h2_resVsEta_d0_90->Draw();
+  c.SaveAs(DIR+type+"_resVsEta_d0_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_d0_90.png");
+
+  h2_resVsEta_d0_L_90->Draw();
+  sprintf(ctxt,"p_{T} < 8 GeV");
+  mySmallText(0.22,0.82,1,ctxt);
+  c.SaveAs(DIR+type+"_resVsEta_d0_L_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_d0_L_90.png");
+
+  h2_resVsEta_d0_H_90->Draw();
+  sprintf(ctxt,"p_{T} > 8 GeV");
+  mySmallText(0.22,0.82,1,ctxt);
+  c.SaveAs(DIR+type+"_resVsEta_d0_H_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_d0_H_90.png");
+
+  h2_resVsEta_phi_90->SetMinimum(0);
+  h2_resVsEta_phi_90->SetMarkerStyle(20);
+  h2_resVsEta_phi_90->Draw("p");
+  c.SaveAs(DIR+type+"_resVsEta_phi_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_phi_90.png");
+
+  h2_resVsEta_phi_L_90->Draw();
+  sprintf(ctxt,"p_{T} < 8 GeV");
+  mySmallText(0.22,0.82,1,ctxt);
+  c.SaveAs(DIR+type+"_resVsEta_phi_L_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_phi_L_90.png");
+
+  h2_resVsEta_phi_H_90->Draw();
+  sprintf(ctxt,"p_{T} > 8 GeV");
+  mySmallText(0.22,0.82,1,ctxt);
+  c.SaveAs(DIR+type+"_resVsEta_phi_H_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_phi_H_90.png");
+
+
+  h2_resVsEta_ptRel_90->SetMinimum(0);
+  h2_resVsEta_ptRel_90->SetMarkerStyle(20);
+  h2_resVsEta_ptRel_90->Draw("p");
+  c.SaveAs(DIR+type+"_resVsEta_ptRel_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_ptRel_90.png");
+
+  h2_resVsEta_ptRel_L_90->Draw();
+  sprintf(ctxt,"p_{T} < 8 GeV");
+  mySmallText(0.22,0.82,1,ctxt);
+  c.SaveAs(DIR+type+"_resVsEta_ptRel_L_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_ptRel_L_90.png");
+
+  h2_resVsEta_ptRel_H_90->Draw();
+  sprintf(ctxt,"p_{T} > 8 GeV");
+  mySmallText(0.22,0.82,1,ctxt);
+  c.SaveAs(DIR+type+"_resVsEta_ptRel_H_90.eps");
+  c.SaveAs(DIR+type+"_resVsEta_ptRel_H_90.png");
 
   if (doDetailedPlots) {
     h2_resVsEta_eta->Write();
