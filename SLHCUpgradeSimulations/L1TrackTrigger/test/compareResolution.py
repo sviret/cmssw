@@ -158,7 +158,7 @@ def setupLegend(sample, histograms, PULabels):
   l.SetLineColor(0)
   l.SetTextSize(0.04)
   l.AddEntry(histograms['PU0_wt'], "With truncation", "p")
-  l.AddEntry(histograms['PU0_wt'], "Without truncation", "l")
+  l.AddEntry(histograms['PU0_wot'], "Without truncation", "l")
   l.AddEntry(None,"","")
 
   if histograms['PU0_wt'] != None or histograms['PU0_wot'] != None :
@@ -177,6 +177,11 @@ def setupLegend(sample, histograms, PULabels):
 
   return l
 
+def removeFirstBin( histograms ):
+  for name,h in histograms.iteritems():
+    if h != None:
+      h.GetXaxis().SetRangeUser(5,100)
+
 # ----------------------------------------------------------------------------------------------------------------
 # Main script
 def compareResolution(what, sample, ptRange=0, pdgid=0):
@@ -186,8 +191,15 @@ def compareResolution(what, sample, ptRange=0, pdgid=0):
   PULabels = ["<PU>=0", "<PU>=140", "<PU>=200"]
   ptRangeLabels = ["2 < P_{T} < 8 GeV","P_{T} > 8 GeV"]
 
+  if 'resVsPt2' in what and ptRange == 'L':
+    what += '_L'
+
   # Get histograms
   histograms68, histograms99 = getAllHistogramsFromFile( what, sample, ptRange, pdgid )
+
+  # Need to remove first (empty bin)
+  if 'resVsPt2' in what and ptRange == 'H':
+    removeFirstBin(histograms68)
 
   canvas = r.TCanvas()
 
@@ -240,7 +252,7 @@ def compareResolution(what, sample, ptRange=0, pdgid=0):
   # Save canvas
   if not os.path.isdir('OverlayPlots'):
     os.mkdir('OverlayPlots')
-  outputFileName = "OverlayPlots/{sample}_{what}_{ptRange}.pdf".format( sample = sample, what=what, ptRange=ptRange )
+  outputFileName = "OverlayPlots/{sample}_{what}.pdf".format( sample = sample, what=what )
   if sample == 'TTbar':
     if pdgid == 13:
       outputFileName = "OverlayPlots/{sample}_muons_{what}.pdf".format( sample = sample, what=what )
@@ -270,10 +282,10 @@ if __name__ == '__main__':
   }
   for sample, pdg in samplePdg.iteritems():
     for ptRange in ['L','H']:
-      compareResolution("resVsEta_phi",sample,ptRange,pdg)
-      compareResolution("resVsEta_z0",sample,ptRange,pdg)
-      compareResolution("resVsEta_ptRel",sample,ptRange,pdg)
-      compareResolution("resVsEta_eta",sample,ptRange,pdg)
+      compareResolution("resVsEta_phi_"+ptRange,sample,ptRange,pdg)
+      compareResolution("resVsEta_z0_"+ptRange,sample,ptRange,pdg)
+      compareResolution("resVsEta_ptRel_"+ptRange,sample,ptRange,pdg)
+      compareResolution("resVsEta_eta_"+ptRange,sample,ptRange,pdg)
 
       compareResolution("resVsPt2_phi",sample,ptRange,pdg)
       compareResolution("resVsPt2_z0",sample,ptRange,pdg)

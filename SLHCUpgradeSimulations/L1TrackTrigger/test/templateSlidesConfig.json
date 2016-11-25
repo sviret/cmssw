@@ -1,0 +1,298 @@
+{
+    "frontpage": {
+        "title": "Template Slides",
+        "subtitle": "TMT",
+        "author": "My collaboration"
+
+    },
+
+    "slides": [
+        {
+            "title": "Baseline Metrics: single muon",
+            "toptext": "Efficiency vs pT, eta : 2-8 GeV, 8-100 GeV",
+            "plots": [
+                ["../OverlayPlots/Muon_eff_pt_L.pdf",   "" ],
+                ["../OverlayPlots/Muon_eff_pt_H.pdf",   "" ],
+                ["../OverlayPlots/Muon_eff_eta_L.pdf",  "" ],
+                ["../OverlayPlots/Muon_eff_eta_H.pdf",  "" ]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Baseline Metrics: single muon",
+            "toptext": "Resolution vs pT 2-8 GeV",
+            "plots": [
+                ["../OverlayPlots/Muon_resVsPt2_eta_L.pdf",     ""],
+                ["../OverlayPlots/Muon_resVsPt2_phi_L.pdf",     ""],
+                ["../OverlayPlots/Muon_resVsPt2_ptRel_L.pdf",   ""],
+                ["../OverlayPlots/Muon_resVsPt2_z0_L.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Baseline Metrics: single muon",
+            "toptext": "Resolution vs pT 8-100 GeV",
+            "plots": [
+                ["../OverlayPlots/Muon_resVsPt2_eta.pdf",     ""],
+                ["../OverlayPlots/Muon_resVsPt2_phi.pdf",     ""],
+                ["../OverlayPlots/Muon_resVsPt2_ptRel.pdf",   ""],
+                ["../OverlayPlots/Muon_resVsPt2_z0.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+
+        {
+            "title": "Baseline Metrics: single muon",
+            "toptext": "Resolution vs eta, pT 2-8 GeV",
+            "plots": [
+                ["../OverlayPlots/Muon_resVsEta_eta_L.pdf",     ""],
+                ["../OverlayPlots/Muon_resVsEta_phi_L.pdf",     ""],
+                ["../OverlayPlots/Muon_resVsEta_ptRel_L.pdf",   ""],
+                ["../OverlayPlots/Muon_resVsEta_z0_L.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Baseline Metrics: single muon",
+            "toptext": "Resolution vs eta, pT 8-100 GeV",
+            "plots": [
+                ["../OverlayPlots/Muon_resVsEta_eta_H.pdf",     ""],
+                ["../OverlayPlots/Muon_resVsEta_phi_H.pdf",     ""],
+                ["../OverlayPlots/Muon_resVsEta_ptRel_H.pdf",   ""],
+                ["../OverlayPlots/Muon_resVsEta_z0_H.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Baseline Metrics: single pion",
+            "toptext": "Efficiency vs pT, eta : 2-8 GeV, 8-100 GeV",
+            "plots": [
+                ["../OverlayPlots/Pion_eff_pt_L.pdf",   "" ],
+                ["../OverlayPlots/Pion_eff_pt_H.pdf",   "" ],
+                ["../OverlayPlots/Pion_eff_eta_L.pdf",  "" ],
+                ["../OverlayPlots/Pion_eff_eta_H.pdf",  "" ]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Baseline Metrics: single pion",
+            "toptext": "Resolution vs pT 2-8 GeV",
+            "plots": [
+                ["../OverlayPlots/Pion_resVsPt2_eta_L.pdf",     ""],
+                ["../OverlayPlots/Pion_resVsPt2_phi_L.pdf",     ""],
+                ["../OverlayPlots/Pion_resVsPt2_ptRel_L.pdf",   ""],
+                ["../OverlayPlots/Pion_resVsPt2_z0_L.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Baseline Metrics: single pion",
+            "toptext": "Resolution vs pT 8-100 GeV",
+            "plots": [
+                ["../OverlayPlots/Pion_resVsPt2_eta.pdf",     ""],
+                ["../OverlayPlots/Pion_resVsPt2_phi.pdf",     ""],
+                ["../OverlayPlots/Pion_resVsPt2_ptRel.pdf",   ""],
+                ["../OverlayPlots/Pion_resVsPt2_z0.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+
+        {
+            "title": "Baseline Metrics: single pion",
+            "toptext": "Resolution vs eta, pT 2-8 GeV",
+            "plots": [
+                ["../OverlayPlots/Pion_resVsEta_eta_L.pdf",     ""],
+                ["../OverlayPlots/Pion_resVsEta_phi_L.pdf",     ""],
+                ["../OverlayPlots/Pion_resVsEta_ptRel_L.pdf",   ""],
+                ["../OverlayPlots/Pion_resVsEta_z0_L.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Baseline Metrics: single pion",
+            "toptext": "Resolution vs eta, pT 8-100 GeV",
+            "plots": [
+                ["../OverlayPlots/Pion_resVsEta_eta_H.pdf",     ""],
+                ["../OverlayPlots/Pion_resVsEta_phi_H.pdf",     ""],
+                ["../OverlayPlots/Pion_resVsEta_ptRel_H.pdf",   ""],
+                ["../OverlayPlots/Pion_resVsEta_z0_H.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Baseline Metrics: single electron",
+            "toptext": "Efficiency vs pT, eta : 2-8 GeV, 8-100 GeV",
+            "plots": [
+                ["../OverlayPlots/Electron_eff_pt_L.pdf",   "" ],
+                ["../OverlayPlots/Electron_eff_pt_H.pdf",   "" ],
+                ["../OverlayPlots/Electron_eff_eta_L.pdf",  "" ],
+                ["../OverlayPlots/Electron_eff_eta_H.pdf",  "" ]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Baseline Metrics: single electron",
+            "toptext": "Resolution vs pT 2-8 GeV",
+            "plots": [
+                ["../OverlayPlots/Electron_resVsPt2_eta_L.pdf",     ""],
+                ["../OverlayPlots/Electron_resVsPt2_phi_L.pdf",     ""],
+                ["../OverlayPlots/Electron_resVsPt2_ptRel_L.pdf",   ""],
+                ["../OverlayPlots/Electron_resVsPt2_z0_L.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Baseline Metrics: single electron",
+            "toptext": "Resolution vs pT 8-100 GeV",
+            "plots": [
+                ["../OverlayPlots/Electron_resVsPt2_eta.pdf",     ""],
+                ["../OverlayPlots/Electron_resVsPt2_phi.pdf",     ""],
+                ["../OverlayPlots/Electron_resVsPt2_ptRel.pdf",   ""],
+                ["../OverlayPlots/Electron_resVsPt2_z0.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+
+        {
+            "title": "Baseline Metrics: single electron",
+            "toptext": "Resolution vs eta, pT 2-8 GeV",
+            "plots": [
+                ["../OverlayPlots/Electron_resVsEta_eta_L.pdf",     ""],
+                ["../OverlayPlots/Electron_resVsEta_phi_L.pdf",     ""],
+                ["../OverlayPlots/Electron_resVsEta_ptRel_L.pdf",   ""],
+                ["../OverlayPlots/Electron_resVsEta_z0_L.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Baseline Metrics: single electron",
+            "toptext": "Resolution vs eta, pT 8-100 GeV",
+            "plots": [
+                ["../OverlayPlots/Electron_resVsEta_eta_H.pdf",     ""],
+                ["../OverlayPlots/Electron_resVsEta_phi_H.pdf",     ""],
+                ["../OverlayPlots/Electron_resVsEta_ptRel_H.pdf",   ""],
+                ["../OverlayPlots/Electron_resVsEta_z0_H.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+       {
+            "title": "Baseline Metrics: muon in ttbar",
+            "toptext": "Efficiency vs pT, eta : 2-8 GeV, 8-100 GeV",
+            "plots": [
+                ["../OverlayPlots/TTbar_muons_eff_pt_L.pdf",   "" ],
+                ["../OverlayPlots/TTbar_muons_eff_pt_H.pdf",   "" ],
+                ["../OverlayPlots/TTbar_muons_eff_eta_L.pdf",  "" ],
+                ["../OverlayPlots/TTbar_muons_eff_eta_H.pdf",  "" ]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Baseline Metrics: muon in ttbar",
+            "toptext": "Resolution vs pT 2-8 GeV",
+            "plots": [
+                ["../OverlayPlots/TTbar_muons_resVsPt2_eta.pdf",     ""],
+                ["../OverlayPlots/TTbar_muons_resVsPt2_phi.pdf",     ""],
+                ["../OverlayPlots/TTbar_muons_resVsPt2_ptRel.pdf",   ""],
+                ["../OverlayPlots/TTbar_muons_resVsPt2_z0.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Baseline Metrics: muon in ttbar",
+            "toptext": "Resolution vs eta, pT 8-100 GeV",
+            "plots": [
+                ["../OverlayPlots/TTbar_muons_resVsEta_eta.pdf",     ""],
+                ["../OverlayPlots/TTbar_muons_resVsEta_phi.pdf",     ""],
+                ["../OverlayPlots/TTbar_muons_resVsEta_ptRel.pdf",   ""],
+                ["../OverlayPlots/TTbar_muons_resVsEta_z0.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Track Isolation",
+            "toptext": "Prompt / non-prompt muons in ttbar + PU",
+            "plots": [
+                ["../OverlayPlots/Isolation.pdf",     ""]
+            ],
+            "bottomtext": ""
+        },
+
+       {
+            "title": "Tracking in Jets",
+            "toptext": "Efficiency for all tracks with pT > 3 GeV in ttbar jets",
+            "plots": [
+                ["../OverlayPlots/TTbar_injet_eff_pt.pdf",   "" ],
+                ["../OverlayPlots/TTbar_injet_highpt_eff_pt.pdf",   "" ],
+                ["../OverlayPlots/TTbar_injet_eff_eta.pdf",  "" ],
+                ["../OverlayPlots/TTbar_injet_highpt_eff_eta.pdf",  "" ]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Tracking in Jets",
+            "toptext": "Resolution of all tracks with pT above 3 GeV in ttbar jets with pT less than 30 GeV",
+            "plots": [
+                ["../OverlayPlots/TTbar_injet_resVsPt2_eta.pdf",     ""],
+                ["../OverlayPlots/TTbar_injet_resVsPt2_phi.pdf",     ""],
+                ["../OverlayPlots/TTbar_injet_resVsPt2_ptRel.pdf",   ""],
+                ["../OverlayPlots/TTbar_injet_resVsPt2_z0.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Tracking in Jets",
+            "toptext": "Resolution of all tracks with pT above 3 GeV in ttbar jets with pT less than 30 GeV",
+            "plots": [
+                ["../OverlayPlots/TTbar_injet_resVsEta_eta.pdf",     ""],
+                ["../OverlayPlots/TTbar_injet_resVsEta_phi.pdf",     ""],
+                ["../OverlayPlots/TTbar_injet_resVsEta_ptRel.pdf",   ""],
+                ["../OverlayPlots/TTbar_injet_resVsEta_z0.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Tracking in Jets",
+            "toptext": "Resolution of all tracks with pT above 3 GeV in ttbar jets with pT above 30 GeV",
+            "plots": [
+                ["../OverlayPlots/TTbar_injet_highpt_resVsPt2_eta.pdf",     ""],
+                ["../OverlayPlots/TTbar_injet_highpt_resVsPt2_phi.pdf",     ""],
+                ["../OverlayPlots/TTbar_injet_highpt_resVsPt2_ptRel.pdf",   ""],
+                ["../OverlayPlots/TTbar_injet_highpt_resVsPt2_z0.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Tracking in Jets",
+            "toptext": "Resolution of all tracks with pT above 3 GeV in ttbar jets with pT above 30 GeV",
+            "plots": [
+                ["../OverlayPlots/TTbar_injet_highpt_resVsEta_eta.pdf",     ""],
+                ["../OverlayPlots/TTbar_injet_highpt_resVsEta_phi.pdf",     ""],
+                ["../OverlayPlots/TTbar_injet_highpt_resVsEta_ptRel.pdf",   ""],
+                ["../OverlayPlots/TTbar_injet_highpt_resVsEta_z0.pdf",      ""]
+            ],
+            "bottomtext": ""
+        }
+    ]
+}
