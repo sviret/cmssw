@@ -3,7 +3,7 @@ import os
 import os.path
 
 # Use this for user specific label at the end of the filename
-userLabel = ""
+userLabel = "_KF4ParamsComb"
 
 # Labels for input files
 PUtypes = ["0","140","200"]
@@ -248,5 +248,6 @@ if __name__ == '__main__':
       compareEfficiency("eff_pt_"+ptRange,sample,ptRange,pdg)
       compareEfficiency("eff_eta_"+ptRange,sample,ptRange,pdg)
 
-
+  compareEfficiency("eff_z0_L",'MuonFLATBS','L',13)
+  compareEfficiency("eff_z0_H",'MuonFLATBS','H',13)
 

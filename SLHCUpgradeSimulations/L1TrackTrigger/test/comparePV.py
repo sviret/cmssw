@@ -216,7 +216,7 @@ def comparePV(what):
   # Save canvas
   if not os.path.isdir('OverlayPlots'):
     os.mkdir('OverlayPlots')
-  outputFileName = "OverlayPlots/{what}.pdf".format( what=what )
+  outputFileName = "OverlayPlots/PV_{what}.pdf".format( what=what )
   canvas.Print(outputFileName);
 
 if __name__ == '__main__':
