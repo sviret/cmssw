@@ -234,8 +234,10 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   tree->SetBranchAddress("tp_nstub",      &tp_nstub,      &b_tp_nstub);
   //tree->SetBranchAddress("tp_nstublayer", &tp_nstublayer, &b_tp_nstublayer);
   tree->SetBranchAddress("tp_eventid",    &tp_eventid,    &b_tp_eventid);
-  tree->SetBranchAddress("tp_injet",   &tp_injet,   &b_tp_injet);
-  tree->SetBranchAddress("tp_injet_highpt",   &tp_injet_highpt,   &b_tp_injet_highpt);
+  if (TP_select_injet > 0) {
+    tree->SetBranchAddress("tp_injet",   &tp_injet,   &b_tp_injet);
+    tree->SetBranchAddress("tp_injet_highpt",   &tp_injet_highpt,   &b_tp_injet_highpt);
+  }
 
   if (doLooseMatch) {
     tree->SetBranchAddress("loosematchtrk_pt",    &matchtrk_pt,    &b_matchtrk_pt);
@@ -245,8 +247,10 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     tree->SetBranchAddress("loosematchtrk_z0",    &matchtrk_z0,    &b_matchtrk_z0);
     tree->SetBranchAddress("loosematchtrk_chi2",  &matchtrk_chi2,  &b_matchtrk_chi2);
     tree->SetBranchAddress("loosematchtrk_nstub", &matchtrk_nstub, &b_matchtrk_nstub);
-    tree->SetBranchAddress("loosematchtrk_injet",   &matchtrk_injet,   &b_matchtrk_injet);
-    tree->SetBranchAddress("loosematchtrk_injet_highpt",   &matchtrk_injet_highpt,   &b_matchtrk_injet_highpt);
+    if (TP_select_injet > 0) {
+      tree->SetBranchAddress("loosematchtrk_injet",   &matchtrk_injet,   &b_matchtrk_injet);
+      tree->SetBranchAddress("loosematchtrk_injet_highpt",   &matchtrk_injet_highpt,   &b_matchtrk_injet_highpt);
+    }
   }
   else {
     tree->SetBranchAddress("matchtrk_pt",    &matchtrk_pt,    &b_matchtrk_pt);
@@ -256,8 +260,10 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     tree->SetBranchAddress("matchtrk_z0",    &matchtrk_z0,    &b_matchtrk_z0);
     tree->SetBranchAddress("matchtrk_chi2",  &matchtrk_chi2,  &b_matchtrk_chi2);
     tree->SetBranchAddress("matchtrk_nstub", &matchtrk_nstub, &b_matchtrk_nstub);
-    tree->SetBranchAddress("matchtrk_injet",   &matchtrk_injet,   &b_matchtrk_injet);
-    tree->SetBranchAddress("matchtrk_injet_highpt",   &matchtrk_injet_highpt,   &b_matchtrk_injet_highpt);
+    if (TP_select_injet > 0) {
+      tree->SetBranchAddress("matchtrk_injet",   &matchtrk_injet,   &b_matchtrk_injet);
+      tree->SetBranchAddress("matchtrk_injet_highpt",   &matchtrk_injet_highpt,   &b_matchtrk_injet_highpt);
+    }
   }
 
   tree->SetBranchAddress("trk_pt",   &trk_pt,   &b_trk_pt);
@@ -265,16 +271,20 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   tree->SetBranchAddress("trk_phi",  &trk_phi,  &b_trk_phi);
   tree->SetBranchAddress("trk_chi2", &trk_chi2, &b_trk_chi2);
   tree->SetBranchAddress("trk_nstub", &trk_nstub, &b_trk_nstub);
-  tree->SetBranchAddress("trk_injet",   &trk_injet,   &b_trk_injet);
-  tree->SetBranchAddress("trk_injet_highpt",   &trk_injet_highpt,   &b_trk_injet_highpt);
+  if (TP_select_injet > 0) {
+    tree->SetBranchAddress("trk_injet",   &trk_injet,   &b_trk_injet);
+    tree->SetBranchAddress("trk_injet_highpt",   &trk_injet_highpt,   &b_trk_injet_highpt);
+  }
 
-  tree->SetBranchAddress("jet_eta", &jet_eta, &b_jet_eta);
-  tree->SetBranchAddress("jet_pt",  &jet_pt,  &b_jet_pt);
-  tree->SetBranchAddress("jet_tp_sumpt",   &jet_tp_sumpt,   &b_jet_tp_sumpt);
-  tree->SetBranchAddress("jet_trk_sumpt",  &jet_trk_sumpt, &b_jet_trk_sumpt);
-  if (doLooseMatch) tree->SetBranchAddress("jet_loosematchtrk_sumpt",  &jet_matchtrk_sumpt, &b_jet_matchtrk_sumpt);
-  else tree->SetBranchAddress("jet_matchtrk_sumpt",  &jet_matchtrk_sumpt, &b_jet_matchtrk_sumpt);
-  
+  if (TP_select_injet > 0) {
+    tree->SetBranchAddress("jet_eta", &jet_eta, &b_jet_eta);
+    tree->SetBranchAddress("jet_pt",  &jet_pt,  &b_jet_pt);
+    tree->SetBranchAddress("jet_tp_sumpt",   &jet_tp_sumpt,   &b_jet_tp_sumpt);
+    tree->SetBranchAddress("jet_trk_sumpt",  &jet_trk_sumpt, &b_jet_trk_sumpt);
+    if (doLooseMatch) tree->SetBranchAddress("jet_loosematchtrk_sumpt",  &jet_matchtrk_sumpt, &b_jet_matchtrk_sumpt);
+    else tree->SetBranchAddress("jet_matchtrk_sumpt",  &jet_matchtrk_sumpt, &b_jet_matchtrk_sumpt);
+  }
+
 
   // ----------------------------------------------------------------------------------------------------------------
   // histograms
@@ -639,22 +649,24 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
 
     // ----------------------------------------------------------------------------------------------------------------
     // sumpt in jets
-    for (int ij=0; ij<(int)jet_tp_sumpt->size(); ij++) {
-
-      float fraction = 0;
-      float fractionMatch = 0;
-      if (jet_tp_sumpt->at(ij) > 0) {
-	fraction = jet_trk_sumpt->at(ij)/jet_tp_sumpt->at(ij);
-	fractionMatch = jet_matchtrk_sumpt->at(ij)/jet_tp_sumpt->at(ij);
+    if (TP_select_injet > 0) {
+      for (int ij=0; ij<(int)jet_tp_sumpt->size(); ij++) {
+	
+	float fraction = 0;
+	float fractionMatch = 0;
+	if (jet_tp_sumpt->at(ij) > 0) {
+	  fraction = jet_trk_sumpt->at(ij)/jet_tp_sumpt->at(ij);
+	  fractionMatch = jet_matchtrk_sumpt->at(ij)/jet_tp_sumpt->at(ij);
+	}
+	
+	h_jet_tp_sumpt_vspt->Fill(jet_tp_sumpt->at(ij),1.0);
+	h_jet_trk_sumpt_vspt->Fill(jet_tp_sumpt->at(ij),fraction);
+	h_jet_matchtrk_sumpt_vspt->Fill(jet_tp_sumpt->at(ij),fractionMatch);
+	
+	h_jet_tp_sumpt_vseta->Fill(jet_eta->at(ij),1.0);
+	h_jet_trk_sumpt_vseta->Fill(jet_eta->at(ij),fraction);
+	h_jet_matchtrk_sumpt_vseta->Fill(jet_eta->at(ij),fractionMatch);
       }
-
-      h_jet_tp_sumpt_vspt->Fill(jet_tp_sumpt->at(ij),1.0);
-      h_jet_trk_sumpt_vspt->Fill(jet_tp_sumpt->at(ij),fraction);
-      h_jet_matchtrk_sumpt_vspt->Fill(jet_tp_sumpt->at(ij),fractionMatch);
-
-      h_jet_tp_sumpt_vseta->Fill(jet_eta->at(ij),1.0);
-      h_jet_trk_sumpt_vseta->Fill(jet_eta->at(ij),fraction);
-      h_jet_matchtrk_sumpt_vseta->Fill(jet_eta->at(ij),fractionMatch);
     }
 
 
@@ -662,10 +674,11 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     // track loop for total rates
     for (int it=0; it<(int)trk_pt->size(); it++) {
            
-      // only look at tracks in (ttbar) jets
-      if (TP_select_injet == 1 && trk_injet->at(it) == 0) continue;       
-      if (TP_select_injet == 2 && trk_injet_highpt->at(it) == 0) continue;       
-      //if (TP_select_injet == 2 && trk_inttjet->at(it) == 0) continue;       
+      // only look at tracks in (ttbar) jets ?
+      if (TP_select_injet > 0) {
+	if (TP_select_injet == 1 && trk_injet->at(it) == 0) continue;       
+	if (TP_select_injet == 2 && trk_injet_highpt->at(it) == 0) continue;       
+      }
 
       if (trk_pt->at(it) > 3.0 && fabs(trk_eta->at(it))<2.5) {
 	ntrk_pt3++;
@@ -685,11 +698,11 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     // tracking particle loop
     for (int it=0; it<(int)tp_pt->size(); it++) {
 
-      // only look at TPs in (ttbar) jets
-      if (TP_select_injet == 1 && tp_injet->at(it) == 0) continue;       
-      if (TP_select_injet == 2 && tp_injet_highpt->at(it) == 0) continue;       
-      //if (TP_select_injet == 2 && tp_inttjet->at(it) == 0) continue;       
-
+      // only look at TPs in (ttbar) jets ?
+      if (TP_select_injet > 0) {
+	if (TP_select_injet == 1 && tp_injet->at(it) == 0) continue;       
+	if (TP_select_injet == 2 && tp_injet_highpt->at(it) == 0) continue;       
+      }
       
       // total track rates
       //if (tp_nstub->at(it) >= 4 && tp_nstublayer->at(it) >= 4 && fabs(tp_dxy->at(it)) < 1 && fabs(tp_eta->at(it)) < TP_maxEta) {
@@ -2412,45 +2425,48 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   // ---------------------------------------------------------------------------------------------------------
   // sum track/ TP pt in jets
 
-  TH1F* h_frac_sumpt_vspt = (TH1F*) h_jet_trk_sumpt_vspt->Clone();
-  h_frac_sumpt_vspt->SetName("frac_sumpt_vspt");
-  h_frac_sumpt_vspt->GetYaxis()->SetTitle("L1 sum(p_{T}) / TP sum(p_{T})");
-  h_frac_sumpt_vspt->Divide(h_jet_trk_sumpt_vspt, h_jet_tp_sumpt_vspt, 1.0, 1.0, "B");
-
-  TH1F* h_frac_sumpt_vseta = (TH1F*) h_jet_trk_sumpt_vseta->Clone();
-  h_frac_sumpt_vseta->SetName("frac_sumpt_vseta");
-  h_frac_sumpt_vseta->GetYaxis()->SetTitle("L1 sum(p_{T}) / TP sum(p_{T})");
-  h_frac_sumpt_vseta->Divide(h_jet_trk_sumpt_vseta, h_jet_tp_sumpt_vseta, 1.0, 1.0, "B");
-
-
-  TH1F* h_matchfrac_sumpt_vspt = (TH1F*) h_jet_matchtrk_sumpt_vspt->Clone();
-  h_matchfrac_sumpt_vspt->SetName("matchfrac_sumpt_vspt");
-  h_matchfrac_sumpt_vspt->GetYaxis()->SetTitle("Matched L1 sum(p_{T}) / TP sum(p_{T})");
-  h_matchfrac_sumpt_vspt->Divide(h_jet_matchtrk_sumpt_vspt, h_jet_tp_sumpt_vspt, 1.0, 1.0, "B");
-
-  TH1F* h_matchfrac_sumpt_vseta = (TH1F*) h_jet_matchtrk_sumpt_vseta->Clone();
-  h_matchfrac_sumpt_vseta->SetName("matchfrac_sumpt_vseta");
-  h_matchfrac_sumpt_vseta->GetYaxis()->SetTitle("Matched L1 sum(p_{T}) / TP sum(p_{T})");
-  h_matchfrac_sumpt_vseta->Divide(h_jet_matchtrk_sumpt_vseta, h_jet_tp_sumpt_vseta, 1.0, 1.0, "B");
-
-
-  h_frac_sumpt_vspt->Draw();
-  c.SaveAs(DIR+type+"_sumpt_vspt.png"); 
-  c.SaveAs(DIR+type+"_sumpt_vspt.eps"); 
-
-  h_frac_sumpt_vseta->Draw();
-  c.SaveAs(DIR+type+"_sumpt_vseta.png"); 
-  c.SaveAs(DIR+type+"_sumpt_vseta.eps"); 
-
-  h_matchfrac_sumpt_vspt->Draw();
-  c.SaveAs(DIR+type+"_sumpt_match_vspt.png"); 
-  c.SaveAs(DIR+type+"_sumpt_match_vspt.eps"); 
-
-  h_matchfrac_sumpt_vseta->Draw();
-  c.SaveAs(DIR+type+"_sumpt_match_vseta.png"); 
-  c.SaveAs(DIR+type+"_sumpt_match_vseta.eps"); 
+  if (TP_select_injet > 0) {
+    
+    TH1F* h_frac_sumpt_vspt = (TH1F*) h_jet_trk_sumpt_vspt->Clone();
+    h_frac_sumpt_vspt->SetName("frac_sumpt_vspt");
+    h_frac_sumpt_vspt->GetYaxis()->SetTitle("L1 sum(p_{T}) / TP sum(p_{T})");
+    h_frac_sumpt_vspt->Divide(h_jet_trk_sumpt_vspt, h_jet_tp_sumpt_vspt, 1.0, 1.0, "B");
+    
+    TH1F* h_frac_sumpt_vseta = (TH1F*) h_jet_trk_sumpt_vseta->Clone();
+    h_frac_sumpt_vseta->SetName("frac_sumpt_vseta");
+    h_frac_sumpt_vseta->GetYaxis()->SetTitle("L1 sum(p_{T}) / TP sum(p_{T})");
+    h_frac_sumpt_vseta->Divide(h_jet_trk_sumpt_vseta, h_jet_tp_sumpt_vseta, 1.0, 1.0, "B");
+    
+    
+    TH1F* h_matchfrac_sumpt_vspt = (TH1F*) h_jet_matchtrk_sumpt_vspt->Clone();
+    h_matchfrac_sumpt_vspt->SetName("matchfrac_sumpt_vspt");
+    h_matchfrac_sumpt_vspt->GetYaxis()->SetTitle("Matched L1 sum(p_{T}) / TP sum(p_{T})");
+    h_matchfrac_sumpt_vspt->Divide(h_jet_matchtrk_sumpt_vspt, h_jet_tp_sumpt_vspt, 1.0, 1.0, "B");
+    
+    TH1F* h_matchfrac_sumpt_vseta = (TH1F*) h_jet_matchtrk_sumpt_vseta->Clone();
+    h_matchfrac_sumpt_vseta->SetName("matchfrac_sumpt_vseta");
+    h_matchfrac_sumpt_vseta->GetYaxis()->SetTitle("Matched L1 sum(p_{T}) / TP sum(p_{T})");
+    h_matchfrac_sumpt_vseta->Divide(h_jet_matchtrk_sumpt_vseta, h_jet_tp_sumpt_vseta, 1.0, 1.0, "B");
 
     
+    h_frac_sumpt_vspt->Draw();
+    c.SaveAs(DIR+type+"_sumpt_vspt.png"); 
+    c.SaveAs(DIR+type+"_sumpt_vspt.eps"); 
+    
+    h_frac_sumpt_vseta->Draw();
+    c.SaveAs(DIR+type+"_sumpt_vseta.png"); 
+    c.SaveAs(DIR+type+"_sumpt_vseta.eps"); 
+    
+    h_matchfrac_sumpt_vspt->Draw();
+    c.SaveAs(DIR+type+"_sumpt_match_vspt.png"); 
+    c.SaveAs(DIR+type+"_sumpt_match_vspt.eps"); 
+    
+    h_matchfrac_sumpt_vseta->Draw();
+    c.SaveAs(DIR+type+"_sumpt_match_vseta.png"); 
+    c.SaveAs(DIR+type+"_sumpt_match_vseta.eps"); 
+  }
+   
+ 
   fout->Close();
 
   // ---------------------------------------------------------------------------------------------------------
