@@ -632,6 +632,15 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   h_jet_matchtrk_sumpt_vspt->Sumw2();
 
 
+
+  // ----------------------------------------------------------------------------------------------------------------
+  // number of tracks per event 
+
+  TH1F* h_ntrk_pt3  = new TH1F("ntrk_pt3", ";# tracks (p_{T} > 3 GeV) / event; Events", 300, 0, 300.0);
+  TH1F* h_ntrk_pt10 = new TH1F("ntrk_pt10", ";# tracks (p_{T} > 10 GeV) / event; Events", 100, 0, 100.0);
+
+
+
   // ----------------------------------------------------------------------------------------------------------------
   //        * * * * *     S T A R T   O F   A C T U A L   R U N N I N G   O N   E V E N T S     * * * * *
   // ----------------------------------------------------------------------------------------------------------------
@@ -672,6 +681,10 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
 
     // ----------------------------------------------------------------------------------------------------------------
     // track loop for total rates
+
+    int ntrkevt_pt3 = 0;
+    int ntrkevt_pt10 = 0;
+
     for (int it=0; it<(int)trk_pt->size(); it++) {
            
       // only look at tracks in (ttbar) jets ?
@@ -682,16 +695,21 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
 
       if (trk_pt->at(it) > 3.0 && fabs(trk_eta->at(it))<2.5) {
 	ntrk_pt3++;
+	ntrkevt_pt3++;
 	h_trk_vspt->Fill(trk_pt->at(it));
 	//if (trk_nstub->at(it) > 3) ntrk_4stub_pt3++;
 	//if (trk_nstub->at(it) > 3 && trk_chi2->at(it) < 100.) ntrk_4stubchi2_pt3++;
       }
       if (trk_pt->at(it) > 10.0 && fabs(trk_eta->at(it))<2.5) {
 	ntrk_pt10++;
+	ntrkevt_pt10++;
 	//if (trk_nstub->at(it) > 3) ntrk_4stub_pt10++;
 	//if (trk_nstub->at(it) > 3 && trk_chi2->at(it) < 100.) ntrk_4stubchi2_pt10++;
       }
     }
+
+    h_ntrk_pt3->Fill(ntrkevt_pt3);
+    h_ntrk_pt10->Fill(ntrkevt_pt10);
 
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -2466,8 +2484,23 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
     c.SaveAs(DIR+type+"_sumpt_match_vseta.eps"); 
   }
    
- 
+
+  // nbr tracks per event 
+
+  h_ntrk_pt3->Draw();
+  h_ntrk_pt3->Write();
+  c.SaveAs(DIR+type+"_trackrate_pt3_perevt.png");
+  c.SaveAs(DIR+type+"_trackrate_pt3_perevt.eps");
+
+  h_ntrk_pt10->Draw();
+  h_ntrk_pt10->Write();
+  c.SaveAs(DIR+type+"_trackrate_pt10_perevt.png");
+  c.SaveAs(DIR+type+"_trackrate_pt10_perevt.eps");
+
+
   fout->Close();
+
+
 
   // ---------------------------------------------------------------------------------------------------------
   //some printouts
