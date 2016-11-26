@@ -3,6 +3,7 @@ import os
 import os.path
 
 # Use this for user specific label at the end of the filename
+# userLabel = "_globalLinearRegression2"
 userLabel = ""
 
 # Labels for input files
@@ -91,8 +92,12 @@ def getAllHistogramsFromFile( what, sample, ptRange, pdgid ):
 
   # Make list of input trees
   inputFileNames = [];
-  # inputFileNameTemplate = "output_Hist_{sample}_{PU}{ptRange}{pdg}_{trunc}Truncation{userLabel}.root"
-  inputFileNameTemplate = "output_{sample}{ptRange}_PU{PU}_{trunc}Truncation_{pdg}{userLabel}.root"
+  inputFileNameTemplate = ""
+  if sample == 'TTbar':
+    inputFileNameTemplate = "output_{sample}_PU{PU}_{trunc}Truncation_{pdg}{userLabel}.root"
+  else :
+    inputFileNameTemplate = "output_{sample}{ptRange}_PU{PU}_{trunc}Truncation_{pdg}{userLabel}.root"
+
   inputFileNames.append( inputFileNameTemplate.format(sample = sample, PU = PUtypes[0], ptRange=ptRangeTypes[ptRange], pdg=pdgIdTypes[pdgid], trunc = 'With', userLabel=userLabel ) )
   inputFileNames.append( inputFileNameTemplate.format(sample = sample, PU = PUtypes[1], ptRange=ptRangeTypes[ptRange], pdg=pdgIdTypes[pdgid], trunc = 'With', userLabel=userLabel ) )
   inputFileNames.append( inputFileNameTemplate.format(sample = sample, PU = PUtypes[2], ptRange=ptRangeTypes[ptRange], pdg=pdgIdTypes[pdgid], trunc = 'With', userLabel=userLabel ) )
@@ -148,7 +153,7 @@ def drawHistogramWithOption(h,drawOption):
     drawOption +=', same'
   return drawOption
 
-def setupLegend(sample, histograms, PULabels):
+def setupLegend(sample, histograms68, histograms99, PULabels):
   legx = 0.25;
   legy = 0.3;
   r.gPad.cd()
@@ -157,25 +162,40 @@ def setupLegend(sample, histograms, PULabels):
   l.SetFillStyle(0)
   l.SetLineColor(0)
   l.SetTextSize(0.04)
-  l.AddEntry(histograms['PU0_wt'], "With truncation", "p")
-  l.AddEntry(histograms['PU0_wot'], "Without truncation", "l")
+  l.AddEntry(histograms68['PU0_wt'], "With truncation", "p")
+  l.AddEntry(histograms68['PU0_wot'], "Without truncation", "l")
   l.AddEntry(None,"","")
 
-  if histograms['PU0_wt'] != None or histograms['PU0_wot'] != None :
-    h = histograms['PU0_wt']
-    if h == None: h = histograms['PU0_wot']
+  if histograms68['PU0_wt'] != None or histograms68['PU0_wot'] != None :
+    h = histograms68['PU0_wt']
+    if h == None: h = histograms68['PU0_wot']
     l.AddEntry(h,PULabels[0],"lp")
-  if histograms['PU140_wt'] != None or histograms['PU140_wot'] != None :
-    h = histograms['PU140_wt']
-    if h == None: h = histograms['PU140_wot']
+  if histograms68['PU140_wt'] != None or histograms68['PU140_wot'] != None :
+    h = histograms68['PU140_wt']
+    if h == None: h = histograms68['PU140_wot']
     l.AddEntry(h,PULabels[1],"lp")
-  if histograms['PU200_wt'] != None or histograms['PU200_wot'] != None :
-    h = histograms['PU200_wt']
-    if h == None: h = histograms['PU200_wot']
+  if histograms68['PU200_wt'] != None or histograms68['PU200_wot'] != None :
+    h = histograms68['PU200_wt']
+    if h == None: h = histograms68['PU200_wot']
     l.AddEntry(h,PULabels[2],"lp")
   l.SetTextFont(42)
 
-  return l
+  l1 = r.TLegend(0.65,0.65,0.85,0.85)
+  l1.SetFillStyle(0)
+  l1.SetBorderSize(0)
+  l1.SetTextSize(0.04)
+  if ( histograms68['PU0_wt'] != None ):
+    l1.AddEntry(histograms99['PU0_wt'],"99%","p")
+    l1.AddEntry(histograms68['PU0_wt'],"68%","p")
+  elif ( histograms68['PU140_wt'] != None ):
+    l1.AddEntry(histograms99['PU140_wt'],"99%","p")
+    l1.AddEntry(histograms68['PU140_wt'],"68%","p")
+  elif ( histograms68['PU200_wt'] != None ):
+    l1.AddEntry(histograms99['PU200_wt'],"99%","p")
+    l1.AddEntry(histograms68['PU200_wt'],"68%","p")
+  l1.SetTextFont(42)
+
+  return l, l1
 
 def removeFirstBin( histograms ):
   for name,h in histograms.iteritems():
@@ -246,34 +266,49 @@ def compareResolution(what, sample, ptRange=0, pdgid=0):
     drawOption = drawHistogramWithOption (histograms99['PU200_wot'], drawOption )
 
   # Make the legend
-  l = setupLegend(sample,histograms68,PULabels)
+  l, l1 = setupLegend(sample,histograms68,histograms99,PULabels)
   l.Draw()
-
+  l1.Draw()
   # Save canvas
-  if not os.path.isdir('OverlayPlots'):
-    os.mkdir('OverlayPlots')
-  outputFileName = "OverlayPlots/{sample}_{what}.pdf".format( sample = sample, what=what )
+  outputDir = 'OverlayPlots{userLabel}'.format(userLabel=userLabel)
+  if not os.path.isdir(outputDir):
+    os.mkdir(outputDir)
+  outputFileName = "{outputDir}/{sample}_{what}.pdf".format( outputDir = outputDir, sample = sample, what=what )
   if sample == 'TTbar':
     if pdgid == 13:
-      outputFileName = "OverlayPlots/{sample}_muons_{what}.pdf".format( sample = sample, what=what )
+      outputFileName = "{outputDir}/{sample}_muons_{what}.pdf".format( outputDir = outputDir, sample = sample, what=what )
     elif pdgid == 1:
-      outputFileName = "OverlayPlots/{sample}_injet_{what}.pdf".format( sample = sample, what=what )
+      outputFileName = "{outputDir}/{sample}_injet_{what}.pdf".format( outputDir = outputDir, sample = sample, what=what )
     elif pdgid == 2:
-      outputFileName = "OverlayPlots/{sample}_injet_highpt_{what}.pdf".format( sample = sample, what=what )
+      outputFileName = "{outputDir}/{sample}_injet_highpt_{what}.pdf".format( outputDir = outputDir, sample = sample, what=what )
   canvas.Print(outputFileName);
 
 if __name__ == '__main__':
   r.gROOT.SetBatch()
 
   for pdg in [1,2,13]:
-    compareResolution("resVsEta_phi","TTbar",0,pdg)
-    compareResolution("resVsEta_z0","TTbar",0,pdg)
-    compareResolution("resVsEta_ptRel","TTbar",0,pdg)
-    compareResolution("resVsEta_eta","TTbar",0,pdg)
-    compareResolution("resVsPt2_phi","TTbar",0,pdg)
-    compareResolution("resVsPt2_z0","TTbar",0,pdg)
-    compareResolution("resVsPt2_ptRel","TTbar",0,pdg)
-    compareResolution("resVsPt2_eta","TTbar",0,pdg)
+
+
+    if pdg == 13:
+      for ptRange in ['L','H']:
+        compareResolution("resVsEta_phi_"+ptRange,"TTbar",ptRange,pdg)
+        compareResolution("resVsEta_z0_"+ptRange,"TTbar",ptRange,pdg)
+        compareResolution("resVsEta_ptRel_"+ptRange,"TTbar",ptRange,pdg)
+        compareResolution("resVsEta_eta_"+ptRange,"TTbar",ptRange,pdg)
+
+        compareResolution("resVsPt2_phi","TTbar",ptRange,pdg)
+        compareResolution("resVsPt2_z0","TTbar",ptRange,pdg)
+        compareResolution("resVsPt2_ptRel","TTbar",ptRange,pdg)
+        compareResolution("resVsPt2_eta","TTbar",ptRange,pdg)
+    else:
+      compareResolution("resVsEta_phi","TTbar",0,pdg)
+      compareResolution("resVsEta_z0","TTbar",0,pdg)
+      compareResolution("resVsEta_ptRel","TTbar",0,pdg)
+      compareResolution("resVsEta_eta","TTbar",0,pdg)
+      compareResolution("resVsPt2_phi","TTbar",0,pdg)
+      compareResolution("resVsPt2_z0","TTbar",0,pdg)
+      compareResolution("resVsPt2_ptRel","TTbar",0,pdg)
+      compareResolution("resVsPt2_eta","TTbar",0,pdg)
 
   samplePdg = {
     'Muon' : 13,

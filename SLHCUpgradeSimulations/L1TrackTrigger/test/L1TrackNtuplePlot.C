@@ -420,6 +420,14 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   TH1F* h_tp_vspt  = new TH1F("tp_vspt", ";TP p_{T} [GeV]; ",40,0,20);
 
 
+  TH1F* h_tp_z0    = new TH1F("tp_z0",   ";Tracking particle z_{0} [cm]; Tracking particles / 1.0 cm",    50, -25.0, 25.0);
+  TH1F* h_tp_z0_L    = new TH1F("tp_z0_L",   ";Tracking particle z_{0} [cm]; Tracking particles / 1.0 cm",    50, -25.0, 25.0);
+  TH1F* h_tp_z0_H    = new TH1F("tp_z0_H",   ";Tracking particle z_{0} [cm]; Tracking particles / 1.0 cm",    50, -25.0, 25.0);
+
+  TH1F* h_match_tp_z0    = new TH1F("match_tp_z0",   ";Tracking particle z_{0} [cm]; Tracking particles / 1.0 cm",    50, -25.0, 25.0);
+  TH1F* h_match_tp_z0_L    = new TH1F("match_tp_z0_L",   ";Tracking particle z_{0} [cm]; Tracking particles / 1.0 cm",    50, -25.0, 25.0);
+  TH1F* h_match_tp_z0_H    = new TH1F("match_tp_z0_H",   ";Tracking particle z_{0} [cm]; Tracking particles / 1.0 cm",    50, -25.0, 25.0);
+
 
   // ----------------------------------------------------------------------------------------------------------------
   //
@@ -428,11 +436,9 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   // ----------------------------------------------------------------------------------------------------------------
 
   TH1F* h_tp_phi   = new TH1F("tp_phi",  ";Tracking particle #phi [rad]; Tracking particles / 0.1",       64, -3.2,   3.2);
-  TH1F* h_tp_z0    = new TH1F("tp_z0",   ";Tracking particle z_{0} [cm]; Tracking particles / 1.0 cm",    50, -25.0, 25.0);
   TH1F* h_tp_d0    = new TH1F("tp_d0",   ";Tracking particle d_{0} [cm]; Tracking particles / 0.0004 cm",100, -0.02, 0.02);
 
   TH1F* h_match_tp_phi   = new TH1F("match_tp_phi",  ";Tracking particle #phi [rad]; Tracking particles / 0.1",       64, -3.2,   3.2);
-  TH1F* h_match_tp_z0    = new TH1F("match_tp_z0",   ";Tracking particle z_{0} [cm]; Tracking particles / 1.0 cm",    50, -25.0, 25.0);
   TH1F* h_match_tp_d0    = new TH1F("match_tp_d0",   ";Tracking particle d_{0} [cm]; Tracking particles / 0.0004 cm",100, -0.02,   0.02);
 
   TH1F* h_match_trk_nstub   = new TH1F("match_trk_nstub",   ";Number of stubs; L1 tracks / 1.0", 15, 0, 15);
@@ -724,8 +730,14 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
 	h_tp_z0->Fill(tp_z0->at(it));
 	h_tp_d0->Fill(tp_d0->at(it));
 	
-	if (tp_pt->at(it) < 8.0) h_tp_eta_L->Fill(tp_eta->at(it));
-	else h_tp_eta_H->Fill(tp_eta->at(it));
+	if (tp_pt->at(it) < 8.0) {
+    h_tp_eta_L->Fill(tp_eta->at(it));
+    h_tp_z0_L->Fill(tp_z0->at(it));
+  }
+	else {
+    h_tp_eta_H->Fill(tp_eta->at(it));
+    h_tp_z0_H->Fill(tp_z0->at(it));
+  }
 	
       }
       
@@ -824,8 +836,14 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
 	else if (fabs(tp_eta->at(it)) < 1.75) n_match_eta1p75++;
 	else n_match_eta2p5++;
 	
-	if (tp_pt->at(it) < 8.0) h_match_tp_eta_L->Fill(tp_eta->at(it));
-	else h_match_tp_eta_H->Fill(tp_eta->at(it));
+	if (tp_pt->at(it) < 8.0) {
+    h_match_tp_eta_L->Fill(tp_eta->at(it));
+    h_match_tp_z0_L->Fill(tp_z0->at(it));
+  }
+	else {
+    h_match_tp_z0_H->Fill(tp_z0->at(it));
+    h_match_tp_eta_H->Fill(tp_eta->at(it));
+  }
       }
       
       
@@ -1965,6 +1983,20 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   h_eff_z0->GetYaxis()->SetTitle("Efficiency");
   h_eff_z0->Divide(h_match_tp_z0, h_tp_z0, 1.0, 1.0, "B");
 
+  h_match_tp_z0_L->Sumw2();
+  h_tp_z0_L->Sumw2();
+  TH1F* h_eff_z0_L = (TH1F*) h_match_tp_z0_L->Clone();
+  h_eff_z0_L->SetName("eff_z0_L");
+  h_eff_z0_L->GetYaxis()->SetTitle("Efficiency");
+  h_eff_z0_L->Divide(h_match_tp_z0_L, h_tp_z0_L, 1.0, 1.0, "B");
+
+  h_match_tp_z0_H->Sumw2();
+  h_tp_z0_H->Sumw2();
+  TH1F* h_eff_z0_H = (TH1F*) h_match_tp_z0_H->Clone();
+  h_eff_z0_H->SetName("eff_z0_H");
+  h_eff_z0_H->GetYaxis()->SetTitle("Efficiency");
+  h_eff_z0_H->Divide(h_match_tp_z0_H, h_tp_z0_H, 1.0, 1.0, "B");
+
   h_match_tp_d0->Sumw2();
   h_tp_d0->Sumw2();
   TH1F* h_eff_d0 = (TH1F*) h_match_tp_d0->Clone();
@@ -1982,6 +2014,8 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   h_eff_eta_H ->SetAxisRange(0,1.1,"Y");
   h_eff_phi ->SetAxisRange(0,1.1,"Y");
   h_eff_z0  ->SetAxisRange(0,1.1,"Y");
+  h_eff_z0_L  ->SetAxisRange(0,1.1,"Y");
+  h_eff_z0_H  ->SetAxisRange(0,1.1,"Y");
   h_eff_d0  ->SetAxisRange(0,1.1,"Y");
 
   if (type.Contains("Electron") || type.Contains("Pion")) h_eff_pt->SetAxisRange(0,49,"X");
@@ -2040,6 +2074,13 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
   c.SaveAs(DIR+type+"_eff_eta_H.eps");
   c.SaveAs(DIR+type+"_eff_eta_H.png");
 
+  h_eff_z0->Draw();
+  h_eff_z0->Write();
+  c.SaveAs(DIR+type+"_eff_z0.eps");
+  c.SaveAs(DIR+type+"_eff_z0.png");
+
+  h_eff_z0_L->Write();
+  h_eff_z0_H->Write();
 
   if (doDetailedPlots) {
     h_eff_phi->Draw();
@@ -2052,11 +2093,6 @@ void L1TrackNtuplePlot(TString type, int TP_select_injet=0, int TP_select_pdgid=
       c.SaveAs(DIR+type+"_eff_phi_zoom.eps");
       c.SaveAs(DIR+type+"_eff_phi_zoom.png");
     }
-    
-    h_eff_z0->Draw();
-    h_eff_z0->Write();
-    c.SaveAs(DIR+type+"_eff_z0.eps");
-    c.SaveAs(DIR+type+"_eff_z0.png");
     
     h_eff_d0->Draw();
     h_eff_d0->Write();

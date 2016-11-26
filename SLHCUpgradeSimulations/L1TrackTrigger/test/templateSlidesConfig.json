@@ -204,7 +204,31 @@
 
         {
             "title": "Baseline Metrics: muon in ttbar",
-            "toptext": "Resolution vs pT 2-8 GeV",
+            "toptext": "Resolution vs pT, 2-8 GeV",
+            "plots": [
+                ["../OverlayPlots/TTbar_muons_resVsPt2_eta_L.pdf",     ""],
+                ["../OverlayPlots/TTbar_muons_resVsPt2_phi_L.pdf",     ""],
+                ["../OverlayPlots/TTbar_muons_resVsPt2_ptRel_L.pdf",   ""],
+                ["../OverlayPlots/TTbar_muons_resVsPt2_z0_L.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Baseline Metrics: muon in ttbar",
+            "toptext": "Resolution vs eta, 2-8 GeV",
+            "plots": [
+                ["../OverlayPlots/TTbar_muons_resVsEta_eta_L.pdf",     ""],
+                ["../OverlayPlots/TTbar_muons_resVsEta_phi_L.pdf",     ""],
+                ["../OverlayPlots/TTbar_muons_resVsEta_ptRel_L.pdf",   ""],
+                ["../OverlayPlots/TTbar_muons_resVsEta_z0_L.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Baseline Metrics: muon in ttbar",
+            "toptext": "Resolution vs pT, 8-100 GeV",
             "plots": [
                 ["../OverlayPlots/TTbar_muons_resVsPt2_eta.pdf",     ""],
                 ["../OverlayPlots/TTbar_muons_resVsPt2_phi.pdf",     ""],
@@ -216,12 +240,22 @@
 
         {
             "title": "Baseline Metrics: muon in ttbar",
-            "toptext": "Resolution vs eta, pT 8-100 GeV",
+            "toptext": "Resolution vs eta, 8-100 GeV",
             "plots": [
-                ["../OverlayPlots/TTbar_muons_resVsEta_eta.pdf",     ""],
-                ["../OverlayPlots/TTbar_muons_resVsEta_phi.pdf",     ""],
-                ["../OverlayPlots/TTbar_muons_resVsEta_ptRel.pdf",   ""],
-                ["../OverlayPlots/TTbar_muons_resVsEta_z0.pdf",      ""]
+                ["../OverlayPlots/TTbar_muons_resVsEta_eta_H.pdf",     ""],
+                ["../OverlayPlots/TTbar_muons_resVsEta_phi_H.pdf",     ""],
+                ["../OverlayPlots/TTbar_muons_resVsEta_ptRel_H.pdf",   ""],
+                ["../OverlayPlots/TTbar_muons_resVsEta_z0_H.pdf",      ""]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Wide BS",
+            "toptext": "Efficiency vs z0: pT 2-8 GeV, pT 8-100 GeV",
+            "plots": [
+                ["../OverlayPlots/MuonFLATBS_eff_z0_L.pdf",     ""],
+                ["../OverlayPlots/MuonFLATBS_eff_z0_H.pdf",     ""]
             ],
             "bottomtext": ""
         },
@@ -231,6 +265,16 @@
             "toptext": "Prompt / non-prompt muons in ttbar + PU",
             "plots": [
                 ["../OverlayPlots/Isolation.pdf",     ""]
+            ],
+            "bottomtext": ""
+        },
+
+        {
+            "title": "Vertex Finding",
+            "toptext": "Efficiency and resolution in ttbar + PU.  Cut at $\\Delta$(L1, PV) $<$ 1mm",
+            "plots": [
+                ["../OverlayPlots/PV_eff1.pdf",     ""],
+                ["../OverlayPlots/PV_zres_vsz.pdf",     ""]
             ],
             "bottomtext": ""
         },
@@ -249,7 +293,7 @@
 
         {
             "title": "Tracking in Jets",
-            "toptext": "Resolution of all tracks with pT above 3 GeV in ttbar jets with pT less than 30 GeV",
+            "toptext": "Resolution of all tracks with pT above 3 GeV in ttbar jets with pT above 30 GeV",
             "plots": [
                 ["../OverlayPlots/TTbar_injet_resVsPt2_eta.pdf",     ""],
                 ["../OverlayPlots/TTbar_injet_resVsPt2_phi.pdf",     ""],
@@ -261,7 +305,7 @@
 
         {
             "title": "Tracking in Jets",
-            "toptext": "Resolution of all tracks with pT above 3 GeV in ttbar jets with pT less than 30 GeV",
+            "toptext": "Resolution of all tracks with pT above 3 GeV in ttbar jets with pT above 30 GeV",
             "plots": [
                 ["../OverlayPlots/TTbar_injet_resVsEta_eta.pdf",     ""],
                 ["../OverlayPlots/TTbar_injet_resVsEta_phi.pdf",     ""],
@@ -273,7 +317,7 @@
 
         {
             "title": "Tracking in Jets",
-            "toptext": "Resolution of all tracks with pT above 3 GeV in ttbar jets with pT above 30 GeV",
+            "toptext": "Resolution of all tracks with pT above 3 GeV in ttbar jets with pT above 100 GeV",
             "plots": [
                 ["../OverlayPlots/TTbar_injet_highpt_resVsPt2_eta.pdf",     ""],
                 ["../OverlayPlots/TTbar_injet_highpt_resVsPt2_phi.pdf",     ""],
@@ -285,7 +329,7 @@
 
         {
             "title": "Tracking in Jets",
-            "toptext": "Resolution of all tracks with pT above 3 GeV in ttbar jets with pT above 30 GeV",
+            "toptext": "Resolution of all tracks with pT above 3 GeV in ttbar jets with pT above 100 GeV",
             "plots": [
                 ["../OverlayPlots/TTbar_injet_highpt_resVsEta_eta.pdf",     ""],
                 ["../OverlayPlots/TTbar_injet_highpt_resVsEta_phi.pdf",     ""],

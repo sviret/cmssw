@@ -120,6 +120,10 @@ void PlotL1PV(TString name) {
   // ----------------------------------------------------------------------------------------------------------------
 
 
+  //
+  // Output file
+  // 
+  TFile* fout = new TFile("output_L1PV_"+inputFile+"_"+fitter+".root","recreate");
 
   // ----------------------------------------------------------------------------------------------------------------
   // write/plot histograms
@@ -166,7 +170,8 @@ void PlotL1PV(TString name) {
   }
   h_zres_vsz->SetAxisRange(0,1,"Y");
   h_zres_vsz->Draw();
-
+  h_zres_vsz->Write();
+  
   cz.SaveAs("PV_res_vsz.png");
   cz.SaveAs("PV_res_vsz.eps");
 
@@ -187,10 +192,12 @@ void PlotL1PV(TString name) {
 
   TCanvas c;
   h_eff1->Draw("ep");
+  h_eff1->Write();
   h_eff5->SetMarkerStyle(24);
   h_eff5->SetMarkerColor(2);
   h_eff5->SetLineColor(2);
   h_eff5->Draw("ep,same");
+  h_eff5->Write();
 
   TLegend* l = new TLegend(0.2,0.2,0.5,0.4);
   l->SetFillColor(0);
@@ -203,6 +210,8 @@ void PlotL1PV(TString name) {
 
   c.SaveAs("PV_eff.png");
   c.SaveAs("PV_eff.eps");
+
+  fout->Close();
 
 }
 
