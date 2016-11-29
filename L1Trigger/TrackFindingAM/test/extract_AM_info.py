@@ -54,7 +54,9 @@ process.maxEvents = cms.untracked.PSet(
 
 # The file you want to extract
 process.source = cms.Source("PoolSource",
-                            fileNames = cms.untracked.vstring('file:AMFIT_output.root'),
+                            #fileNames = cms.untracked.vstring('file:AMfull_fake.root'),
+                            fileNames = cms.untracked.vstring('root://lyogrid06.in2p3.fr//dpm/in2p3.fr/home/cms/data/store/user/sviret/SLHC/PR/ReSynchro/PYTHIA6_Tauola_TTbar_TuneZ2star_14TeV_PU0_PDDS2_CB_FIT_DRx2_reopt/FA388D72-0693-E611-A088-002590D0B008_with_AMPR_and_FIT.root'),
+                            #fileNames = cms.untracked.vstring('file:EDM_SLHC_extr_PILEUP4T_140_8.root'),
                             duplicateCheckMode = cms.untracked.string( 'noDuplicateCheck' )
 )
 
@@ -67,21 +69,36 @@ process.MIBextraction.doMatch          = True
 process.MIBextraction.doMC             = True
 process.MIBextraction.doSTUB           = True
 
+
+process.MIBextraction.doMatch          = True
+process.MIBextraction.doMC             = True
+process.MIBextraction.doSTUB           = True
+process.MIBextraction.doL1TRK          = True
+
+process.MIBextraction.L1pattern_tag    = cms.InputTag( "MergePROutput", "AML1Patterns")
+process.MIBextraction.L1tc_tag         = cms.InputTag( "MergeTCOutput", "AML1TCs")
+process.MIBextraction.L1track_tag      = cms.InputTag( "MergeDRTCBOutput", "AMTCL1TracksDR")
+process.MIBextraction.CLUS_container   = cms.string( "TTStubsFromPixelDigis")
+process.MIBextraction.CLUS_name        = cms.string( "ClusterAccepted" )
+process.MIBextraction.extractedRootFile= cms.string('extr_tt0_reopt.root')
+
+
+
 # You can choose to extract the info from filtered stubs only
 #process.MIBextraction.STUB_container   = cms.string( "MergePROutput" )
 #process.MIBextraction.STUB_name        = cms.string( "StubInPattern" )
-process.MIBextraction.CLUS_container   = cms.string( "TTStubsFromPixelDigis")
-process.MIBextraction.CLUS_name        = cms.string( "ClusterAccepted" )
+#process.MIBextraction.CLUS_container   = cms.string( "TTStubsFromPixelDigis")
+#process.MIBextraction.CLUS_name        = cms.string( "ClusterAccepted" )
 
-process.MIBextraction.doL1TRK          = True
-process.MIBextraction.L1pattern_tag    = cms.InputTag( "MergePROutput", "AML1Patterns")
+#process.MIBextraction.doL1TRK          = True
+#process.MIBextraction.L1pattern_tag    = cms.InputTag( "MergePROutput", "AML1Patterns")
 
 # Choose the appropriate lines
 #process.MIBextraction.L1track_tag      = cms.InputTag( "", "") # No L1Tracks
 #process.MIBextraction.L1tc_tag         = cms.InputTag( "", "") # No TCs
-process.MIBextraction.L1track_tag      = cms.InputTag( "MergeFITOutput", "AML1Tracks") # Floating point tracks
+#process.MIBextraction.L1track_tag      = cms.InputTag( "MergeFITOutput", "AML1Tracks") # Floating point tracks
 #process.MIBextraction.L1track_tag      = cms.InputTag( "MergeFITOutputb", "AML1BinTracks") # Bit-wise tracks
-process.MIBextraction.L1tc_tag         = cms.InputTag( "MergeTCOutputb", "AML1BinTCs") # Bit-wise TCs
+#process.MIBextraction.L1tc_tag         = cms.InputTag( "MergeTCOutputb", "AML1BinTCs") # Bit-wise TCs
 #process.MIBextraction.L1tc_tag         = cms.InputTag( "MergeTCOutput", "AML1TCs") # Floating point TCs
 
 process.p = cms.Path(process.MIBextraction)

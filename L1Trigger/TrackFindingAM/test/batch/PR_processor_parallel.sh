@@ -311,3 +311,176 @@ if [ ${1} = "FIT" ]; then
     rm $INPUT
 
 fi
+
+
+#
+# Case 5: Fit total 
+#
+# When the ***_with_AMPR.root files have been processed
+#
+
+if [ ${1} = "FITFULL" ]; then
+
+    echo "Doing the fit"
+
+
+    #echo "$PACKDIR/PR_processor_parallel.sh  FITFULL $INDIR_XROOT/$l $OUTM -1 $OUTDIR_GRID $RELEASEDIR $GTAG $OUTDIRSTO $OUTB" >> run_FIT_${nsj}_${MATTER}.sh
+
+    INPUT=${2}                  # The input xrootd file name and address
+    OUTPUT=${3}"_and_FIT.root"  # Output file name 
+    NEVT=${4}                 # #evts/file
+    OUTDIR=${5}               # The first event to process in the input file
+    CMSSW_PROJECT_SRC=${6}    # The CMSSW project release dir
+    GT=${7}                   # The global tag
+
+    INTMP=$PWD/${8}          # 
+
+    INFILE=`basename $INPUT`
+    echo $INPUT,$INFILE
+
+    FNAME=${INFILE}                # A tag to enable parallel processing    
+
+    #
+    # Setting up environment variables
+    #   
+
+
+
+    cd $CMSSW_PROJECT_SRC
+    export SCRAM_ARCH=slc6_amd64_gcc472
+    eval `scramv1 runtime -sh`   
+
+    mkdir ${INTMP}
+    cd $INTMP
+    TOP=$PWD
+
+    mkdir ${INTMP}/RECOVERY
+
+    #
+    # And we tweak the python generation script according to our needs
+    #  
+
+    cd $TOP
+    cp $CMSSW_PROJECT_SRC/src/L1Trigger/TrackFindingAM/test/batch/base/AMTCFITDR_base.py BH_dummy_${FNAME}.py 
+    cp $CMSSW_PROJECT_SRC/src/L1Trigger/TrackFindingAM/data/modules_position.txt . 
+
+    xrdcp $INPUT .
+
+    # Finally the script is modified according to the requests
+    
+    sed "s/NEVTS/$NEVT/"                                   -i BH_dummy_${FNAME}.py
+#    sed "s#INPUTFILENAME#$INPUT#"                          -i BH_dummy_${FNAME}.py
+    sed "s#INPUTFILENAME#file:$INFILE#"                    -i BH_dummy_${FNAME}.py
+    sed "s#OUTPUTFILENAME#$OUTPUT#"                        -i BH_dummy_${FNAME}.py
+    sed "s#EXTRFILENAME#EXTR_$OUTPUT#"                     -i BH_dummy_${FNAME}.py
+    sed "s/MYGLOBALTAG/$GT/"                               -i BH_dummy_${FNAME}.py
+
+    cmsRun BH_dummy_${FNAME}.py 
+
+    #rm BH_dummy_${FNAME}.py 
+
+    # Recover the data
+    #  
+
+    echo ${OUTDIR}/$OUTPUT
+
+#    lcg-cp file://$INPUT            ${OUTDIR}/$INFILE
+    gfal-copy file://$TOP/$OUTPUT      ${OUTDIR}
+#    lcg-cp file://$TOP/EXTR_$OUTPUT ${OUTDIR}/$OUTPUTE
+
+#    deal=`lcg-ls ${OUTDIR}/$INFILE | wc -l`
+
+#    if [ $deal = "0" ]; then
+#	mv $INPUT ${INTMP}/RECOVERY/$INFILE
+#    fi
+
+    deal=`gfal-ls ${OUTDIR}/$OUTPUT | wc -l`
+
+    if [ $deal = "0" ]; then
+	mv $TOP/$OUTPUT ${INTMP}/RECOVERY/$OUTPUT
+    fi
+
+#    deal=`lcg-ls ${OUTDIR}/$OUTPUTE | wc -l`
+#
+#    if [ $deal = "0" ]; then
+#	mv $TOP/EXTR_$OUTPUT ${INTMP}/RECOVERY/$OUTPUTE
+#    fi
+
+    rm $OUTPUT
+#    rm EXTR_$OUTPUT
+#    rm $INFILE
+
+fi
+
+
+
+if [ ${1} = "EXTR" ]; then
+
+    echo "Doing the extraction"
+
+
+    #echo "$PACKDIR/PR_processor_parallel.sh  EXTR $INDIR_XROOT/$l $OUTE -1 $OUTDIR_GRID $RELEASEDIR $GTAG $OUTDIRSTO $OUTB" >> run_FIT_${nsj}_${MATTER}.sh
+
+    INPUT=${2}                # The input xrootd file name and address
+    OUTPUT=${3}               # Output file name 
+    NEVT=${4}                 # #evts/file
+    OUTDIR=${5}               # The first event to process in the input file
+    CMSSW_PROJECT_SRC=${6}    # The CMSSW project release dir
+    GT=${7}                   # The global tag
+    INTMP=$PWD/${8}           # 
+
+    INFILE=`basename $INPUT`
+    echo $INPUT,$INFILE
+    
+    FNAME=${INFILE}                # A tag to enable parallel processing    
+    #
+    # Setting up environment variables
+    #   
+
+
+
+    cd $CMSSW_PROJECT_SRC
+    export SCRAM_ARCH=slc6_amd64_gcc472
+    eval `scramv1 runtime -sh`   
+
+    mkdir ${INTMP}
+    cd $INTMP
+    TOP=$PWD
+
+    mkdir ${INTMP}/RECOVERY
+
+    #
+    # And we tweak the python generation script according to our needs
+    #  
+
+    cd $TOP
+    cp $CMSSW_PROJECT_SRC/src/L1Trigger/TrackFindingAM/test/batch/base/AMEXTR_base.py BH_dummy_${FNAME}.py 
+
+    xrdcp $INPUT .
+
+    # Finally the script is modified according to the requests
+    
+    sed "s#INPUTFILENAME#file:$INFILE#"                    -i BH_dummy_${FNAME}.py
+    sed "s#OUTPUTFILENAME#$OUTPUT#"                        -i BH_dummy_${FNAME}.py
+    sed "s/MYGLOBALTAG/$GT/"                               -i BH_dummy_${FNAME}.py
+
+    cmsRun BH_dummy_${FNAME}.py 
+    rm BH_dummy_${FNAME}.py 
+
+    # Recover the data
+    #  
+
+    echo ${OUTDIR}/$OUTPUT
+
+    gfal-copy file://$TOP/$OUTPUT      ${OUTDIR}
+
+    deal=`gfal-ls ${OUTDIR}/$OUTPUT | wc -l`
+
+    if [ $deal = "0" ]; then
+	mv $TOP/$OUTPUT ${INTMP}/RECOVERY/$OUTPUT
+    fi
+
+    rm $OUTPUT
+    rm $INFILE
+
+fi

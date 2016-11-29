@@ -15,9 +15,9 @@
 #
 # Author: S.Viret (viret@in2p3.fr)
 # Date        : 17/02/2014
-# Upd.        : 10/02/2016
+# Upd.        : 24/11/2016
 #
-# Script tested with release CMSSW_6_2_X_SLHC
+# Script tested with release CMSSW_6_2_0_SLHC28_patch1
 #
 #########################
 
@@ -45,13 +45,13 @@ process.maxEvents = cms.untracked.PSet(
 #
 # You can use as input file the result of the script SLHC_PGUN_off.py of part 2.2 of the tutorial
 #
-# Any other EDM file containing stubs and produced with CMSSW 620_SLHC13 and later should also work
+# Any other EDM file containing stubs and produced with CMSSW 620_SLHC28_p1 and later should also work
 # 
 # Below some examples are given
 #
 
 process.source = cms.Source("PoolSource",
-                            fileNames = cms.untracked.vstring('/store/group/upgrade/Tracker/L1Tracking/Synchro/Input/TTbar/CMSSW_6_2_0_SLHC26-PU_DES23_62_V1_LHCCRefPU200-v1/F24BAA21-8818-E511-9030-0025905A6134.root'), 
+                            fileNames = cms.untracked.vstring('root://xrootd.unl.edu//store/mc/TTI2023Upg14D/PYTHIA6_Tauola_TTbar_TuneZ2star_14TeV/GEN-SIM-DIGI-RAW/PU200_DES23_62_V1-v1/110000/08F5A858-4D9E-E611-8DFC-E41D2D08DDE0.root'), 
                             skipEvents=cms.untracked.uint32(0),
 			    duplicateCheckMode = cms.untracked.string( 'noDuplicateCheck' )
 )
@@ -61,7 +61,7 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:upgradePLS3', '')
 
 # Some pattern recognition options
-process.TTPatternsFromStub.inputBankFile = cms.string('/afs/cern.ch/work/s/sviret/public/PatternBanks/TP2014_extended/620_SLHC7_MUBANK_lowmidhig_sec30_varDC_1000000.pbk')
+process.TTPatternsFromStub.inputBankFile = cms.string('/afs/cern.ch/work/s/sviret/public/PatternBanks/Gaussian_extended_new/620_SLHC7_MUBANK_lowmidhig_sec25_varDC_524288.pbk')
 process.TTPatternsFromStub.threshold     = cms.int32(5)
 process.TTPatternsFromStub.nbMissingHits = cms.int32(1)
 process.TTPatternsFromStub.debugMode     = cms.int32(0)
@@ -89,7 +89,8 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
 
 # Keep the PR output
 process.RAWSIMoutput.outputCommands.append('keep  *_*_*_AMPR')
-process.RAWSIMoutput.outputCommands.append('drop *_TTPatternsFromStub_*_*')
+process.RAWSIMoutput.outputCommands.append('drop *_TT*From*_*_*')
+process.RAWSIMoutput.outputCommands.append('drop *_TriggerResults_*_*')
 process.RAWSIMoutput.outputCommands.append('keep  *_*_MergedTrackTruth_*')
 
 # Path and EndPath definitions

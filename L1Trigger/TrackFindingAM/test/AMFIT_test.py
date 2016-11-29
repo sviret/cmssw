@@ -1,19 +1,20 @@
 #########################
 #
 # Configuration file for L1 PCA fit
-# using a file with AMTC output 
+# using a file with AMTC/CB output 
 #
 # This script works on any official production sample
 # (assuming that this sample contains a container of TTStubs,
 # a container of TTClusters, and a container of TrackingParticles)
 #
-# And of course, a container of TCs.... (TTTracks) 
+# And of course, a container of TCs or CBs.... (TTTracks) 
 #
 #
 # Author: S.Viret (viret@in2p3.fr)
 # Date        : 04/03/2016
+# Upd.        : 25/11/2016
 #
-# Script tested with release CMSSW_6_2_0_SLHC27
+# Script tested with release CMSSW_6_2_0_SLHC28_patch1
 #
 #########################
 
@@ -34,18 +35,19 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('L1Trigger.TrackTrigger.TrackTrigger_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(5)
+    input = cms.untracked.int32(-1)
 )
 
 # Input source
 #
-# You can use as input file the result of the script AMTC_test.py of part 6.1.2 of the tutorial
+# You can use as input file the result of the script AMTC/CB_test.py of part 6.1.2 of the tutorial
 #
-# Any other EDM file containing TCs and produced with CMSSW 620_SLHC27 should also work
+# Any other EDM file containing TCs or CBs and produced with CMSSW 620_SLHC28_patch1 should also work
 #
 
 process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring('file:AMTC_output.root'),
+                            #fileNames = cms.untracked.vstring('file:AMCB_output.root'),
                             duplicateCheckMode = cms.untracked.string( 'noDuplicateCheck' )
 )
 
@@ -56,7 +58,10 @@ process.TTStubAssociatorFromPixelDigis.TTStubs        = cms.VInputTag( cms.Input
 process.TTStubAssociatorFromPixelDigis.TTClusterTruth = cms.VInputTag( cms.InputTag("TTClusterAssociatorFromPixelDigis","ClusterAccepted"))
 process.TTTrackAssociatorFromPixelDigis.TTTracks      = cms.VInputTag( cms.InputTag("MergeFITOutput", "AML1Tracks"))
 
-process.TTTracksTAMUFromTC.ConstantsDir               = cms.FileInPath("L1Trigger/TrackFindingAM/data/PreEstimate_Transverse/matrixVD_2016.txt")
+process.TTTracksTAMUFromTC.ConstantsDir    = cms.FileInPath("L1Trigger/TrackFindingAM/data/PreEstimate_Transverse/matrixVD_2016.txt")
+#process.TTTracksTAMUFromACB.ConstantsDir  = cms.FileInPath("L1Trigger/TrackFindingAM/data/PreEstimate_Transverse/matrixVD_2016.txt")
+#process.TTTracksTAMUFromSCB.ConstantsDir  = cms.FileInPath("L1Trigger/TrackFindingAM/data/PreEstimate_Transverse/matrixVD_2016.txt")
+
 
 # Additional output definition
 from Configuration.AlCa.GlobalTag import GlobalTag
@@ -79,10 +84,12 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
 # Keep the PR output
 process.RAWSIMoutput.outputCommands.append('keep  *_*_*_AMPR')
 process.RAWSIMoutput.outputCommands.append('keep  *_*_*_AMTC')
+process.RAWSIMoutput.outputCommands.append('keep  *_*_*_AMCB')
 
 # Keep the FIT output
 process.RAWSIMoutput.outputCommands.append('keep  *_*_*_AMFIT')
-process.RAWSIMoutput.outputCommands.append('drop *_TTTracks*FromTC_*_*')
+process.RAWSIMoutput.outputCommands.append('drop *_TT*From*_*_*')
+process.RAWSIMoutput.outputCommands.append('drop *_TriggerResults_*_*')
 process.RAWSIMoutput.outputCommands.append('keep  *_*_MergedTrackTruth_*')
 
 # Path and EndPath definitions

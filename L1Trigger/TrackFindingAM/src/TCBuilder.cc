@@ -14,7 +14,9 @@ TCBuilder::TCBuilder(int nb):TrackFitter(nb)
 {
   l2gConverter=NULL;
   m_nMissingHits = 1;                 //Maximum number of missing layers in a TC (from the number of layers in the pattern)
+  maxseeds=-1; // By default all seeds are used.
   updateThresholds();
+  rsize=6;
 }
 
 TCBuilder::~TCBuilder()
@@ -27,6 +29,15 @@ void TCBuilder::initialize(){
 
 void TCBuilder::setLocalToGlobalConverter(LocalToGlobalConverter* l){
   l2gConverter = l;
+}
+
+void TCBuilder::setMaxSeeds(int nmax){
+  maxseeds = nmax;
+}
+
+void TCBuilder::setSize(int rs){
+  rsize = rs;
+  if (rsize>6) rsize=6;
 }
 
 void TCBuilder::setHardwareEmulation(bool hardwareEmulation)
@@ -609,6 +620,8 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 
   int tow = sector_id; // The tower ID, necessary to get the phi shift
 
+  int nseeds=0;
+
   SEC_TYPE currentSec;
 
   //Get the sec_type from the sector_id
@@ -641,9 +654,18 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
       /**************** FROM LOCAL TO GLOBAL COORDINATES ****************/
       vector<float> coords;
       if(l2gConverter!=NULL){
+
+
 	coords = l2gConverter->toGlobal(pOrigHit);
 	rotatedX = coords[0];
 	rotatedY = coords[1];
+
+	//cout << endl;
+	//	cout << pOrigHit->getX() << " / " << pOrigHit->getY() << " / " << pOrigHit->getZ() << endl;
+	//cout << int(pOrigHit->getLayer()) << " / " << int(pOrigHit->getLadder()) << " / " << int(pOrigHit->getModule()) << " / " << int(pOrigHit->getSegment()) << " / " << pOrigHit->getStripNumber() << endl;
+	//cout << pOrigHit->getX()*ci-pOrigHit->getY()*si << " / " << rotatedX << " / " << pOrigHit->getX()*ci-pOrigHit->getY()*si - rotatedX << endl;
+	//cout << pOrigHit->getX()*si+pOrigHit->getY()*ci << " / " << rotatedY << " / " << pOrigHit->getX()*si+pOrigHit->getY()*ci - rotatedY << endl;
+	//cout << pOrigHit->getZ() << " / " << coords[2] << " / " << pOrigHit->getZ() - coords[2]  << endl;
       }
       else{
 	// If we do not have a converter, use the coordinates from CMSSW
@@ -697,6 +719,11 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 	}
     }
 
+  if (rsize>0)
+  {
+    nLayersCurrentPattern=rsize;
+  }
+
 
   vector <Hit*> vecCurrentCandidateHits;
   vector <double> vecCurrentCandidateScore;
@@ -725,6 +752,8 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 	  if (nLaySeed1 == nLaySeed2) continue; //The seed layers have to be differents
 	  if (nLaySeed2 > 4) break;             //no more possible combinations for the current seed1
 
+	  ++nseeds;
+	  if (nseeds>maxseeds && maxseeds>0) break;
 
 	  //We have a correct Seed1/Seed2 combination !!!
 
@@ -814,7 +843,8 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 
   //All the Seeds combinations have been tested
 
-  if ( (currentSec == SEC_HYBRID && vecBestCandidateHits.size() >= 4) || vecBestCandidateHits.size() >= 5 )
+  //  if ( (currentSec == SEC_HYBRID && vecBestCandidateHits.size() >= 4) || vecBestCandidateHits.size() >= 5 )
+  if ( (currentSec == SEC_BARREL && vecBestCandidateHits.size() >= 5) || vecBestCandidateHits.size() >= 4 )
     {
       //If there is a recorded best candidate
 

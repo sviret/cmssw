@@ -42,6 +42,8 @@ class TCBuilder:public TrackFitter{
   double m_tabEndcapThresholds[4][5][16][2];  //Endcap LayMaxSeed1 = 3, LayMaxSeed2 = 4, LayMaxTestStub = 15
 
   int m_nMissingHits;
+  int maxseeds;
+  int rsize;
   LocalToGlobalConverter* l2gConverter;
 
   /**
@@ -73,7 +75,9 @@ class TCBuilder:public TrackFitter{
   Track* createFittedTrack(vector <Hit*>&);
 
   void setLocalToGlobalConverter(LocalToGlobalConverter* l);
- 
+  void setMaxSeeds(int nmax);
+  void setSize(int rs);
+
   /**
      \brief Configure the way the computing is done
      \param hardwareEmulation If true the computing will be done using the hardware precision. If false, float computing is used.

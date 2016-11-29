@@ -264,7 +264,8 @@ void PatternFinder::find(int start, int& stop){
 
   //TAMU PCA
   string dataDir = "./tamu_data/";
-  LinearizedTrackFitter linearizedTrackFitter(dataDir.c_str(), true, true);
+  shared_ptr<LinearizedTrackFitter> linearizedTrackFitter = make_shared<LinearizedTrackFitter>(dataDir.c_str(), true, 3, true, 14);
+  //LinearizedTrackFitter linearizedTrackFitter(dataDir.c_str(), true, true);
 
   while(num_evt<n_entries_TT && num_evt<=stop){
     TT->GetEntry(num_evt);
@@ -469,8 +470,8 @@ void PatternFinder::find(int start, int& stop){
 	  bits=bit_values[0]-4;
 	}
 	if(bits!=-1){
-	  double normChi2 = linearizedTrackFitter.fit(tc_for_fit, bits);
-	  const std::vector<double> pars = linearizedTrackFitter.estimatedPars();
+	  double normChi2 = linearizedTrackFitter->fit(tc_for_fit, bits);
+	  const std::vector<double> pars = linearizedTrackFitter->estimatedPars();
 	  float pt=1.0/fabs(pars[0]);
 	  float pz=pt*pars[2];
 	  float phi=pars[1]+sec_phi;
