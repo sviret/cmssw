@@ -123,7 +123,7 @@ void PlotL1PV(TString name) {
   //
   // Output file
   // 
-  TFile* fout = new TFile("output_L1PV_"+inputFile+"_"+fitter+".root","recreate");
+  TFile* fout = new TFile("output_L1PV_"+name+".root","recreate");
 
   // ----------------------------------------------------------------------------------------------------------------
   // write/plot histograms
