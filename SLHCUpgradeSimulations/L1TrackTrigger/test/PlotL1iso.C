@@ -252,7 +252,7 @@ void PlotL1iso(TString name) {
   //
   // Output file
   // 
-  TFile* fout = new TFile("output_L1Iso_"+inputFile+"_"+fitter+".root","recreate");
+  TFile* fout = new TFile("output_L1Iso_"+name+".root","recreate");
 
   TGraph* g_eff = new TGraph(100,passIso_nonprompt,passIso_prompt);
   TH2F* h_dummy = new TH2F("dummy", "; efficiency (non-prompt #mu); efficiency (prompt #mu)",90,0.1,1.0,10,0.9,1.0);
