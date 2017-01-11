@@ -35,7 +35,7 @@ class Pattern{
      \param p The pattern to copy
   **/
   Pattern(const Pattern& p);
-  ~Pattern();
+  virtual ~Pattern();
   /**
      \brief Set one of the PatternLayer
      \param layer The layer of the new PatternLayer (will be copied)
@@ -92,7 +92,7 @@ class Pattern{
   /**
      \brief Created a unique key for this pattern
   **/
-  string getKey();
+  string getKey() const;
   /**
      \brief Copy constructor
      \return The number of layers for this Pattern
@@ -134,6 +134,16 @@ class Pattern{
      \return The value
   **/
   int getOrderInChip() const;
+
+  int getGrade() const;
+  /**
+     \brief Get the average Pt of the tracks having generated the pattern (if used)
+     \return The average Pt
+  **/
+  virtual float getAveragePt() const = 0;
+  virtual float getMinPt() const = 0;
+  virtual float getMaxPt() const = 0;
+  virtual int getCharge() const = 0;
 
   /**
      \brief Allows to display a Pattern as a string

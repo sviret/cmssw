@@ -61,7 +61,7 @@ CMSSWLocalToGlobalConverter::CMSSWLocalToGlobalConverter(int sectorID, string ge
 	  val.str(items[10]);
 	  val >> coef_value;
 	  module_pos[layer][ladder][module][2]=coef_value;
-	  
+
 	  //Process the starting phi of the tower
 	  double sec_phi = (sectorID%8) * M_PI / 4.0 - 0.4;
 	  
@@ -74,7 +74,7 @@ CMSSWLocalToGlobalConverter::CMSSWLocalToGlobalConverter(int sectorID, string ge
 	  double rotatedY = module_pos[layer][ladder][module][0] * si + module_pos[layer][ladder][module][1] * ci;
 	  module_pos[layer][ladder][module][0] = rotatedX;
 	  module_pos[layer][ladder][module][1] = rotatedY;
-	  
+
 	  //Computes the angle between X axis and the module center
 	  float PhiMod = atan2(module_pos[layer][ladder][module][1],module_pos[layer][ladder][module][0]);//atan2(y,x)
 	  float fModuleWidth,fModuleHeight,nModuleStrips,nModuleSegments;
@@ -82,8 +82,6 @@ CMSSWLocalToGlobalConverter::CMSSWLocalToGlobalConverter(int sectorID, string ge
 	    //PS
 	    fModuleWidth 	= 4.48144;
 	    fModuleHeight 	= 9.59;
-	    //fModuleWidth 	= 4.626;
-	    //fModuleHeight 	= 9.60;
 	    nModuleStrips	= 959.0;
 	    nModuleSegments	= 31.0;
 	  }
@@ -91,8 +89,6 @@ CMSSWLocalToGlobalConverter::CMSSWLocalToGlobalConverter(int sectorID, string ge
 	    //2S
 	    fModuleWidth 	= 5.025;
 	    fModuleHeight 	= 9.135;
-	    //fModuleWidth 	= 5.025;
-	    //fModuleHeight 	= 9.144;
 	    nModuleStrips	= 1015.0;
 	    nModuleSegments	= 1.0;
 	  }
@@ -108,8 +104,14 @@ CMSSWLocalToGlobalConverter::CMSSWLocalToGlobalConverter(int sectorID, string ge
 	    module_pos[layer][ladder][module][8]=-fSegmentPitch;
 	  }
 	  else{
-	    module_pos[layer][ladder][module][3]=fStripPitch * sin(PhiMod);
-	    module_pos[layer][ladder][module][4]=-fStripPitch * cos(PhiMod);
+	    if(tracker_side){
+	      module_pos[layer][ladder][module][3]=fStripPitch * sin(PhiMod);
+	      module_pos[layer][ladder][module][4]=-fStripPitch * cos(PhiMod);
+	    }
+	    else{
+	      module_pos[layer][ladder][module][3]=-fStripPitch * sin(PhiMod);
+	      module_pos[layer][ladder][module][4]=fStripPitch * cos(PhiMod);
+	    }
 	    module_pos[layer][ladder][module][5]=0.0;
 	    module_pos[layer][ladder][module][6]=-fSegmentPitch * cos(PhiMod);
 	    module_pos[layer][ladder][module][7]=-fSegmentPitch * sin(PhiMod);
@@ -166,8 +168,6 @@ vector<float> CMSSWLocalToGlobalConverter::toGlobal(int layer, int ladder, int m
   float Y;
   float Z;
   
-  bool isBarrel = layer<11;
-
   if(isPS){
     relatStrip = strip-(959.0/2.0);
     relatSeg   = segment-(31.0/2.0);
@@ -181,28 +181,17 @@ vector<float> CMSSWLocalToGlobalConverter::toGlobal(int layer, int ladder, int m
   vector<float> positions = module_pos.at(layer).at(ladder).at(module);
 
 
-
   X = positions[0];
   Y = positions[1];
   Z = positions[2];
 
-
-
-  if(!tracker_side && !isBarrel){
-    X -= CommonTools::binning(relatStrip*positions[3], 6, 18, SIGNED);
-    Y -= CommonTools::binning(relatStrip*positions[4], 6, 18, SIGNED);
-  }
-  else {
-    X += CommonTools::binning(relatStrip*positions[3], 6, 18, SIGNED);
-    Y += CommonTools::binning(relatStrip*positions[4], 6, 18, SIGNED);
-  }
+  X += CommonTools::binning(relatStrip*positions[3], 6, 18, SIGNED);
+  Y += CommonTools::binning(relatStrip*positions[4], 6, 18, SIGNED);
   Z += CommonTools::binning(relatStrip*positions[5], 8, 18, SIGNED);
 
   X += CommonTools::binning(relatSeg*positions[6], 6, 18, SIGNED);
   Y += CommonTools::binning(relatSeg*positions[7], 6, 18, SIGNED);
   Z += CommonTools::binning(relatSeg*positions[8], 8, 18, SIGNED);
-
-  //  cout << "After " << X << " / " << Y << " / " << Z << endl; 
 
   res.push_back(CommonTools::binning(X, 6, 18, SIGNED));
   res.push_back(CommonTools::binning(Y, 6, 18, SIGNED));

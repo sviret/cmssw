@@ -9,6 +9,7 @@
 #include <memory>
 #include "SectorTree.h"
 #include "PRBF2LocalToGlobalConverter.h"
+#include "CMSSWLocalToGlobalConverter.h"
 #include "LinearizedTrackFitter.h"
 
 #ifdef IPNL_USE_CUDA

@@ -111,18 +111,21 @@ TChain* PatternGenerator::createTChain(string directoryName, string tchainName){
   }
 
   p_m_stub_modid = &m_stub_modid; 
+  p_m_stub_pdg = &m_stub_pdg; 
   p_m_stub_strip = &m_stub_strip;
   p_m_stub_ptGEN = &m_stub_ptGEN;  
   p_m_stub_etaGEN = &m_stub_etaGEN;  
   
   TT->SetBranchAddress("STUB_n",         &m_stub);
   TT->SetBranchAddress("STUB_modid",     &p_m_stub_modid);
+  TT->SetBranchAddress("STUB_pdg",     &p_m_stub_pdg);
   TT->SetBranchAddress("STUB_strip",     &p_m_stub_strip);
   TT->SetBranchAddress("STUB_ptGEN",     &p_m_stub_ptGEN);
   TT->SetBranchAddress("STUB_etaGEN",    &p_m_stub_etaGEN);
   TT->SetBranchStatus("*",0);
   TT->SetBranchStatus("STUB_n",1);
   TT->SetBranchStatus("STUB_modid",1);
+  TT->SetBranchStatus("STUB_pdg",1);
   TT->SetBranchStatus("STUB_strip",1); 
   TT->SetBranchStatus("STUB_ptGEN",1); 
   TT->SetBranchStatus("STUB_etaGEN",1);
@@ -171,6 +174,7 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     }
 
     float current_eta = -10;
+    float current_pdg = 0;
 
     //check the layers of the stubs
     for(int j=0;j<m_stub;j++){
@@ -220,6 +224,7 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
       }
 
       current_eta = m_stub_etaGEN[j];
+      current_pdg = m_stub_pdg[j];
 
     }
 
@@ -296,11 +301,11 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
 
     float last_pt = 0;
     int ladder_ori = -1;
-    Pattern* p = new Pattern(tracker_layers.size());
+    Pattern* p = new GradedPattern(tracker_layers.size());
     Pattern* lowDef_p=NULL;
     
     if(getVariableResolutionState()){ // we use variable resolution patterns so we create 2 patterns with different resolution
-      lowDef_p = new Pattern(tracker_layers.size());
+      lowDef_p = new GradedPattern(tracker_layers.size());
     }
     for(unsigned int j=0;j<tracker_layers.size();j++){
       int stub_number = layers[j];
@@ -379,10 +384,10 @@ int PatternGenerator::generate(TChain* TT, int* evtIndex, int evtNumber, int* nb
     
     if(coverageEstimation==NULL){
       if(getVariableResolutionState()){
-	sector->getPatternTree()->addPattern(lowDef_p,p, last_pt);
+	sector->getPatternTree()->addPattern(lowDef_p,p, last_pt, current_pdg);
       }
       else{
-	sector->getPatternTree()->addPattern(p,NULL, last_pt);
+	sector->getPatternTree()->addPattern(p,NULL, last_pt, current_pdg);
       }
     }
     else{

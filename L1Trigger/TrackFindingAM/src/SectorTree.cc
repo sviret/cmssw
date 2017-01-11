@@ -148,7 +148,7 @@ vector<Sector*> SectorTree::getActivePatternsPerSector(int active_threshold, uns
     sort(active_patterns.begin(),active_patterns.end(),comparePatternOrder);//order the roads by their chip's address
     for(unsigned int j=0;j<active_patterns.size();j++){
       if(j<max_nb_roads)
-	copy->getPatternTree()->addPattern(active_patterns[j], NULL, active_patterns[j]->getAveragePt());
+	copy->getPatternTree()->addPattern(active_patterns[j], NULL, active_patterns[j]->getAveragePt(), active_patterns[j]->getCharge());
       delete active_patterns[j];
     }
     list.push_back(copy);
@@ -164,7 +164,7 @@ vector<Sector*> SectorTree::getActivePatternsPerSectorUsingMissingHit(int max_nb
     sort(active_patterns.begin(),active_patterns.end(),comparePatternOrder);//order the roads by their chip's address
     for(unsigned int j=0;j<active_patterns.size();j++){
       if(j<max_nb_roads)
-	copy->getPatternTree()->addPattern(active_patterns[j], NULL, active_patterns[j]->getAveragePt());
+	copy->getPatternTree()->addPattern(active_patterns[j], NULL, active_patterns[j]->getAveragePt(), active_patterns[j]->getCharge());
       delete active_patterns[j];
     }
     list.push_back(copy);

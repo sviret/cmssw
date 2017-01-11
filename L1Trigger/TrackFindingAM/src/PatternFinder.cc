@@ -34,7 +34,7 @@ PatternFinder::PatternFinder(int at, SectorTree* st, string f, string of){
 
   tracker.setSectorMaps(sector_list[0]->getLadderCodeMap(),sector_list[0]->getModuleCodeMap());
 
-  converter = new PRBF2LocalToGlobalConverter(sector_list[0],"./modules_position.txt");
+  converter = NULL;
 
   //Link the patterns with the tracker representation
   cout<<"linking..."<<endl;
@@ -264,8 +264,11 @@ void PatternFinder::find(int start, int& stop){
 
   //TAMU PCA
   string dataDir = "./tamu_data/";
-  shared_ptr<LinearizedTrackFitter> linearizedTrackFitter = make_shared<LinearizedTrackFitter>(dataDir.c_str(), true, 3, true, 14);
-  //LinearizedTrackFitter linearizedTrackFitter(dataDir.c_str(), true, true);
+  LinearizedTrackFitter linearizedTrackFitter(dataDir.c_str(), true, 1, true, 1);
+
+  //Initialization of local to global converter
+  if(converter==NULL)
+    converter = new PRBF2LocalToGlobalConverter(sectors->getAllSectors()[0],"./modules_position.txt");
 
   while(num_evt<n_entries_TT && num_evt<=stop){
     TT->GetEntry(num_evt);
@@ -470,8 +473,8 @@ void PatternFinder::find(int start, int& stop){
 	  bits=bit_values[0]-4;
 	}
 	if(bits!=-1){
-	  double normChi2 = linearizedTrackFitter->fit(tc_for_fit, bits);
-	  const std::vector<double> pars = linearizedTrackFitter->estimatedPars();
+	  double normChi2 = linearizedTrackFitter.fit(tc_for_fit, bits);
+	  const std::vector<double> pars = linearizedTrackFitter.estimatedPars();
 	  float pt=1.0/fabs(pars[0]);
 	  float pz=pt*pars[2];
 	  float phi=pars[1]+sec_phi;
