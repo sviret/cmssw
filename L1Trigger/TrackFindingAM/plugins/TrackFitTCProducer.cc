@@ -335,12 +335,12 @@ void TrackFitTCProducer::produce( edm::Event& iEvent, const edm::EventSetup& iSe
       TCB->setSectorID(tempTrackPtr->getSector());
       TCB->setLocalToGlobalConverter(NULL);
       TCB->setMaxSeeds(m_seed_in_tc);
-      TCB->setSize(roadsize);
+      TCB->setPatternSize(roadsize);
       TCB->fit(m_hits);
       TCBb->setSectorID(tempTrackPtr->getSector());
       TCBb->setLocalToGlobalConverter(l2g_it->second);
       TCBb->setMaxSeeds(m_seed_in_tc);
-      TCBb->setSize(roadsize);
+      TCBb->setPatternSize(roadsize);
       TCBb->fit(m_hits);
 
       tracks = TCB->getTracks();

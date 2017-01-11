@@ -124,7 +124,7 @@ bool Pattern::isActiveUsingMissingHit(int nb_allowed_missing_hit, int active_thr
     return false;
 }
 
-string Pattern::getKey(){
+string Pattern::getKey() const{
   string key="";
   for(int i=0;i<nb_layer;i++){
     key.append(layer_strips[i]->getCode());

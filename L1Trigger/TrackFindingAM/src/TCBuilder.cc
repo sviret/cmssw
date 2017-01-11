@@ -13,10 +13,10 @@ TCBuilder::TCBuilder():TrackFitter(0){
 TCBuilder::TCBuilder(int nb):TrackFitter(nb)
 {
   l2gConverter=NULL;
-  m_nMissingHits = 1;                 //Maximum number of missing layers in a TC (from the number of layers in the pattern)
+  m_nMissingHits = 1;
+  m_minimum_number_for_TC = 0;                 //Minimum number of layers with stub to a create a TC (defined per pattern)
   maxseeds=-1; // By default all seeds are used.
   updateThresholds();
-  rsize=6;
 }
 
 TCBuilder::~TCBuilder()
@@ -35,9 +35,9 @@ void TCBuilder::setMaxSeeds(int nmax){
   maxseeds = nmax;
 }
 
-void TCBuilder::setSize(int rs){
-  rsize = rs;
-  if (rsize>6) rsize=6;
+void TCBuilder::setPatternSize(int rs){
+  if(rs>0)
+    m_minimum_number_for_TC = rs-m_nMissingHits;
 }
 
 void TCBuilder::setHardwareEmulation(bool hardwareEmulation)
@@ -654,18 +654,9 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
       /**************** FROM LOCAL TO GLOBAL COORDINATES ****************/
       vector<float> coords;
       if(l2gConverter!=NULL){
-
-
 	coords = l2gConverter->toGlobal(pOrigHit);
 	rotatedX = coords[0];
 	rotatedY = coords[1];
-
-	//cout << endl;
-	//	cout << pOrigHit->getX() << " / " << pOrigHit->getY() << " / " << pOrigHit->getZ() << endl;
-	//cout << int(pOrigHit->getLayer()) << " / " << int(pOrigHit->getLadder()) << " / " << int(pOrigHit->getModule()) << " / " << int(pOrigHit->getSegment()) << " / " << pOrigHit->getStripNumber() << endl;
-	//cout << pOrigHit->getX()*ci-pOrigHit->getY()*si << " / " << rotatedX << " / " << pOrigHit->getX()*ci-pOrigHit->getY()*si - rotatedX << endl;
-	//cout << pOrigHit->getX()*si+pOrigHit->getY()*ci << " / " << rotatedY << " / " << pOrigHit->getX()*si+pOrigHit->getY()*ci - rotatedY << endl;
-	//cout << pOrigHit->getZ() << " / " << coords[2] << " / " << pOrigHit->getZ() - coords[2]  << endl;
       }
       else{
 	// If we do not have a converter, use the coordinates from CMSSW
@@ -707,22 +698,15 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
   sort(hits.begin(), hits.end(), [ ]( const Hit& lhs, const Hit& rhs ) { return lhs.getLayer() < rhs.getLayer(); });
 
 
-  int nLayersCurrentPattern = 0;
   int lastAddedLayer = -1;
   //Count the number of layers present in the pattern
   for (unsigned int hitIndex=0; hitIndex < hits.size(); hitIndex++)
     {
       if (lastAddedLayer != hits[hitIndex].getLayer())
 	{
-	  nLayersCurrentPattern++;
 	  lastAddedLayer = hits[hitIndex].getLayer();
 	}
     }
-
-  if (rsize>0)
-  {
-    nLayersCurrentPattern=rsize;
-  }
 
 
   vector <Hit*> vecCurrentCandidateHits;
@@ -810,16 +794,9 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 		}
 	    }
 
-	  //If the current candidate own more than 6 stubs, the lasts (outtermost) are removed
-	  while (vecCurrentCandidateHits.size() > 6)
-	    {
-	      vecCurrentCandidateHits.pop_back();
-	      vecCurrentCandidateScore.pop_back();
-	    }
-
 	  //All the stubs have been tested for the current Seeds combination
 
-	  if (int(vecCurrentCandidateHits.size()) >= nLayersCurrentPattern - m_nMissingHits)
+	  if (vecCurrentCandidateHits.size() >= m_minimum_number_for_TC)
 	    {
 	      //The current candidate has enough stubs to be a candidate
  
@@ -843,10 +820,14 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 
   //All the Seeds combinations have been tested
 
-  //  if ( (currentSec == SEC_HYBRID && vecBestCandidateHits.size() >= 4) || vecBestCandidateHits.size() >= 5 )
-  if ( (currentSec == SEC_BARREL && vecBestCandidateHits.size() >= 5) || vecBestCandidateHits.size() >= 4 )
+  if ( vecBestCandidateHits.size() >= m_minimum_number_for_TC )
     {
       //If there is a recorded best candidate
+
+      //If the candidate owns more than 6 stubs, the outtermost ones are removed
+      while (vecBestCandidateHits.size() > 6){
+	vecBestCandidateHits.pop_back();
+      }
 
       // If we have a 6 stubs TC with a stub on the last endcap disk -> we remove it
       // The 5 stubs TC will be easier to handle for the PCA
@@ -869,6 +850,7 @@ void TCBuilder::fit(vector<Hit*> originalHits, int pattern_id)
 void TCBuilder::fit(){
   for(unsigned int i=0;i<patterns.size();i++){
     vector<Hit*> allHits = patterns[i]->getHits();
+    setPatternSize(patterns[i]->getNbLayers()-patterns[i]->getNbFakeSuperstrips());
     fit(allHits, patterns[i]->getOrderInChip());
   }
 }

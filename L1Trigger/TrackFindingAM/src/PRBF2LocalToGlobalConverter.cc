@@ -132,8 +132,14 @@ PRBF2LocalToGlobalConverter::PRBF2LocalToGlobalConverter(const Sector* sectorDef
 	    module_pos[prbf2_layer][local_ladder][local_module][8]=-fSegmentPitch;
 	  }
 	  else{
-	    module_pos[prbf2_layer][local_ladder][local_module][3]=fStripPitch * sin(PhiMod);
-	    module_pos[prbf2_layer][local_ladder][local_module][4]=-fStripPitch * cos(PhiMod);
+	    if(tracker_side){
+	      module_pos[prbf2_layer][local_ladder][local_module][3]=fStripPitch * sin(PhiMod);
+	      module_pos[prbf2_layer][local_ladder][local_module][4]=-fStripPitch * cos(PhiMod);
+	    }
+	    else{
+	      module_pos[prbf2_layer][local_ladder][local_module][3]=-fStripPitch * sin(PhiMod);
+	      module_pos[prbf2_layer][local_ladder][local_module][4]=fStripPitch * cos(PhiMod);
+	    }
 	    module_pos[prbf2_layer][local_ladder][local_module][5]=0.0;
 	    module_pos[prbf2_layer][local_ladder][local_module][6]=-fSegmentPitch * cos(PhiMod);
 	    module_pos[prbf2_layer][local_ladder][local_module][7]=-fSegmentPitch * sin(PhiMod);
@@ -209,8 +215,6 @@ vector<float> PRBF2LocalToGlobalConverter::toGlobal(int layer, int ladder, int m
   float Y;
   float Z;
   
-  bool isBarrel = ((layer&0x7)<3);
-
   if(isPS){
     relatStrip = strip-(959.0/2.0);
     relatSeg   = segment-(31.0/2.0);
@@ -228,14 +232,8 @@ vector<float> PRBF2LocalToGlobalConverter::toGlobal(int layer, int ladder, int m
   Y = positions[1];
   Z = positions[2];
 
-  if(!tracker_side && !isBarrel){
-    X -= CommonTools::binning(relatStrip*positions[3], 6, 18, SIGNED);
-    Y -= CommonTools::binning(relatStrip*positions[4], 6, 18, SIGNED);
-  }
-  else {
-    X += CommonTools::binning(relatStrip*positions[3], 6, 18, SIGNED);
-    Y += CommonTools::binning(relatStrip*positions[4], 6, 18, SIGNED);
-  }
+  X += CommonTools::binning(relatStrip*positions[3], 6, 18, SIGNED);
+  Y += CommonTools::binning(relatStrip*positions[4], 6, 18, SIGNED);
   Z += CommonTools::binning(relatStrip*positions[5], 8, 18, SIGNED);
 
   X += CommonTools::binning(relatSeg*positions[6], 6, 18, SIGNED);
