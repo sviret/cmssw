@@ -42,8 +42,8 @@ class TCBuilder:public TrackFitter{
   double m_tabEndcapThresholds[4][5][16][2];  //Endcap LayMaxSeed1 = 3, LayMaxSeed2 = 4, LayMaxTestStub = 15
 
   int m_nMissingHits;
+  unsigned int m_minimum_number_for_TC;
   int maxseeds;
-  int rsize;
   LocalToGlobalConverter* l2gConverter;
 
   /**
@@ -75,9 +75,18 @@ class TCBuilder:public TrackFitter{
   Track* createFittedTrack(vector <Hit*>&);
 
   void setLocalToGlobalConverter(LocalToGlobalConverter* l);
+  /**
+     \brief Set the maximum number of seeds that can be treated by the TC Builder (additional seeds will be droped)
+     \param nmax The maximum number of treated seeds
+   **/
   void setMaxSeeds(int nmax);
-  void setSize(int rs);
-
+  /**
+     \brief Set the size of the pattern that will be fitted (number of active layers). 
+     \brief This method is meant to be used in CMSSW - in standalone version the value is automaticaly extracted from the patterns.
+     \param rs The number of active layers in the next fitted pattern (number of layers - number of fake superstrips)
+   **/
+  void setPatternSize(int rs);
+ 
   /**
      \brief Configure the way the computing is done
      \param hardwareEmulation If true the computing will be done using the hardware precision. If false, float computing is used.
