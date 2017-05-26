@@ -55,6 +55,14 @@ class TTStubBuilder : public edm::EDProducer
     edm::EDGetTokenT< edmNew::DetSetVector< TTCluster< T > > > clustersToken;
     bool ForbidMultipleStubs;
 
+    bool applyFE;
+    unsigned int  maxStubs_2S; // Every BX
+    unsigned int  maxStubs_PS; // Every 2BX
+    unsigned int  maxStubs_2S_CIC_5; // Every 8BX
+    unsigned int  maxStubs_PS_CIC_5; // Every 8BX
+    unsigned int  maxStubs_2S_CIC_10; // Every 8BX
+    unsigned int  maxStubs_PS_CIC_10; // Every 8BX
+
     /// Mandatory methods
     virtual void beginRun( const edm::Run& run, const edm::EventSetup& iSetup );
     virtual void endRun( const edm::Run& run, const edm::EventSetup& iSetup );
@@ -64,6 +72,13 @@ class TTStubBuilder : public edm::EDProducer
     /// NOTE: this must be static!
     static bool SortStubBendPairs( const std::pair< unsigned int, double >& left, const std::pair< unsigned int, double >& right );
     static bool SortStubsBend( const TTStub< T >& left, const TTStub< T >& right );
+
+    int ievt;
+
+    std::unordered_map< int, std::vector< TTStub< Ref_Phase2TrackerDigi_ > > > moduleStubs_CIC; /// Temporary storage for stubs before max check
+    std::unordered_map< int, int > moduleStubs_MPA; /// Temporary storage for stubs before max check
+    std::unordered_map< int, int > moduleStubs_CBC; /// Temporary storage for stubs before max check
+
 }; /// Close class
 
 /*! \brief Implementation of methods
@@ -79,6 +94,13 @@ TTStubBuilder< T >::TTStubBuilder( const edm::ParameterSet& iConfig )
 {
   clustersToken = consumes< edmNew::DetSetVector< TTCluster< T > > >(iConfig.getParameter< edm::InputTag >( "TTClusters" ));
   ForbidMultipleStubs = iConfig.getParameter< bool >( "OnlyOnePerInputCluster" );
+  applyFE             = iConfig.getParameter< bool >( "FEineffs" );
+  maxStubs_2S         = iConfig.getParameter< uint32_t >( "CBClimit" );
+  maxStubs_PS         = iConfig.getParameter< uint32_t >( "MPAlimit" );
+  maxStubs_2S_CIC_5   = iConfig.getParameter< uint32_t >( "SS5GCIClimit" );
+  maxStubs_PS_CIC_5   = iConfig.getParameter< uint32_t >( "PS5GCIClimit" );
+  maxStubs_2S_CIC_10  = iConfig.getParameter< uint32_t >( "SS10GCIClimit" );
+  maxStubs_PS_CIC_10  = iConfig.getParameter< uint32_t >( "PS10GCIClimit" );
   produces< edmNew::DetSetVector< TTCluster< T > > >( "ClusterAccepted" );
   produces< edmNew::DetSetVector< TTStub< T > > >( "StubAccepted" );
   produces< edmNew::DetSetVector< TTStub< T > > >( "StubRejected" );
@@ -94,6 +116,10 @@ void TTStubBuilder< T >::beginRun( const edm::Run& run, const edm::EventSetup& i
 {
   /// Get the stub finding algorithm
   iSetup.get< TTStubAlgorithmRecord >().get( theStubFindingAlgoHandle );
+  ievt=0;
+  moduleStubs_CIC.clear();
+  moduleStubs_MPA.clear();
+  moduleStubs_CBC.clear();
 }
 
 /// End run
