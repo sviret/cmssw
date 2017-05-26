@@ -49,11 +49,11 @@ void TTStubBuilder< Ref_Phase2TrackerDigi_ >::produce( edm::Event& iEvent, const
     
     if (detid.subdetId()==StripSubdetector::TOB)
     {
-      if (tTopo->layer(detid)==5) is10G_PS = true;
+      if (tTopo->layer(detid)==1) is10G_PS = true;
     }
     else if (detid.subdetId()==StripSubdetector::TID)
     {
-      if (tTopo->tidWheel(detid)<=1 && tTopo->tidRing(detid)<=3) is10G_PS = true;
+      if (tTopo->tidWheel(detid)<=2 && tTopo->tidRing(detid)<=4) is10G_PS = true;
     }
 
 
