@@ -88,8 +88,11 @@ void TTStubBuilder< Ref_Phase2TrackerDigi_ >::produce( edm::Event& iEvent, const
     const GeomDetUnit* det0 = theTrackerGeom->idToDetUnit( lowerDetid );
     const PixelGeomDetUnit* pix0 = dynamic_cast< const PixelGeomDetUnit* >( det0 );
     const PixelTopology* top0 = dynamic_cast< const PixelTopology* >( &(pix0->specificTopology()) );
-    const int chipSize = 2 * top0->rowsperroc(); /// Need to find ASIC size in half-strip units
+    //const int chipSize = 2 * top0->rowsperroc(); /// Need to find ASIC size in half-strip units
+    int chipSize = 127; /// SV: previous line is wrong, need to find the right numbers
 
+    if (isPS) chipSize = 120;
+	  
     //    std::unordered_map< int, std::vector< TTStub< Ref_Phase2TrackerDigi_ > > > moduleStubs; /// Temporary storage for stubs before max check
 
     /// Loop over pairs of Clusters
@@ -168,8 +171,12 @@ void TTStubBuilder< Ref_Phase2TrackerDigi_ >::produce( edm::Event& iEvent, const
 	  bool FEreject = false;
           /// This means that only some of them do
           /// Put in the temporary output
-          int chip     = 100*nmod+tempTTStub.getTriggerPosition()/chipSize; /// Find out which MPA/CBC ASIC
-          int CIC_chip = 100*nmod+chip%8; /// Find out which CIC ASIC
+	  MeasurementPoint mp0 = tempTTStub.getClusterRef(0)->findAverageLocalCoordinates();
+          int seg       = static_cast<int>(mp0.y());
+          if (isPS) seg = seg/16;
+
+          int chip     = 1000*nmod+10*int(tempTTStub.getTriggerPosition())/chipSize+seg; /// Find out which MPA/CBC ASIC
+          int CIC_chip = 10*nmod+seg; /// Find out which CIC ASIC
 
 	  // First look is the stub is passing trough the very front end
 	  (isPS)
