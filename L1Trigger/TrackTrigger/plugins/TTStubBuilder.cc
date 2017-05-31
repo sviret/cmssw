@@ -288,41 +288,41 @@ void TTStubBuilder< Ref_Phase2TrackerDigi_ >::produce( edm::Event& iEvent, const
 	    }
 	    std::sort( bendMap.begin(), bendMap.end(), TTStubBuilder< Ref_Phase2TrackerDigi_ >::SortStubBendPairs );
 
-	    std::vector< int > tempStubs;
-	    tempStubs.clear();
+            bool CIC_reject=true;
 
-	    for ( unsigned int i = 0; i < moduleStubs_CIC[CIC_chip].size(); ++i )
+	    // bendMap contains link over all the stubs included in moduleStubs_CIC[CIC_chip]
+
+	    for ( unsigned int i = 0; i < maxStubs; ++i ) 
 	    {
-	      if (i<maxStubs)
+	      // The stub we have added is among the first ones, add it
+	      if (bendMap[i].first==moduleStubs_CIC[CIC_chip].size()-1)
 	      {
-		// The new stub is OK
-		if (bendMap[i].first==moduleStubs_CIC[CIC_chip].size()-1)
-		{
-		  tempInner.push_back( *(tempTTStub.getClusterRef(0)) );
-		  tempOuter.push_back( *(tempTTStub.getClusterRef(1)) );
-		  tempAccepted.push_back( tempTTStub );
-		}
-	      }
-	      else
-	      {
-		TTStub< Ref_Phase2TrackerDigi_ > tempTTStub2( tempTTStub.getDetId() );
-
-		tempTTStub2.addClusterRef( (tempTTStub.getClusterRef(0)) );
-		tempTTStub2.addClusterRef( (tempTTStub.getClusterRef(1)) );
-
-		tempTTStub2.setTriggerDisplacement( 1000+2.*tempTTStub.getTriggerDisplacement() ); /// getter is in FULL-strip units, setter is in HALF-strip units
-		tempTTStub2.setTriggerOffset( 1000+2.*tempTTStub.getTriggerOffset() ); /// getter is in FULL-strip units, setter is in HALF-strip units
-
-		tempTTStub2.setRealTriggerOffset( 0 );
-
-		tempInner.push_back( *(tempTTStub2.getClusterRef(0)) );
-		tempOuter.push_back( *(tempTTStub2.getClusterRef(1)) );
-		tempAccepted.push_back( tempTTStub2 );
-
-		std::cout << "Hit CIC limit !!!" << std::endl; 
+		tempInner.push_back( *(tempTTStub.getClusterRef(0)) );
+		tempOuter.push_back( *(tempTTStub.getClusterRef(1)) );
+		tempAccepted.push_back( tempTTStub );
+		CIC_reject=false;
 	      }
 	    }
-	  	      
+
+	    if (CIC_reject) // The stub added does not pass the cut
+	    {
+	      TTStub< Ref_Phase2TrackerDigi_ > tempTTStub2( tempTTStub.getDetId() );
+	      
+	      tempTTStub2.addClusterRef( (tempTTStub.getClusterRef(0)) );
+	      tempTTStub2.addClusterRef( (tempTTStub.getClusterRef(1)) );
+	      
+	      tempTTStub2.setTriggerDisplacement( 1000+2.*tempTTStub.getTriggerDisplacement() ); /// getter is in FULL-strip units, setter is in HALF-strip units
+	      tempTTStub2.setTriggerOffset( 1000+2.*tempTTStub.getTriggerOffset() ); /// getter is in FULL-strip units, setter is in HALF-strip units
+	      
+	      tempTTStub2.setRealTriggerOffset( 0 );
+	      
+	      tempInner.push_back( *(tempTTStub2.getClusterRef(0)) );
+	      tempOuter.push_back( *(tempTTStub2.getClusterRef(1)) );
+	      tempAccepted.push_back( tempTTStub2 );
+	      
+	      std::cout << "Hit CIC limit !!!" << std::endl; 
+	    }		  
+		  	  	      
 	    //std::cout << ievt << " / " << CIC_chip << " / " << moduleStubs_CIC[CIC_chip].size() << std::endl; 
           }
         } /// End of check on max number of stubs per module
