@@ -22,7 +22,6 @@ TTStubAlgorithm_official_Phase2TrackerDigi_ = cms.ESProducer("TTStubAlgorithm_of
    NTiltedRings = cms.vdouble( 0., 12., 12., 12., 0., 0., 0.), #Number of tilted rings per side in barrel layers (for tilted geom only)
    TiltedBarrelCutSet = cms.VPSet(
         cms.PSet( TiltedCut = cms.vdouble( 0 ) ),
-        cms.PSet( TiltedCut = cms.vdouble( 0 ) ),
         cms.PSet( TiltedCut = cms.vdouble( 0, 2, 2, 2, 2, 2, 2, 1.5, 1.5, 1.5, 1.5, 1., 1.) ),
         cms.PSet( TiltedCut = cms.vdouble( 0, 2.5, 2.5, 2.5, 2.5, 2, 2, 2.5, 2.5, 2, 2, 2, 2) ),
         cms.PSet( TiltedCut = cms.vdouble( 0, 3.5, 3.5, 3, 3, 3, 3, 2.5, 2.5, 2.5, 2, 2, 2) ),
