@@ -68,6 +68,8 @@ class TTClusterAssociationMap
     std::map< edm::Ref< edmNew::DetSetVector< TTCluster< T > >, TTCluster< T > >, std::vector< edm::Ptr< TrackingParticle > > > clusterToTrackingParticleVectorMap;
     std::map< edm::Ptr< TrackingParticle >, std::vector< edm::Ref< edmNew::DetSetVector< TTCluster< T > >, TTCluster< T > > > > trackingParticleToClusterVectorMap;
 
+    int nclus;
+
 }; /// Close class
 
 /*! \brief   Implementation of methods
@@ -85,6 +87,7 @@ TTClusterAssociationMap< T >::TTClusterAssociationMap()
   /// Set default data members
   clusterToTrackingParticleVectorMap.clear();
   trackingParticleToClusterVectorMap.clear();
+  nclus=0;
 }
 
 /// Destructor
@@ -134,8 +137,12 @@ std::vector< edm::Ptr< TrackingParticle > > TTClusterAssociationMap< T >::findTr
 template< typename T >
 bool TTClusterAssociationMap< T >::isGenuine( edm::Ref< edmNew::DetSetVector< TTCluster< T > >, TTCluster< T > > aCluster ) const
 {
+
+
   /// Get the TrackingParticles
   std::vector< edm::Ptr< TrackingParticle > > theseTrackingParticles = this->findTrackingParticlePtrs( aCluster );
+
+
 
   /// If the vector is empty, then the cluster is UNKNOWN
   if ( theseTrackingParticles.size() == 0 )
@@ -146,6 +153,12 @@ bool TTClusterAssociationMap< T >::isGenuine( edm::Ref< edmNew::DetSetVector< TT
   unsigned int goodDifferentTPs = 0;
   std::vector< const TrackingParticle* > tpAddressVector;
 
+  std::vector<float> tp_mom;
+
+  tp_mom.clear();
+
+  float tp_tot=0;
+
   /// Loop over the TrackingParticles
   for ( unsigned int itp = 0; itp < theseTrackingParticles.size(); itp++ )
   {
@@ -154,6 +167,25 @@ bool TTClusterAssociationMap< T >::isGenuine( edm::Ref< edmNew::DetSetVector< TT
 
     /// Count the NULL TrackingParticles
     if ( curTP.isNull() )
+    {
+      tp_mom.push_back(0);
+    }
+    else
+    {
+      tp_mom.push_back(curTP.get()->p4().pt());
+      tp_tot+=curTP.get()->p4().pt();
+    }
+  }
+
+  if (tp_tot==0) return false;
+
+  for ( unsigned int itp = 0; itp < theseTrackingParticles.size(); itp++ )
+  {
+    /// Get the TrackingParticle
+    edm::Ptr< TrackingParticle > curTP = theseTrackingParticles.at(itp);
+
+    /// Count the NULL TrackingParticles
+    if ( tp_mom.at(itp) <= 0.01*tp_tot)
     {
       nullTPs++;
     }
@@ -165,13 +197,24 @@ bool TTClusterAssociationMap< T >::isGenuine( edm::Ref< edmNew::DetSetVector< TT
     }
   }
 
+
+
   /// Count how many different TrackingParticle there are
   std::sort( tpAddressVector.begin(), tpAddressVector.end() );
   tpAddressVector.erase( std::unique( tpAddressVector.begin(), tpAddressVector.end() ), tpAddressVector.end() );
   goodDifferentTPs = tpAddressVector.size();
+  /*
+  bool isGenuine=( nullTPs == 0 && goodDifferentTPs == 1 );
 
+  if (!isGenuine)
+  {
+    std::cout << "Into IsGenuineCluster " << theseTrackingParticles.size() << std::endl;
+    std::cout << nullTPs << " / " << goodDifferentTPs << " / " << ( nullTPs == 0 && goodDifferentTPs == 1 ) << std::endl;
+  }
+  */
   /// GENUINE means no NULLs and only one good TP
-  return ( nullTPs == 0 && goodDifferentTPs == 1 );
+  //return ( nullTPs == 0 && goodDifferentTPs == 1 );
+  return ( goodDifferentTPs == 1 );
 }
 
 template< typename T >
@@ -222,6 +265,14 @@ bool TTClusterAssociationMap< T >::isCombinatoric( edm::Ref< edmNew::DetSetVecto
   if ( theseTrackingParticles.size() == 0 )
     return false;
 
+
+  bool genuineClu = this->isGenuine( aCluster );
+  bool unknownClu = this->isUnknown( aCluster );
+
+  if (genuineClu || unknownClu) return false;
+
+  return true;
+
   /// If we are here, it means there are some TrackingParticles
   unsigned int nullTPs = 0;
   unsigned int goodDifferentTPs = 0;
@@ -253,7 +304,8 @@ bool TTClusterAssociationMap< T >::isCombinatoric( edm::Ref< edmNew::DetSetVecto
 
   /// COMBINATORIC means no NULLs and more than one good TP
   /// OR, in alternative, only one good TP but non-zero NULLS
-  return ( ( nullTPs == 0 && goodDifferentTPs > 1 ) || ( nullTPs > 0 && goodDifferentTPs > 0 ) );
+  //  return ( ( nullTPs == 0 && goodDifferentTPs > 1 ) || ( nullTPs > 0 && goodDifferentTPs > 0 ) );
+  return (goodDifferentTPs > 1);
 }
 
 template< typename T >

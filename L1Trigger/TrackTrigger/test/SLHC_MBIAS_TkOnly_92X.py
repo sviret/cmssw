@@ -3,19 +3,20 @@
 # Configuration file for simple MBias events
 # production in tracker only
 # Produces 100 minbias events, to be used as an input in
-# SLHC_PU_TkOnly_90X.py (of course with the same geometry)
+# SLHC_PU_TkOnly_92X.py (of course with the same geometry)
 #
 # UE tuning is UE_P8M1
 #
 # Author: S.Viret (viret@in2p3.fr)
-# Date        : 16/02/2017
+# Date        : 23/05/2017
 #
-# Script tested with release CMSSW_9_0_0_pre4
+# Script tested with release CMSSW_9_2_0
 #
 #########################
 #
 # Here you choose if you want flat (True) or tilted (False) geometry
 #
+# Geometry used are D10 (Flat) and D11 (Tilted)
 
 flat=False
 
@@ -33,7 +34,6 @@ process.load('Configuration.EventContent.EventContent_cff')
 process.load('Configuration.StandardSequences.MagneticField_38T_PostLS1_cff')
 process.load('Configuration.StandardSequences.Generator_cff')
 process.load('Configuration.StandardSequences.SimIdeal_cff')
-process.load('L1Trigger.TrackTrigger.TkOnlyFlatGeom_cff') # Special config file for TkOnly geometry
 process.load('IOMC.EventVertexGenerators.VtxSmearedGauss_cfi')
 process.load('GeneratorInterface.Core.genFilterSummary_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
@@ -62,7 +62,7 @@ process.source = cms.Source("EmptySource")
 # Global tag for PromptReco
 process.genstepfilter.triggerConditions=cms.vstring("generation_step")
 from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
 # Random seeds
 process.RandomNumberGeneratorService.generator.initialSeed      = 1
