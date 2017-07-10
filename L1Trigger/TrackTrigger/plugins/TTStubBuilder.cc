@@ -92,7 +92,7 @@ void TTStubBuilder< Ref_Phase2TrackerDigi_ >::produce( edm::Event& iEvent, const
     int chipSize = 127; /// SV: previous line is wrong, need to find the right numbers
 
     if (isPS) chipSize = 120;
-	  
+
     //    std::unordered_map< int, std::vector< TTStub< Ref_Phase2TrackerDigi_ > > > moduleStubs; /// Temporary storage for stubs before max check
 
     /// Loop over pairs of Clusters
@@ -171,12 +171,11 @@ void TTStubBuilder< Ref_Phase2TrackerDigi_ >::produce( edm::Event& iEvent, const
 	  bool FEreject = false;
           /// This means that only some of them do
           /// Put in the temporary output
-	  MeasurementPoint mp0 = tempTTStub.getClusterRef(0)->findAverageLocalCoordinates();
+          MeasurementPoint mp0 = tempTTStub.getClusterRef(0)->findAverageLocalCoordinates();
           int seg       = static_cast<int>(mp0.y());
-          if (isPS) seg = seg/16;
-
-          int chip     = 1000*nmod+10*int(tempTTStub.getTriggerPosition())/chipSize+seg; /// Find out which MPA/CBC ASIC
-          int CIC_chip = 10*nmod+seg; /// Find out which CIC ASIC
+	  if (isPS) seg = seg/16;
+          int chip      = 1000*nmod+10*int(tempTTStub.getTriggerPosition())/chipSize+seg; /// Find out which MPA/CBC ASIC
+          int CIC_chip  = 10*nmod+seg; /// Find out which CIC ASIC
 
 	  // First look is the stub is passing trough the very front end
 	  (isPS)
@@ -252,8 +251,15 @@ void TTStubBuilder< Ref_Phase2TrackerDigi_ >::produce( edm::Event& iEvent, const
 	    }
 	  }
 
+	  // End of the MPA/CBC loop
+
 	  // If the stub has been already thrown out, there is no reason to include it into the CIC stream
 	  if (FEreject) continue;
+
+	  //          tempInner.push_back( *(tempTTStub.getClusterRef(0)) );
+	  //          tempOuter.push_back( *(tempTTStub.getClusterRef(1)) );
+	  //          tempAccepted.push_back( tempTTStub );
+
 	  
 	  (isPS)
 	    ? maxStubs = maxStubs_PS_CIC_5
@@ -269,27 +275,39 @@ void TTStubBuilder< Ref_Phase2TrackerDigi_ >::produce( edm::Event& iEvent, const
 
 	    tempInner.push_back( *(tempTTStub.getClusterRef(0)) );
             tempOuter.push_back( *(tempTTStub.getClusterRef(1)) );
-            tempAccepted.push_back( tempTTStub );
+            tempAccepted.push_back( tempTTStub ); // The stub is added
           }
           else
           {
-	    moduleStubs_CIC[CIC_chip].push_back( tempTTStub ); //We add the new stub
+	    bool CIC_reject=true;
 
-	    /// Sort them and pick up only the first N.
-	    bendMap.clear();
- 	    bendMap.reserve(moduleStubs_CIC[CIC_chip].size());
-	    
-	    for ( unsigned int i = 0; i < moduleStubs_CIC[CIC_chip].size(); ++i )
+	    if ( moduleStubs_CIC[CIC_chip].size() < maxStubs )
 	    {
- 		bendMap.push_back( std::pair< unsigned int, double >( i, moduleStubs_CIC[CIC_chip].at(i).getTriggerBend() ) );
+	      moduleStubs_CIC[CIC_chip].push_back( tempTTStub ); //We add the new stub
+	      tempInner.push_back( *(tempTTStub.getClusterRef(0)) );
+	      tempOuter.push_back( *(tempTTStub.getClusterRef(1)) );
+	      tempAccepted.push_back( tempTTStub ); // The stub is added
 	    }
-	    std::sort( bendMap.begin(), bendMap.end(), TTStubBuilder< Ref_Phase2TrackerDigi_ >::SortStubBendPairs );
+	    else
+	    {
+	      moduleStubs_CIC[CIC_chip].push_back( tempTTStub ); //We add the new stub
+
+	      /// Sort them and pick up only the first N.
+	      bendMap.clear();
+	      bendMap.reserve(moduleStubs_CIC[CIC_chip].size());
+	    
+	      for ( unsigned int i = 0; i < moduleStubs_CIC[CIC_chip].size(); ++i )
+	      {
+		bendMap.push_back( std::pair< unsigned int, double >( i, moduleStubs_CIC[CIC_chip].at(i).getTriggerBend() ) );
+	      }
+
+	      std::sort( bendMap.begin(), bendMap.end(), TTStubBuilder< Ref_Phase2TrackerDigi_ >::SortStubBendPairs );
 	      
-	    // bendMap contains link over all the stubs included in moduleStubs_CIC[CIC_chip]
+	      // bendMap contains link over all the stubs included in moduleStubs_CIC[CIC_chip]
 	      
-	    for ( unsigned int i = 0; i < maxStubs; ++i ) 
-            {
-  		// The stub we have added is among the first ones, add it
+	      for ( unsigned int i = 0; i < maxStubs; ++i ) 
+	      {
+		// The stub we have added is among the first ones, add it
 		if (bendMap[i].first==moduleStubs_CIC[CIC_chip].size()-1)
 		{
 		  //tempInner.push_back( *(tempTTStub.getClusterRef(0)) );
@@ -297,11 +315,11 @@ void TTStubBuilder< Ref_Phase2TrackerDigi_ >::produce( edm::Event& iEvent, const
 		  //tempAccepted.push_back( tempTTStub );
 		  CIC_reject=false;
 		}
-            }
+	      }
 
-            if (CIC_reject) // The stub added does not pass the cut
-            {
-    		TTStub< Ref_Phase2TrackerDigi_ > tempTTStub2( tempTTStub.getDetId() );
+	      if (CIC_reject) // The stub added does not pass the cut
+	      {
+		TTStub< Ref_Phase2TrackerDigi_ > tempTTStub2( tempTTStub.getDetId() );
 	      
 		tempTTStub2.addClusterRef( (tempTTStub.getClusterRef(0)) );
 		tempTTStub2.addClusterRef( (tempTTStub.getClusterRef(1)) );
@@ -316,17 +334,19 @@ void TTStubBuilder< Ref_Phase2TrackerDigi_ >::produce( edm::Event& iEvent, const
 		tempAccepted.push_back( tempTTStub2 );
 	      
 		std::cout << "Hit CIC limit !!!" << std::endl; 
-           } 
-   	   else
-	   {
+	      }
+	      else
+	      {
 		tempInner.push_back( *(tempTTStub.getClusterRef(0)) );
 		tempOuter.push_back( *(tempTTStub.getClusterRef(1)) );
 		tempAccepted.push_back( tempTTStub ); // The stub is added
-            }		  
-		  		  	  	      
+	      }
+	    }
+	 
+      
 	    //std::cout << ievt << " / " << CIC_chip << " / " << moduleStubs_CIC[CIC_chip].size() << std::endl; 
           }
-        } /// End of check on max number of stubs per module
+	} /// End of check on max number of stubs per module
       } /// End of nested loop
     } /// End of loop over pairs of Clusters
 
